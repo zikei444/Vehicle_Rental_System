@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="text-center">
-    <h1>Welcome to Vehicle Rental System</h1>
+    <h1>Welcome to Vehicle Rental System : )</h1>
     <p>Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!
         Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!
         Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!Book cars, trucks, and vans easily online!
