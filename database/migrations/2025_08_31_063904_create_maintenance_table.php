@@ -13,13 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('maintenances', function (Blueprint $table) {
+        Schema::create('maintenance', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
             $table->foreignId('admin_id')->constrained('admins')->onDelete('cascade');
-            $table->date('maintenance_date');
-            $table->string('description');
-            $table->decimal('cost', 10, 2)->nullable();
+            $table->string('maintenance_type');
+            $table->date('service_date');
+            $table->decimal('cost', 10, 2);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

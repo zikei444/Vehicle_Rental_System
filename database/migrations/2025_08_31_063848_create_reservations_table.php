@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->decimal('total_price', 10, 2);
+            $table->date('pickup_date');
+            $table->date('return_date');
+            $table->decimal('total_cost', 10, 2);
             $table->timestamps();
         });
     }

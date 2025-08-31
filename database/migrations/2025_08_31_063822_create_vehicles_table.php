@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->string('type'); // car, truck, van
+            $table->enum('type', ['car', 'truck', 'van']);
             $table->string('brand');
             $table->string('model');
-            $table->string('plate_number')->unique();
-            $table->integer('year');
-            $table->decimal('price_per_day', 8, 2);
+            $table->string('registration_number');
+            $table->decimal('rental_price', 10, 2);
+            $table->enum('availability_status', ['available', 'rented', 'reserved', 'under_maintenance'])->default('available');
             $table->timestamps();
         });
     }

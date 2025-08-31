@@ -15,6 +15,9 @@ return new class extends Migration
     {
         Schema::create('vans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            $table->integer('passenger_capacity');
+            $table->enum('fuel_type', ['petrol', 'diesel']);
             $table->timestamps();
         });
     }
