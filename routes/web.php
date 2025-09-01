@@ -16,9 +16,22 @@ Route::get('vehicles/select/{id}', [VehicleController::class, 'select']);
 Route::get('reservation/process', [ReservationController::class, 'process'])
      ->name('reservation.process');
 
-// Calculate and back to same page
-Route::post('reservation/calculate', [ReservationController::class, 'calculate'])
-->name('reservation.calculate');
+// Calculate and display cost 
+Route::post('/reservation/calculate-ajax', [ReservationController::class, 'calculateAjax'])
+    ->name('reservation.calculate.ajax');
+
+// To confirm and proceed to booking 
+Route::match(['get', 'post'], '/reservation/confirm', [ReservationController::class, 'confirm'])
+    ->name('reservation.confirm');
+
+
+// Success Payment 
+Route::post('/reservation/payment-process', [ReservationController::class, 'paymentProcess'])
+    ->name('reservation.payment.process');
+
+
+
+
 
 
      

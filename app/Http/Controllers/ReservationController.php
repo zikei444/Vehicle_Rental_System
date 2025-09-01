@@ -28,50 +28,106 @@ class ReservationController extends Controller
         return view('reservations.reservationProcess', compact('vehicle'));
     }
 
-    public function calculate(Request $request)
+    public function calculateAjax(Request $request)
     {
-        $vehicle_id = $request->input('vehicle_id');
-        $pickup = $request->input('pickup_date');
-        $return = $request->input('return_date');
+        $pickup = new \DateTime($request->pickup_date);
+        $days = (int) $request->days;
 
-        if (!$vehicle_id || !$pickup || !$return) {
-            return redirect()->back()->withErrors(['error' => 'All fields are required']);
+        if ($days <= 0) {
+            return response()->json(['error' => 'Number of days must be at least 1']);
         }
 
-        // Fetch vehicle info from API
+        // Calculate return date (pickup + days)
+        $return = (clone $pickup)->modify("+{$days} days");
+
+        // Fetch vehicle info
         $response = Http::get($this->vehicleApi, [
             'action' => 'get',
-            'id' => $vehicle_id
+            'id' => $request->vehicle_id
         ]);
 
-        $vehicleData = $response->json()['data'] ?? null;
-        $vehicle = is_string($vehicleData) ? json_decode($vehicleData, true) : $vehicleData;
+        $vehicle = $response->json()['data'] ?? null;
 
         if (!$vehicle) {
-            return redirect()->back()->withErrors(['error' => 'Vehicle not found']);
+            return response()->json(['error' => 'Vehicle not found']);
         }
 
-        // Calculate number of days
-        $days = max(1, (strtotime($return) - strtotime($pickup)) / (60 * 60 * 24));
-
-        // Choose strategy based on vehicle type
-        switch ($vehicle['type']) {
-            case 'car':
-                $strategy = new CarCostStrategy();
-                break;
-            case 'truck':
-                $strategy = new TruckCostStrategy();
-                break;
-            case 'van':
-                $strategy = new VanCostStrategy();
-                break;
-            default:
-                return redirect()->back()->withErrors(['error' => 'Unknown vehicle type']);
-        }
-
+        // Pick strategy
+        $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($vehicle['type']) . "CostStrategy";
+        $strategy = new $strategyClass();
         $totalCost = $strategy->calculate($vehicle, $days);
 
-        // Return to same view with cost
-        return view('reservations.reservationProcess', compact('vehicle', 'totalCost', 'pickup', 'return'));
+        return response()->json([
+            'vehicle_id' => $request->vehicle_id,
+            'totalCost' => $totalCost,
+            'days' => $days,
+            'pickup' => $pickup->format('Y-m-d'),
+            'return' => $return->format('Y-m-d'),
+        ]);
+    }
+
+
+    public function confirm(Request $request)
+    {
+        // Fetch full vehicle details from API
+        $response = Http::get($this->vehicleApi, [
+            'action' => 'get',
+            'id' => $request->vehicle_id
+        ]);
+        $vehicle = $response->json()['data'] ?? null;
+
+        $pickup_date = $request->pickup_date;
+        $return_date = $request->return_date;
+        $days = $request->days;
+        $total_cost = $request->total_cost;
+
+        return view('reservations.reservationPayment', compact(
+            'vehicle',
+            'pickup_date',
+            'return_date',
+            'days',
+            'total_cost'
+        ));
+    }
+
+    // Handle payment processing
+    public function paymentProcess(Request $request)
+    {
+        $payment_method = $request->input('payment_method');
+
+        // Validate common fields
+        $rules = [
+            'vehicle_id'   => 'required',
+            'pickup_date'  => 'required|date',
+            'return_date'  => 'required|date',
+            'days'         => 'required|integer|min:1',
+            'total_cost'   => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,bank_transfer'
+        ];
+
+        // Add extra validation if payment method is card
+        if ($payment_method === 'card') {
+            $rules = array_merge($rules, [
+                'card_name'    => 'required|string|max:255',
+                'card_number'  => 'required|digits_between:13,19',
+                'cvv'          => 'required|digits:3',
+                'expiry_month' => 'required|integer|min:1|max:12',
+                'expiry_year'  => 'required|integer|min:' . date('Y'),
+            ]);
+        }
+
+        $validated = $request->validate($rules);
+
+        // ⚡ Simulate payment success
+        return view('reservations.reservationSuccess', [
+            'payment_method' => ucfirst(str_replace('_', ' ', $payment_method)),
+            'vehicle_id'     => $validated['vehicle_id'],
+            'pickup_date'    => $validated['pickup_date'],
+            'return_date'    => $validated['return_date'],
+            'days'           => $validated['days'],
+            'total_cost'     => $validated['total_cost'],
+            'card_name'      => $validated['card_name'] ?? null,
+            'card_number'    => $validated['card_number'] ?? null,
+        ]);
     }
 }
