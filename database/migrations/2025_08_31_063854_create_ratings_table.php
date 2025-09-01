@@ -13,14 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('reservations', function (Blueprint $table) {
+        Schema::create('ratings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
-            $table->date('pickup_date');
-            $table->date('return_date');
-            $table->decimal('total_cost', 10, 2);
-            $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
+            $table->foreignId('admin_id')->nullable()->constrained('admins')->onDelete('set null');
+            $table->integer('rating');
+            $table->text('feedback')->nullable();
             $table->timestamps();
         });
     }
