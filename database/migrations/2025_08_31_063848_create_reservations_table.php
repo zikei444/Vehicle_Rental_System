@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('pickup_date');
             $table->date('return_date');
             $table->decimal('total_cost', 10, 2);
+            $table->enum('payment_method', ['cash', 'card', 'bank_transfer']);
             $table->enum('status', ['ongoing', 'completed', 'cancelled'])->default('ongoing');
             $table->timestamps();
         });

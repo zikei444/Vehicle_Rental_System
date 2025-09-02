@@ -50,17 +50,29 @@ if ($method === 'GET' && $action === 'getByStatus') {
 if ($method === 'POST' && $action === 'add') {
     $input = json_decode(file_get_contents("php://input"), true);
 
-    // Default STATUS
+    // Default values
     $status = 'ongoing';
+    $customer_id = 1; // Put for now first 
 
-    $stmt = $pdo->prepare("INSERT INTO reservations (customer_id, vehicle_id, pickup_date, return_date, total_cost, status) VALUES (?,?,?,?,?,?)");
+    $now = date('Y-m-d H:i:s');
+
+    $stmt = $pdo->prepare("
+        INSERT INTO reservations 
+            (customer_id, vehicle_id, pickup_date, return_date, days, total_cost, payment_method, status, created_at, updated_at) 
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+    ");
+
     $stmt->execute([
         $input['customer_id'],
         $input['vehicle_id'],
         $input['pickup_date'],
         $input['return_date'],
+        $input['days'],   // ✅ use user input
         $input['total_cost'],
-        $status
+        $input['payment_method'],
+        $status,
+        $now,
+        $now
     ]);
 
     echo json_encode([

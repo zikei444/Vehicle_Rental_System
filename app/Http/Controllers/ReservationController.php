@@ -11,6 +11,7 @@ use App\Services\Reservations\CostCalculator\VanCostStrategy;
 class ReservationController extends Controller
 {
     private $vehicleApi = 'http://localhost/vehicle-rental-system/public/api/vehicleApi.php'; // api path
+    private $reservationApi = 'http://localhost/vehicle-rental-system/public/api/reservationApi.php'; // api path
 
     public function process(Request $request)
     {
@@ -46,6 +47,7 @@ class ReservationController extends Controller
             'id' => $request->vehicle_id
         ]);
 
+
         $vehicle = $response->json()['data'] ?? null;
 
         if (!$vehicle) {
@@ -74,6 +76,7 @@ class ReservationController extends Controller
             'action' => 'get',
             'id' => $request->vehicle_id
         ]);
+
         $vehicle = $response->json()['data'] ?? null;
 
         $pickup_date = $request->pickup_date;
@@ -93,6 +96,7 @@ class ReservationController extends Controller
     // Handle payment processing
     public function paymentProcess(Request $request)
     {
+        
         $payment_method = $request->input('payment_method');
 
         // Validate common fields
@@ -118,8 +122,25 @@ class ReservationController extends Controller
 
         $validated = $request->validate($rules);
 
-        // ⚡ Simulate payment success
+        $response = Http::withBody(
+            json_encode([
+                'customer_id'    => 1,
+                'vehicle_id'     => $validated['vehicle_id'],
+                'pickup_date'    => $validated['pickup_date'],
+                'return_date'    => $validated['return_date'],
+                'days'           => $validated['days'],  // send days
+                'total_cost'     => $validated['total_cost'],
+                'payment_method' => $validated['payment_method'],
+            ]),
+            'application/json'
+        )->post($this->reservationApi . '?action=add');
+
+
+        $apiResult = $response->json();
+
+        // Payment success
         return view('reservations.reservationSuccess', [
+            'reservation_id'  => $apiResult['id'] ?? null, 
             'payment_method' => ucfirst(str_replace('_', ' ', $payment_method)),
             'vehicle_id'     => $validated['vehicle_id'],
             'pickup_date'    => $validated['pickup_date'],

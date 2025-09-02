@@ -6,6 +6,9 @@
 
     <div class="alert alert-success">
         ✅ Your reservation has been confirmed!
+        @if($reservation_id)
+            <p><strong>Reservation ID:</strong> {{ $reservation_id }}</p>
+        @endif
     </div>
 
     <p><strong>Vehicle ID:</strong> {{ $vehicle_id }}</p>
