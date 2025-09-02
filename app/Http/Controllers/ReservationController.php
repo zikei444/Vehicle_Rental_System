@@ -138,6 +138,15 @@ class ReservationController extends Controller
 
         $apiResult = $response->json();
 
+        // After successfully saving reservation
+        $response = Http::withBody(
+            json_encode([
+                'vehicle_id' => $validated['vehicle_id'],
+                'status'     => 'rented',
+            ]),
+            'application/json'
+        )->post($this->vehicleApi . '?action=updateStatus');
+
         // Payment success
         return view('reservations.reservationSuccess', [
             'reservation_id'  => $apiResult['id'] ?? null, 
@@ -151,4 +160,30 @@ class ReservationController extends Controller
             'card_number'    => $validated['card_number'] ?? null,
         ]);
     }
+
+    public function myReservations()
+{
+    $customerId = 1; // replace with Auth::id() once login is ready
+
+    // Fetch all reservations
+    $response = Http::get($this->reservationApi, [
+        'action' => 'getAll'
+    ]);
+
+    $reservations = $response->json()['data'] ?? [];
+
+    // Filter only reservations for this customer
+    $reservations = array_filter($reservations, fn($r) => $r['customer_id'] == $customerId);
+
+    // Fetch vehicle details for each reservation
+    foreach ($reservations as &$res) {
+        $vehicleResp = Http::get($this->vehicleApi, [
+            'action' => 'get',
+            'id' => $res['vehicle_id']
+        ]);
+        $res['vehicle'] = $vehicleResp->json()['data'] ?? null;
+    }
+
+    return view('reservations.myReservation', compact('reservations'));
+}
 }

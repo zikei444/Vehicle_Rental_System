@@ -10,21 +10,41 @@
 
     <!-- Custom CSS -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
+    <style>
+        /* Make body full height and flex column */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Main content grows to fill space */
+        main.content-wrapper {
+            flex: 1;
+        }
+
+        /* Optional: reduce footer padding to make it thinner */
+        footer {
+            padding: 0.5rem 0;
+        }
+    </style>
 </head>
 <body>
+        <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
 
     {{-- Include Header --}}
     @include('layouts.header')
 
-    <div class="container mt-4">
+    <main class="content-wrapper container mt-4">
         @yield('content')
-    </div>
+    </main>
 
     {{-- Include Footer --}}
     @include('layouts.footer')
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/app.js') }}"></script>
+
 </body>
 </html>

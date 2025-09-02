@@ -108,5 +108,37 @@ if ($method === 'DELETE' && $action === 'delete' && $id) {
     exit;
 }
 
+// PUT update reservation status + comments
+if ($method === 'PUT' && $action === 'edit' && $id) {
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    if (!isset($input['status'])) {
+        echo json_encode(["status" => "error", "message" => "Status is required"]);
+        exit;
+    }
+
+    // Build SQL dynamically to include comments if provided
+    $fields = ['status'];
+    $params = [$input['status']];
+
+    if (isset($input['cancel_comment'])) {
+        $fields[] = 'cancel_comment';
+        $params[] = $input['cancel_comment'];
+    }
+    if (isset($input['complete_comment'])) {
+        $fields[] = 'complete_comment';
+        $params[] = $input['complete_comment'];
+    }
+
+    $sql = "UPDATE reservations SET " . implode("=?, ", $fields) . "=? WHERE id=?";
+    $params[] = $id;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    echo json_encode(["status" => "success", "message" => "Reservation updated"]);
+    exit;
+}
+
 // Invalid action 
 echo json_encode(["status" => "error", "message" => "Invalid action"]);

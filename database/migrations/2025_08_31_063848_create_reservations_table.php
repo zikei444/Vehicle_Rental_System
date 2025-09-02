@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
             $table->date('pickup_date');
             $table->date('return_date');
+             $table->integer('days');
             $table->decimal('total_cost', 10, 2);
             $table->enum('payment_method', ['cash', 'card', 'bank_transfer']);
             $table->enum('status', ['ongoing', 'completed', 'cancelled'])->default('ongoing');

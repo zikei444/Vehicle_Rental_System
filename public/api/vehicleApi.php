@@ -30,19 +30,14 @@ if ($method === 'GET' && $action === 'get' && $id) {
     exit;
 }
 
-// PUT update vehicle availability
-if ($method === 'PUT' && $action === 'updateStatus' && $id) {
-    $input = json_decode(file_get_contents("php://input"), true);
-
-    if (!isset($input['availability_status'])) {
-        echo json_encode(["status"=>"error","message"=>"Availability status is required"]);
-        exit;
-    }
-
+// POST update vehicle status
+if ($method === 'POST' && $action === 'updateStatus') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
     $stmt = $pdo->prepare("UPDATE vehicles SET availability_status=? WHERE id=?");
-    $stmt->execute([$input['availability_status'], $id]);
-
-    echo json_encode(["status"=>"success","message"=>"Vehicle status updated"]);
+    $stmt->execute([$input['status'], $input['vehicle_id']]);
+    
+    echo json_encode(['status' => 'success', 'message' => 'Vehicle status updated']);
     exit;
 }
 
