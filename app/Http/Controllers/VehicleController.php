@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class VehicleController extends Controller
 {
-    private $vehicleApi = 'http://localhost/vehicle-rental-system/public/api/vehicleApi.php'; // api path
+    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php'; // api path
 
     // Show all vehicles for selection
     public function index()

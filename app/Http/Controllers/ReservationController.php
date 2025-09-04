@@ -10,8 +10,8 @@ use App\Services\Reservations\CostCalculator\VanCostStrategy;
 
 class ReservationController extends Controller
 {
-    private $vehicleApi = 'http://localhost/vehicle-rental-system/public/api/vehicleApi.php'; // api path
-    private $reservationApi = 'http://localhost/vehicle-rental-system/public/api/reservationApi.php'; // api path
+    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php'; // api path
+    private $reservationApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/reservationApi.php'; // api path
 
     public function process(Request $request)
     {
