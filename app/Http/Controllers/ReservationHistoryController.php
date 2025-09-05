@@ -14,8 +14,7 @@ class ReservationHistoryController extends Controller
 
     public function index()
     {
-        // 1. Get logged-in user ID
-        $userId = Auth::id();
+    $customerId = 1; // temporary placeholder
 
         // 2. Fetch customer ID from users table (customers table has user_id)
         $customer = \DB::table('customers')->where('user_id', $userId)->first();
