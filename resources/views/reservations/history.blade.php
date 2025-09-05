@@ -22,7 +22,7 @@
                 <td>{{ $res->status }}</td>
                 <td>
                     @if($res->status === 'completed' && !$res->rating) 
-                        <a href="{{ route('ratings.create', $res->id) }}" class="btn btn-primary btn-sm">Rate</a>
+                        <a href="{{ routes('ratings.create', $res->id) }}" class="btn btn-primary btn-sm">Rate</a>
                     @elseif($res->rating)
                         Rated
                     @else
