@@ -23,7 +23,7 @@ class ReservationHistoryController extends Controller
         // }
 
         // 3. Fetch reservations for this customer
-        $reservations = Reservation::where('customer_id', $customerId->id)
+        $reservations = Reservation::where('customer_id', $customerId)
             ->orderBy('pickup_date', 'desc')
             ->get();
 
