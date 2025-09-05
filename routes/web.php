@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservationController;
+use App\Http\Controllers\RatingController;
 
 // Vehical Routes: 
 // Vehicle selection page
@@ -46,6 +47,10 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
     ->name('admin.reservations.destroy');
 
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/feedback', [FeedbackController::class, 'manage'])->name('feedback.manage');
+    Route::post('/admin/feedback/{id}/update', [FeedbackController::class, 'updateStatus'])->name('feedback.updateStatus');
+});
 
 
      

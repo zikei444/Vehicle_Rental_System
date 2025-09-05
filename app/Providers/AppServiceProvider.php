@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Providers;
-
+use App\Models\Rating;
 use Illuminate\Support\ServiceProvider;
-
+use App\Observers\RatingObserver;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -21,8 +21,9 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+
+    public function boot(): void
     {
-        //
+        Rating::observe(RatingObserver::class);
     }
 }
