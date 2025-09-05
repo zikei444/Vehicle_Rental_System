@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<h1>Select a Vehicle</h1>
+<h1>Select a VehicleYoyo</h1>
 
 <table border="1" cellpadding="5">
     <thead>
