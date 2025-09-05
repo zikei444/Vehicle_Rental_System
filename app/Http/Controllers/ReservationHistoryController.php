@@ -16,11 +16,11 @@ class ReservationHistoryController extends Controller
     {
     $customerId = 1; // temporary placeholder
 
-        // 2. Fetch customer ID from users table (customers table has user_id)
-        $customer = \DB::table('customers')->where('user_id', $userId)->first();
-        if (!$customer) {
-            return redirect()->back()->with('error', 'No customer profile found.');
-        }
+        // // 2. Fetch customer ID from users table (customers table has user_id)
+        // $customer = \DB::table('customers')->where('user_id', $userId)->first();
+        // if (!$customer) {
+        //     return redirect()->back()->with('error', 'No customer profile found.');
+        // }
 
         // 3. Fetch reservations for this customer
         $reservations = Reservation::where('customer_id', $customer->id)
