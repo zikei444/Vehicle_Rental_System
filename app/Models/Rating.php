@@ -21,24 +21,5 @@ class Rating extends Model
     /**
      * Scope for approved ratings
      */
-    public function scopeApproved($query)
-    {
-        return $query->where('status', 'approved');
-    }
 
-    /**
-     * Scope for pending ratings
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    /**
-     * Scope for rejected ratings
-     */
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 'rejected');
-    }
 }

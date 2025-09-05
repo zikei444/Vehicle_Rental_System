@@ -16,11 +16,13 @@ class RatingObserver
     {
                 // Example: Log the new rating
         Log::info("New rating submitted by user {$rating->user_id} for rental {$rating->rental_id}");
-
+        Mail::to($rating->user->email)->send(new ThankYouRatingMail($rating));
+        \Log::info("Thank-you email sent to user {$rating->user->email}");
         // Example: Auto-flag rating for admin review
         $rating->status = 'pending'; // status column in ratings table (pending / approved)
         $rating->saveQuietly(); // avoid infinite loop
     }
+        
 
     /**
      * Handle the Rating "updated" event.
@@ -35,6 +37,7 @@ class RatingObserver
         }
 
     }
+
 
     /**
      * Handle the Rating "deleted" event.

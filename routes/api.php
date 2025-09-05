@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\RatingApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('ratings')->group(function () {
+    Route::post('/', [RatingApiController::class, 'store']);           // Submit rating
+    Route::put('/approve/{id}', [RatingApiController::class, 'approve']); // Admin approve
+    Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
 });
