@@ -24,3 +24,4 @@ Route::prefix('ratings')->group(function () {
     Route::put('/approve/{id}', [RatingApiController::class, 'approve']); // Admin approve
     Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
 });
+Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);

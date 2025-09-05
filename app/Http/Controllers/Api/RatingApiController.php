@@ -6,57 +6,49 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rating;
 use App\Models\Reservation;
+use Illuminate\Support\Facades\Auth;
 
-class RatingApiController extends Controller
+class RatingController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'rental_id' => 'required|exists:reservations,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'user_id' => 'required|exists:users,id',
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string'
+            'comment' => 'nullable|string|max:500',
         ]);
 
-        $reservation = Reservation::find($request->rental_id);
-        if ($reservation->status !== 'completed') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You can only rate after completing the rental.'
-            ], 400);
+        // Check if reservation belongs to user and is completed
+        $reservation = Reservation::with('rating')
+            ->where('id', $data['rental_id'])
+            ->where('customer_id', Auth::user()->customer->id)
+            ->first();
+
+        if (!$reservation) {
+            return response()->json(['status'=>'error','message'=>'Reservation not found or not yours.']);
         }
 
+        if ($reservation->status !== 'completed') {
+            return response()->json(['status'=>'error','message'=>'Cannot rate a reservation that is not completed.']);
+        }
+
+        if ($reservation->rating) {
+            return response()->json(['status'=>'error','message'=>'You have already rated this reservation.']);
+        }
+
+        // Create rating
         $rating = Rating::create([
-            'rental_id' => $request->rental_id,
-            'vehicle_id' => $request->vehicle_id,
-            'user_id' => $request->user_id,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-            'approved' => 0
+            'customer_id' => Auth::user()->customer->id,
+            'vehicle_id' => $data['vehicle_id'],
+            'admin_id' => null, // can be assigned later if needed
+            'rating' => $data['rating'],
+            'feedback' => $data['comment'],
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Thank you for your feedback! Your rating is pending admin approval.'
-        ]);
-    }
+        // Observer will automatically handle thank-you email or notifications
 
-    public function approve($id)
-    {
-        $rating = Rating::findOrFail($id);
-        $rating->approved = 1;
-        $rating->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Rating approved successfully.'
-        ]);
-    }
-
-    public function index()
-    {
-        $ratings = Rating::where('approved', 1)->get();
-        return response()->json(['status'=>'success','data'=>$ratings]);
+        return response()->json(['status'=>'success','message'=>'Thank you for your rating!']);
     }
 }

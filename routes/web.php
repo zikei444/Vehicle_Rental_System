@@ -5,6 +5,7 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\ReservationHistoryController;
 
 // Vehical Routes: 
 // Vehicle selection page
@@ -57,4 +58,6 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 //     Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
 // });
 Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
+
+Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])->name('reservations.history');
      
