@@ -58,7 +58,10 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 //     Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
 // });
 Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
-
+// Show feedback/rating form
+Route::get('/ratings/create/{reservation}', [RatingController::class, 'create'])->name('ratings.create');
+// Submit the feedback/rating form
+Route::post('/ratings/store/{reservation}', [RatingController::class, 'store'])->name('ratings.store');
 Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])
      //->middleware('auth')
      ->name('reservations.history');     
