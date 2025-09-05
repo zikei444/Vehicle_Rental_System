@@ -3,17 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Models\Vehicle;
 
 class VehicleController extends Controller
 {
-    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php'; // api path
-
     // Show all vehicles for selection
     public function index()
     {
-        $response = Http::get($this->vehicleApi, ['action' => 'getAll']);
-        $vehicles = $response->json()['data'] ?? [];
+        // Use ORM instead of API
+        $vehicles = Vehicle::all();
 
         return view('vehicles.index', compact('vehicles'));
     }
@@ -21,7 +19,13 @@ class VehicleController extends Controller
     // Go to reservation section to proceed 
     public function select($id)
     {
-        // Go to reservationProcess.blade.php
+        // Check if vehicle exists
+        $vehicle = Vehicle::find($id);
+        if (!$vehicle) {
+            return redirect()->back()->with('error', 'Vehicle not found.');
+        }
+
+        // Redirect to reservation process
         return redirect()->route('reservation.process', ['vehicle_id' => $id]);
     }
 }
