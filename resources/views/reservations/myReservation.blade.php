@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1 class="bg-primary text-white p-3 rounded">My Current Reservations</h1>
+    <h1 class="bg-primary text-white p-3 rounded">My Current Reservation</h1>
 
     @if(count($reservations) === 0)
         <div class="alert alert-info">You have no current reservations.</div>
