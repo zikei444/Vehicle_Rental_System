@@ -60,5 +60,5 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
 
 Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])
-     ->middleware('auth')
+     //->middleware('auth')
      ->name('reservations.history');     
