@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RatingApiController;
+use App\Http\Controllers\Api\VehicleApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,3 +26,8 @@ Route::prefix('ratings')->group(function () {
     Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
 });
 Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);
+
+// Vehicles API
+Route::get('/vehicles', [VehicleApiController::class, 'index']);
+Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']);
+Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStatus']);
