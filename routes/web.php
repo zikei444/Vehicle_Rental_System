@@ -46,11 +46,14 @@ Route::patch('/admin/reservations/{id}/update-status', [AdminReservationControll
 Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'destroy'])
     ->name('admin.reservations.destroy');
 
+// =================== CUSTOMER ROUTES ===================
+Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
+Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
 
+
+// =================== ADMIN ROUTES ===================
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/feedback', [FeedbackController::class, 'manage'])->name('feedback.manage');
-    Route::post('/admin/feedback/{id}/update', [FeedbackController::class, 'updateStatus'])->name('feedback.updateStatus');
+    Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
+    Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
 });
-
-
      
