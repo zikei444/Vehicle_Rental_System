@@ -1,14 +1,17 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Maintenance Records')
+
 @section('content')
-    <h1>Maintenance Records</h1>
+<div class="container">
+    <h1 class="mb-4">All Maintenance Records</h1>
 
     <p>
         <a href="{{ route('maintenance.create') }}">+ Schedule Maintenance</a>
     </p>
 
-    <table border="1" cellpadding="6" cellspacing="0">
-        <thead>
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
             <tr>
                 <th>ID</th>
                 <th>Vehicle</th>
@@ -47,6 +50,6 @@
             @endforelse
         </tbody>
     </table>
-
+</div>
     {{ $records->links() }}
 @endsection

@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Schedule Maintenance')
+
 @section('content')
-    <h1>Schedule Maintenance</h1>
+<div class="container">
+    <h1 class="mb-4">Schedule Maintenance</h1>
 
     <form method="post" action="{{ route('maintenance.store') }}">
         @csrf
@@ -45,4 +48,5 @@
         <button type="submit">Save</button>
         <a href="{{ route('maintenance.index') }}">Back</a>
     </form>
+</div>
 @endsection

@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Maintenance Records')
+
 @section('content')
-    <h1>Edit Maintenance #{{ $maintenance->id }}</h1>
+<div class="container">
+    <h1 class="mb-4">Edit Maintenance #{{ $maintenance->id }}</h1>
 
     <p>Vehicle: #{{ $maintenance->vehicle_id }}</p>
 
-    {{-- Use app timezone when displaying timestamps --}}
+    <!-- Use app timezone when displaying timestamps -->
     @php($tz = config('app.timezone'))
 
-    <div class="text-muted" style="margin-bottom:12px;">
-        Created:
-        {{ $maintenance->created_at?->timezone($tz)->format('Y-m-d H:i') }}
-        • Updated:
-        {{ $maintenance->updated_at?->timezone($tz)->format('Y-m-d H:i') }}
-        • Completed:
-        {{ $maintenance->completed_at ? $maintenance->completed_at->timezone($tz)->format('Y-m-d H:i') : '—' }}
+    <div class="text-muted mb-3">
+        <div>Created: {{ $maintenance->created_at?->timezone($tz)->format('Y-m-d H:i') }}</div>
+        <div>Updated: {{ $maintenance->updated_at?->timezone($tz)->format('Y-m-d H:i') }}</div>
+        <div>Completed: {{ $maintenance->completed_at ? $maintenance->completed_at->timezone($tz)->format('Y-m-d H:i') : '—' }}</div>
     </div>
 
     <form method="post" action="{{ route('maintenance.update', $maintenance) }}">
@@ -63,4 +63,5 @@
         <button type="submit">Update</button>
         <a href="{{ route('maintenance.index') }}">Back</a>
     </form>
+</div>
 @endsection
