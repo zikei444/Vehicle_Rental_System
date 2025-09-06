@@ -22,8 +22,10 @@ class Vehicle extends Model
     ];
 
      // use constants to avoid typos everywhere
-    public const AVAILABLE          = 'Available';
-    public const UNDER_MAINTENANCE  = 'Under Maintenance';
+    public const AVAILABLE          = 'available';
+    public const RESERVED           = 'reserved';
+    public const RENTED             = 'rented';
+    public const UNDER_MAINTENANCE  = 'under_maintenance';
 
     // Relationship: one vehicle can have many maintenance records
     public function maintenanceRecords()

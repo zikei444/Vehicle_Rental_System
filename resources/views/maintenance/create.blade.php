@@ -3,16 +3,6 @@
 @section('content')
     <h1>Schedule Maintenance</h1>
 
-    @if ($errors->any())
-        <div>
-            <ul>
-                @foreach ($errors->all() as $e)
-                    <li style="color:red">{{ $e }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <form method="post" action="{{ route('maintenance.store') }}">
         @csrf
 

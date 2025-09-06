@@ -17,7 +17,5 @@ abstract class VehicleState
 
     // default transitions (override if needed)
     public function markAsAvailable() {}
-    public function markAsReserved() {}
-    public function markAsRented() {}
     public function markAsUnderMaintenance() {}
 }

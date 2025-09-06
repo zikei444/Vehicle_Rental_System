@@ -30,7 +30,7 @@ class MaintenanceController extends Controller
     // GET /maintenance/create
     public function create()
     {
-        $vehicles = Vehicle::where('availability_status', 'Available')
+        $vehicles = Vehicle::where('availability_status', Vehicle::AVAILABLE)
             ->orderBy('id')->get();
 
         return view('maintenance.create', compact('vehicles'));
@@ -50,15 +50,18 @@ class MaintenanceController extends Controller
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
 
-        if ($vehicle->availability_status !== 'Available') {
-            return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.']);
+        if ($vehicle->availability_status !== Vehicle::AVAILABLE) {
+            return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])
+                        ->withInput();
         }
 
         $alreadyScheduled = Maintenance::where('vehicle_id', $vehicle->id)
-            ->where('status', 'Scheduled')->exists();
+        ->where('status', 'Scheduled')
+        ->exists();
 
         if ($alreadyScheduled) {
-            return back()->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.']);
+            return back()->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.'])
+                        ->withInput();
         }
 
         DB::transaction(function () use ($request, $vehicle) {
@@ -67,7 +70,7 @@ class MaintenanceController extends Controller
 
             Maintenance::create([
                 'vehicle_id'       => $vehicle->id,
-                'admin_id'         => auth('admin')->id() ?? null,
+                // 'admin_id'         => auth('admin')->id() ?? null,
                 'maintenance_type' => $request->maintenance_type,
                 'service_date'     => $request->service_date,
                 'cost'             => $request->cost,
@@ -92,27 +95,42 @@ class MaintenanceController extends Controller
     public function update(Request $request, Maintenance $maintenance)
     {
         $request->validate([
-            'status' => 'required|in:Scheduled,Completed,Cancelled',
-            'cost'   => 'nullable|numeric|min:0',
-            'notes'  => 'nullable|string',
+            'maintenance_type' => 'required|string|max:255',
+            'service_date'     => 'required|date',
+            'status'           => 'required|in:Scheduled,Completed,Cancelled',
+            'cost'             => 'nullable|numeric|min:0',
+            'notes'            => 'nullable|string',
         ]);
 
         $vehicle = $maintenance->vehicle;
+        $fromStatus = $maintenance->status;
+        $toStatus   = $request->status;
 
-        DB::transaction(function () use ($request, $maintenance, $vehicle) {
+        DB::transaction(function () use ($request, $maintenance, $vehicle, $fromStatus, $toStatus) {
             $maintenance->fill([
-                'status' => $request->status,
-                'cost'   => $request->cost,
-                'notes'  => $request->notes,
-            ])->save();
+                'maintenance_type' => $request->maintenance_type,
+                'service_date'     => $request->service_date,
+                'status'           => $toStatus,
+                'cost'             => $request->cost,
+                'notes'            => $request->notes,
+            ]);
 
-            // State Pattern transitions
-            if (in_array($request->status, ['Completed', 'Cancelled'])) {
-                if ($vehicle->availability_status === 'Under Maintenance') {
+            // completed_at handling
+            if ($fromStatus !== 'Completed' && $toStatus === 'Completed') {
+                $maintenance->completed_at = now();
+            } elseif ($fromStatus === 'Completed' && $toStatus !== 'Completed') {
+                $maintenance->completed_at = null; // optional: clear if moved away from Completed
+            }
+
+            $maintenance->save();
+
+            // State transitions
+            if (in_array($toStatus, ['Completed', 'Cancelled'])) {
+                if ($vehicle->availability_status === Vehicle::UNDER_MAINTENANCE) {
                     $vehicle->getState()->markAsAvailable();
                 }
-            } elseif ($request->status === 'Scheduled') {
-                if ($vehicle->availability_status !== 'Under Maintenance') {
+            } elseif ($toStatus === 'Scheduled') {
+                if ($vehicle->availability_status !== Vehicle::UNDER_MAINTENANCE) {
                     $vehicle->getState()->markAsUnderMaintenance();
                 }
             }
@@ -135,7 +153,7 @@ class MaintenanceController extends Controller
             $stillScheduled = Maintenance::where('vehicle_id', $vehicle->id)
                 ->where('status', 'Scheduled')->exists();
 
-            if (!$stillScheduled && $vehicle->availability_status === 'Under Maintenance') {
+            if (!$stillScheduled && $vehicle->availability_status === Vehicle::UNDER_MAINTENANCE) {
                 $vehicle->getState()->markAsAvailable();
             }
         }
