@@ -6,6 +6,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\ReservationHistoryController;
+use App\Http\Controllers\MaintenanceController;
 
 // Vehical Routes: 
 // Vehicle selection page
@@ -64,4 +65,36 @@ Route::get('/ratings/create/{reservation}', [RatingController::class, 'create'])
 Route::post('/ratings/store/{reservation}', [RatingController::class, 'store'])->name('ratings.store');
 Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])
      //->middleware('auth')
-     ->name('reservations.history');     
+     ->name('reservations.history');  
+     
+// =================== MAINTENANCE (ADMIN) ===================
+// List page for admins
+// Show all maintenance records (optionally filter by vehicle via ?vehicle_id=)
+Route::get('/maintenance', [MaintenanceController::class, 'index'])
+    ->name('maintenance.index');
+
+// Create form
+// Show the form to schedule a new maintenance record
+Route::get('/maintenance/create', [MaintenanceController::class, 'create'])
+    ->name('maintenance.create');
+
+// Store action
+// Save a new maintenance record and (via State Pattern) set vehicle to "Under Maintenance"
+Route::post('/maintenance', [MaintenanceController::class, 'store'])
+    ->name('maintenance.store');
+
+// Edit form
+// Show the form to edit an existing maintenance record
+// {maintenance} uses route-model binding to App\Models\Maintenance
+Route::get('/maintenance/{maintenance}/edit', [MaintenanceController::class, 'edit'])
+    ->name('maintenance.edit');
+
+// Update action
+// Update the record; if status is Completed/Cancelled, switch vehicle back to "Available"
+Route::put('/maintenance/{maintenance}', [MaintenanceController::class, 'update'])
+    ->name('maintenance.update');
+
+// Delete action
+// Delete the selected record (controller handles any necessary vehicle state cleanup)
+Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
+    ->name('maintenance.destroy');
