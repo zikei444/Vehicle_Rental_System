@@ -46,13 +46,8 @@ class AdminReservationController extends Controller
         // Update vehicle status via API
         $vehicleResponse = Http::withBody(
             json_encode([
-<<<<<<< HEAD
                 'availability_status' => 'available',
                 'vehicle_id' => $vehicleId
-=======
-                'vehicle_id' => $reservation->vehicle_id,
-                'status'     => 'available'
->>>>>>> 4237f6c7827c954e409a66df53c3acf6267c0be0
             ]),
             'application/json'
         )->post($this->vehicleApi . "?action=updateStatus");
