@@ -67,40 +67,15 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 
 // // =================== CUSTOMER FEEDBACK ROUTES ===================
 // routes/web.php
-Route::get('/vehicles/{vehicle}/comments', [VehicleReviewController::class, 'showComments']);
-Route::get('/vehicles/{vehicle}/ratings', [VehicleReviewController::class, 'showRating']);
 
-// Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
-// Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
+// 车辆评分页面
+Route::prefix('vehicles/{vehicle}')->group(function () {
+    // 显示评分列表
+    Route::get('/ratings', [VehicleReviewController::class, 'showRatings']);
 
-// // =================== ADMIN FEEDBACK ROUTES ===================
-// // (No middleware for now – free access)
-// Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
-// Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
-// // // =================== CUSTOMER ROUTES ===================
-// // Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
-// // Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
-
-
-// // // =================== ADMIN ROUTES ===================
-// // Route::middleware(['auth', 'admin'])->group(function () {
-// //     Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
-// //     Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
-// // });
-// //Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
-// Route::get('/ratings/{reservation}/create', [RatingController::class, 'create'])->name('ratings.create');
-// Route::post('/ratings', [RatingController::class, 'store'])->name('ratings.store');
-// Route::get('/history', [ReservationHistoryController::class, 'index'])->name('reservation.history');
-
-
-// // Show feedback/rating form
-// Route::get('/ratings/create/{reservation}', [RatingController::class, 'create'])->name('ratings.create');
-// // Submit the feedback/rating form
-// Route::post('/ratings/store/{reservation}', [RatingController::class, 'store'])->name('ratings.store');
-// Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])
-//      //->middleware('auth')
-//      ->name('reservations.history');  
-     
+    // 显示平均评分
+    Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
+});
 // Maintenance Route:
 Route::prefix('admin')->group(function () {
     // Show all maintenance records

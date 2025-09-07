@@ -19,12 +19,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('ratings')->group(function () {
-    Route::post('/', [RatingApiController::class, 'store']);           // Submit rating
-    Route::put('/approve/{id}', [RatingApiController::class, 'approve']); // Admin approve
-    Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
-});
-Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);
+// Route::prefix('ratings')->group(function () {
+//     Route::post('/', [RatingApiController::class, 'store']);           // Submit rating
+//     Route::put('/approve/{id}', [RatingApiController::class, 'approve']); // Admin approve
+//     Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
+// });
+//Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);
 
 // Vehicles API
 Route::get('/vehicles', [VehicleApiController::class, 'index']);
