@@ -27,9 +27,9 @@ class VehicleReviewController extends Controller
                 $ratings = $this->ratingService->getRatings($vehicleId);
             }
 
-            return view('vehicles.ratings', compact('ratings'));
+            return view('ratings.index', compact('ratings'));
         } catch (\Exception $e) {
-            return view('vehicles.ratings', [
+            return view('ratings.index', [
                 'ratings' => collect([]),
                 'error' => $e->getMessage()
             ]);
@@ -49,9 +49,9 @@ class VehicleReviewController extends Controller
                 $average = $this->ratingService->getAverageRating($vehicle);
             }
 
-            return view('vehicles.average', compact('average'));
+            return view('ratings.average', compact('average'));
         } catch (\Exception $e) {
-            return view('vehicles.average', [
+            return view('ratings.average', [
                 'average' => ['average_rating' => 0],
                 'error' => $e->getMessage()
             ]);
