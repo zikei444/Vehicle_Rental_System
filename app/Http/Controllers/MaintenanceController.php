@@ -18,12 +18,9 @@ class MaintenanceController extends Controller
         $records = Maintenance::with('vehicle')
             ->when($vehicleId, fn($q) => $q->where('vehicle_id', $vehicleId))
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
-        // If you don't have a view yet, temporarily return JSON:
-        // return response()->json($records);
-
-        return view('maintenance.index', compact('records', 'vehicleId'));
+        return view('maintenance.index', ['records' => $records]);
     }
 
     // ---------- CREATE FORM ----------
