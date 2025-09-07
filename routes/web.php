@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\ReservationHistoryController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\VehicleReviewController;
+use App\Http\Controllers\AdminRatingController;
 
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
@@ -76,6 +77,16 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     // 显示平均评分
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
+
+// // =================== ADMIN MANAGE FEEDBACK ===================
+
+Route::prefix('admin')->group(function () {
+    Route::get('/ratings', [AdminRatingController::class, 'index'])->name('ratings_admin.index');
+    Route::post('/ratings/{id}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
+    Route::post('/ratings/{id}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
+});
+
+
 // Maintenance Route:
 Route::prefix('admin')->group(function () {
     // Show all maintenance records
