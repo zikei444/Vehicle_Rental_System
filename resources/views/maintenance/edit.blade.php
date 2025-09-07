@@ -60,8 +60,8 @@
             @error('notes') <div style="color:red">{{ $message }}</div> @enderror
         </div>
 
-        <button type="submit">Update</button>
-        <a href="{{ route('maintenance.index') }}">Back</a>
+        <button type="submit" class="btn btn-success">Update</button>
+        <a href="{{ route('maintenance.index') }}" class="btn btn-secondary">Back to All Maintenance Records</a>
     </form>
 </div>
 @endsection
