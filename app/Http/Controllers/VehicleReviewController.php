@@ -1,66 +1,60 @@
 <?php
 
-// app/Http/Controllers/VehicleReviewController.php
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use App\Services\CommentService;
 use App\Services\RatingService;
 use App\Models\Vehicle;
 
-class VehicleReviewController extends Controller {
-    protected $commentService;
+class VehicleReviewController extends Controller
+{
     protected $ratingService;
 
-    public function __construct(CommentService $commentService, RatingService $ratingService) {
-        $this->commentService = $commentService;
+    public function __construct(RatingService $ratingService) {
         $this->ratingService = $ratingService;
     }
 
-    public function showComments(Request $request, $vehicleId) {
-        try {
-            $useApi = $request->query('use_api', false);
-
-            if ($useApi) {
-                // 外部 API 调用
-                $response = Http::timeout(10)->get(url("/api/vehicles/{$vehicleId}/comments"));
-                if ($response->failed()) throw new \Exception("Failed to fetch comments");
-                $comments = $response->json();
-            } else {
-                // 内部 Service 调用
-                $comments = $this->commentService->getComments($vehicleId);
-            }
-
-            return view('vehicles.comments', compact('comments'));
-        } catch (\Exception $e) {
-            return view('vehicles.comments', [
-                'comments' => collect([]),
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    public function showRating(Request $request, $vehicleId) {
+    public function showRatings(Request $request, $vehicleId) {
         try {
             $useApi = $request->query('use_api', false);
 
             if ($useApi) {
                 $response = Http::timeout(10)->get(url("/api/vehicles/{$vehicleId}/ratings"));
-                if ($response->failed()) throw new \Exception("Failed to fetch rating");
-                $rating = $response->json();
+                if ($response->failed()) throw new \Exception("Failed to fetch ratings");
+                $ratings = $response->json();
             } else {
-                $vehicle = Vehicle::findOrFail($vehicleId);
-                $rating = $this->ratingService->getRating($vehicle);
+                $ratings = $this->ratingService->getRatings($vehicleId);
             }
 
-            return view('vehicles.rating', compact('rating'));
+            return view('vehicles.ratings', compact('ratings'));
         } catch (\Exception $e) {
-            return view('vehicles.rating', [
-                'rating' => ['average_rating' => 0],
+            return view('vehicles.ratings', [
+                'ratings' => collect([]),
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function showAverage(Request $request, $vehicleId) {
+        try {
+            $useApi = $request->query('use_api', false);
+
+            if ($useApi) {
+                $response = Http::timeout(10)->get(url("/api/vehicles/{$vehicleId}/ratings/average"));
+                if ($response->failed()) throw new \Exception("Failed to fetch average rating");
+                $average = $response->json();
+            } else {
+                $vehicle = Vehicle::findOrFail($vehicleId);
+                $average = $this->ratingService->getAverageRating($vehicle);
+            }
+
+            return view('vehicles.average', compact('average'));
+        } catch (\Exception $e) {
+            return view('vehicles.average', [
+                'average' => ['average_rating' => 0],
                 'error' => $e->getMessage()
             ]);
         }
     }
 }
-
