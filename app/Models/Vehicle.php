@@ -3,6 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Reservation;  
+use App\Models\Car;
+use App\Models\Truck;
+use App\Models\Van;
+
+use App\Models\Maintenance;
+use App\States\Vehicle\AvailableState;
+use App\States\Vehicle\UnderMaintenanceState;
 
 class Vehicle extends Model
 {
@@ -12,8 +20,81 @@ class Vehicle extends Model
         'type',
         'brand',
         'model',
+        'year_of_manufacture', 
         'registration_number',
         'rental_price',
-        'availability_status'
+        'availability_status',
+        'image',
     ];
+
+    // use constants to avoid typos everywhere
+    public const AVAILABLE          = 'available';
+    public const RESERVED           = 'reserved';
+    public const RENTED             = 'rented';
+    public const UNDER_MAINTENANCE  = 'under_maintenance';
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+    public function car()
+    {
+        return $this->hasOne(\App\Models\Car::class);
+    }
+
+    public function truck()
+    {
+        return $this->hasOne(\App\Models\Truck::class);
+    }
+
+    public function van()
+    {
+        return $this->hasOne(\App\Models\Van::class);
+    }
+
+    // Scope to filter available vehicles
+    public function scopeAvailable($query)
+    {
+        return $query->where('availability_status', 'available');
+    }
+
+    // Scope to filter by type (car/truck/van)
+    public function scopeOfType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    // Relationship: one vehicle can have many maintenance records
+    public function maintenanceRecords()
+    { 
+        return $this->hasMany(Maintenance::class);
+    }
+
+    // State Pattern
+    private $state;
+
+    public function setState($state)
+    {
+        $this->state = $state;
+    }
+
+    public function getState()
+    {
+        if (!$this->state) {
+            // map DB value to a State object
+            if ($this->availability_status === self::UNDER_MAINTENANCE) {
+                $this->state = new UnderMaintenanceState($this);
+            } else {
+                // default to AvailableState for any other value
+                $this->state = new AvailableState($this);
+            }
+        }
+        return $this->state;
+    }
 }

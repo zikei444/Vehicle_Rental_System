@@ -5,29 +5,46 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Reservation;
+use App\Models\Vehicle;
 use App\Services\Reservations\CostCalculator\CarCostStrategy;
 use App\Services\Reservations\CostCalculator\TruckCostStrategy;
 use App\Services\Reservations\CostCalculator\VanCostStrategy;
 
 class ReservationController extends Controller
 {
-    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php';
+    private $vehicleApi = '/api/vehicles';
 
     public function process(Request $request)
     {
-        $vehicle_id = $request->query('vehicle_id');
+        $vehicleId = $request->query('vehicle_id');
+        $useApi = $request->query('use_api', false);
 
-        // Fetch vehicle info via API
-        $response = Http::get($this->vehicleApi, [
-            'action' => 'get',
-            'id' => $vehicle_id
-        ]);
+        try {
+            if ($useApi) {
+                // External API consumption
+                $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
+                if ($response->failed()) {
+                    throw new \Exception('Failed to fetch vehicle from API');
+                }
+                $vehicle = $response->json()['data'] ?? null;
+            } else {
+                // Internal service (Eloquent)
+                $vehicle = Vehicle::find($vehicleId);
+            }
 
-        $vehicle = $response->json()['data'] ?? null;
+            if (!$vehicle) {
+                return back()->with('error', 'Vehicle not found');
+            }
 
-        return view('reservations.reservationProcess', compact('vehicle'));
+            return view('reservations.reservationProcess', compact('vehicle'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
+    /**
+     * Calculate cost via Ajax.
+     */
     public function calculateAjax(Request $request)
     {
         $pickup = new \DateTime($request->pickup_date);
@@ -38,53 +55,81 @@ class ReservationController extends Controller
         }
 
         $return = (clone $pickup)->modify("+{$days} days");
+        $useApi = $request->query('use_api', false);
 
-        $response = Http::get($this->vehicleApi, [
-            'action' => 'get',
-            'id' => $request->vehicle_id
-        ]);
-        $vehicle = $response->json()['data'] ?? null;
+        try {
+            if ($useApi) {
+                $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $request->vehicle_id));
+                if ($response->failed()) {
+                    throw new \Exception('Failed to fetch vehicle');
+                }
+                $vehicle = $response->json()['data'] ?? null;
+            } else {
+                $vehicle = Vehicle::find($request->vehicle_id);
+            }
 
-        if (!$vehicle) {
-            return response()->json(['error' => 'Vehicle not found']);
+            if (!$vehicle) {
+                return response()->json(['error' => 'Vehicle not found']);
+            }
+
+            // Strategy pattern
+            $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($vehicle['type']) . "CostStrategy";
+            $strategy = new $strategyClass();
+            $totalCost = $strategy->calculate($vehicle, $days);
+
+            return response()->json([
+                'vehicle_id' => $request->vehicle_id,
+                'totalCost'  => $totalCost,
+                'days'       => $days,
+                'pickup'     => $pickup->format('Y-m-d'),
+                'return'     => $return->format('Y-m-d'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
         }
-
-        $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($vehicle['type']) . "CostStrategy";
-        $strategy = new $strategyClass();
-        $totalCost = $strategy->calculate($vehicle, $days);
-
-        return response()->json([
-            'vehicle_id' => $request->vehicle_id,
-            'totalCost'  => $totalCost,
-            'days'       => $days,
-            'pickup'     => $pickup->format('Y-m-d'),
-            'return'     => $return->format('Y-m-d'),
-        ]);
     }
 
+    /**
+     * Confirm reservation before payment.
+     */
     public function confirm(Request $request)
     {
-        $response = Http::get($this->vehicleApi, [
-            'action' => 'get',
-            'id' => $request->vehicle_id
-        ]);
+        $useApi = $request->query('use_api', false);
 
-        $vehicle = $response->json()['data'] ?? null;
+        try {
+            if ($useApi) {
+                $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $request->vehicle_id));
+                if ($response->failed()) {
+                    throw new \Exception('Failed to fetch vehicle');
+                }
+                $vehicle = $response->json()['data'] ?? null;
+            } else {
+                $vehicle = Vehicle::find($request->vehicle_id);
+            }
 
-        return view('reservations.reservationPayment', [
-            'vehicle'      => $vehicle,
-            'pickup_date'  => $request->pickup_date,
-            'return_date'  => $request->return_date,
-            'days'         => $request->days,
-            'total_cost'   => $request->total_cost
-        ]);
+            if (!$vehicle) {
+                return back()->with('error', 'Vehicle not found');
+            }
+
+            return view('reservations.reservationPayment', [
+                'vehicle'      => $vehicle,
+                'pickup_date'  => $request->pickup_date,
+                'return_date'  => $request->return_date,
+                'days'         => $request->days,
+                'total_cost'   => $request->total_cost
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
+    /**
+     * Payment processing + reservation creation.
+     */
     public function paymentProcess(Request $request)
     {
         $payment_method = $request->input('payment_method');
 
-        // Validation
         $rules = [
             'vehicle_id'     => 'required',
             'pickup_date'    => 'required|date',
@@ -106,9 +151,9 @@ class ReservationController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Save reservation via ORM
+        // Save reservation
         $reservation = Reservation::create([
-            'customer_id'    => 1, // replace with Auth::id() later
+            'customer_id'    => 1, // TODO: replace with Auth::id()
             'vehicle_id'     => $validated['vehicle_id'],
             'pickup_date'    => $validated['pickup_date'],
             'return_date'    => $validated['return_date'],
@@ -117,14 +162,21 @@ class ReservationController extends Controller
             'payment_method' => $validated['payment_method'],
         ]);
 
-        // Update vehicle status via API
-        Http::withBody(
-            json_encode([
+        // Update vehicle status
+        $useApi = $request->query('use_api', false);
+
+        if ($useApi) {
+            Http::timeout(10)->post(url($this->vehicleApi . '/update-status'), [
                 'vehicle_id' => $validated['vehicle_id'],
                 'status'     => 'rented',
-            ]),
-            'application/json'
-        )->post($this->vehicleApi . '?action=updateStatus');
+            ]);
+        } else {
+            $vehicle = Vehicle::find($validated['vehicle_id']);
+            if ($vehicle) {
+                $vehicle->availability_status = 'rented';
+                $vehicle->save();
+            }
+        }
 
         return view('reservations.reservationSuccess', [
             'reservation_id'  => $reservation->id,
@@ -139,20 +191,23 @@ class ReservationController extends Controller
         ]);
     }
 
-    public function myReservations()
+    /**
+     * Show reservations of logged-in customer.
+     */
+    public function myReservations(Request $request)
     {
-        $customerId = 1; // replace with Auth::id()
+        $customerId = 1; // TODO: replace with Auth::id()
+        $useApi = $request->query('use_api', false);
 
-        // Fetch reservations via ORM
         $reservations = Reservation::where('customer_id', $customerId)->get();
 
-        // Fetch vehicle info via API for each reservation
         foreach ($reservations as &$res) {
-            $vehicleResp = Http::get($this->vehicleApi, [
-                'action' => 'get',
-                'id' => $res->vehicle_id
-            ]);
-            $res->vehicle = $vehicleResp->json()['data'] ?? null;
+            if ($useApi) {
+                $vehicleResp = Http::timeout(10)->get(url($this->vehicleApi . '/' . $res->vehicle_id));
+                $res->vehicle = $vehicleResp->json()['data'] ?? null;
+            } else {
+                $res->vehicle = Vehicle::find($res->vehicle_id);
+            }
         }
 
         return view('reservations.myReservation', compact('reservations'));

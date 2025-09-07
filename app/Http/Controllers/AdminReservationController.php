@@ -5,29 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Reservation;
+use App\Models\Vehicle; 
 
 class AdminReservationController extends Controller
 {
-    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php';
+    private $vehicleApi = '/api/vehicles';
 
-    // View all reservations
-    public function reservations()
+    // Show all reservations
+    public function reservations(Request $request)
     {
+        $useApi = $request->query('use_api', false);
         $reservations = Reservation::all();
 
-        // Fetch vehicle info via API for each reservation
         foreach ($reservations as &$res) {
-            $vehicleResp = Http::get($this->vehicleApi, [
-                'action' => 'get',
-                'id' => $res->vehicle_id
-            ]);
-            $res->vehicle = $vehicleResp->json()['data'] ?? null;
+            if ($useApi) {
+                // External API consumption
+                $vehicleResp = Http::get(url($this->vehicleApi . '/' . $res->vehicle_id));
+                $res->vehicle = $vehicleResp->json()['data'] ?? null;
+            } else {
+                // Internal consumption (direct model)
+                $res->vehicle = Vehicle::find($res->vehicle_id);
+            }
         }
 
         return view('reservations.adminReservations', compact('reservations'));
     }
 
-    // Update reservation status
+    // Update reservation status= ongoing to completed // cancelled
     public function updateStatus(Request $request, $id)
     {
         $validated = $request->validate([
@@ -43,23 +47,31 @@ class AdminReservationController extends Controller
         $reservation->status = $validated['status'];
         $reservation->save();
 
-        // Update vehicle status via API
-        $vehicleResponse = Http::withBody(
-            json_encode([
-                'vehicle_id' => $reservation->vehicle_id,
-                'status'     => 'available'
-            ]),
-            'application/json'
-        )->post($this->vehicleApi . "?action=updateStatus");
+        $useApi = $request->query('use_api', false);
 
-        if (!$vehicleResponse->successful()) {
-            return redirect()->back()->with('error', 'Reservation updated, but failed to update vehicle status.');
+        if ($useApi) {
+            // External API call
+            $vehicleResponse = Http::post(url($this->vehicleApi . '/update-status'), [
+                'vehicle_id' => $reservation->vehicle_id,
+                'status'     => 'available',
+            ]);
+
+            if (!$vehicleResponse->successful()) {
+                return redirect()->back()->with('error', 'Reservation updated, but failed to update vehicle status via API.');
+            }
+        } else {
+            // Internal consumption
+            $vehicle = Vehicle::find($reservation->vehicle_id);
+            if ($vehicle) {
+                $vehicle->availability_status = 'available';
+                $vehicle->save();
+            }
         }
 
         return redirect()->back()->with('success', 'Reservation and vehicle status updated.');
     }
 
-    // Delete reservation
+    // Delete Reservation
     public function destroy($id)
     {
         $reservation = Reservation::find($id);
