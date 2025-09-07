@@ -52,7 +52,7 @@ class AdminReservationController extends Controller
         // Update vehicle status to available
         $vehicleResponse = Http::withBody(
             json_encode([
-                'status' => 'available',
+                'availability_status' => 'available',
                 'vehicle_id' => $vehicleId
             ]),
             'application/json'

@@ -142,7 +142,7 @@ class ReservationController extends Controller
         $response = Http::withBody(
             json_encode([
                 'vehicle_id' => $validated['vehicle_id'],
-                'status'     => 'rented',
+                'availability_status'     => 'rented',
             ]),
             'application/json'
         )->post($this->vehicleApi . '?action=updateStatus');

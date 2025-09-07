@@ -2,6 +2,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Customer;
+use App\Models\Vehicle;
+use App\Models\Rating;
 
 class Reservation extends Model
 {
@@ -31,3 +34,5 @@ class Reservation extends Model
         return $query->where('status', 'completed');
     }
 }
+
+?>
