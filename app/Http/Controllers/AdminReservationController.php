@@ -4,20 +4,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\Models\Reservation;
 
 class AdminReservationController extends Controller
 {
-    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php'; // api path
-    private $reservationApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/reservationApi.php'; // api path
+    private $vehicleApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/vehicleApi.php';
 
     // View all reservations
     public function reservations()
     {
-        $response = Http::get($this->reservationApi, [
-            'action' => 'getAll'
-        ]);
+        $reservations = Reservation::all();
 
-        $reservations = $response->json()['data'] ?? [];
+        // Fetch vehicle info via API for each reservation
+        foreach ($reservations as &$res) {
+            $vehicleResp = Http::get($this->vehicleApi, [
+                'action' => 'get',
+                'id' => $res->vehicle_id
+            ]);
+            $res->vehicle = $vehicleResp->json()['data'] ?? null;
+        }
 
         return view('reservations.adminReservations', compact('reservations'));
     }
@@ -29,47 +34,45 @@ class AdminReservationController extends Controller
             'status' => 'required|in:completed,cancelled',
         ]);
 
-        // Get reservation to find vehicle_id
-        $resResponse = Http::get($this->reservationApi, ['action' => 'get', 'id' => $id]);
-        $reservation = $resResponse->json()['data'] ?? null;
+        $reservation = Reservation::find($id);
 
-        if(!$reservation){
+        if (!$reservation) {
             return redirect()->back()->with('error', 'Reservation not found.');
         }
 
-        $vehicleId = $reservation['vehicle_id'];
+        $reservation->status = $validated['status'];
+        $reservation->save();
 
-        // Update reservation status via PUT
-        $response = Http::withBody(
-            json_encode(['status' => $validated['status']]),
-            'application/json'
-        )->put($this->reservationApi . "?action=edit&id={$id}");
-
-        if(!$response->successful()){
-            return redirect()->back()->with('error', 'Failed to update reservation.');
-        }
-
-        // Update vehicle status to available
+        // Update vehicle status via API
         $vehicleResponse = Http::withBody(
             json_encode([
+<<<<<<< HEAD
                 'availability_status' => 'available',
                 'vehicle_id' => $vehicleId
+=======
+                'vehicle_id' => $reservation->vehicle_id,
+                'status'     => 'available'
+>>>>>>> 4237f6c7827c954e409a66df53c3acf6267c0be0
             ]),
             'application/json'
         )->post($this->vehicleApi . "?action=updateStatus");
 
-        if(!$vehicleResponse->successful()){
+        if (!$vehicleResponse->successful()) {
             return redirect()->back()->with('error', 'Reservation updated, but failed to update vehicle status.');
         }
 
         return redirect()->back()->with('success', 'Reservation and vehicle status updated.');
     }
 
-
     // Delete reservation
     public function destroy($id)
     {
-        $response = Http::delete($this->reservationApi . "?action=delete&id={$id}");
+        $reservation = Reservation::find($id);
+
+        if ($reservation) {
+            $reservation->delete();
+        }
+
         return redirect()->back()->with('success', 'Reservation deleted.');
     }
 }
