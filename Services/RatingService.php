@@ -12,10 +12,13 @@ class RatingService {
         ];
     }
 
-    public function addRating($vehicleId, $score) {
+    public function addRating($vehicleId,$customerId,$score, $feedback) {
         return Rating::create([
             'vehicle_id' => $vehicleId,
-            'score' => $score,
+            'customer_id' => $customerId, // 示例，记得换成真实的
+            'rating' => $score,
+            'feedback' => $feedback,
+            'status' => 'pending'
         ]);
     }
 }
