@@ -7,8 +7,9 @@ use App\Models\Rating;
 class RatingService
 {
     public function getRatings($vehicleId) {
-        return Rating::where('vehicle_id', $vehicleId)->approved()->get();
-    }
+        return Rating::where('vehicle_id', $vehicleId)->get();
+        //return Rating::where('vehicle_id', $vehicleId)->approved()->get();
+}
 
     public function getAverageRating($vehicle) {
         return [
