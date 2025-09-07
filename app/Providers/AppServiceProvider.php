@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\Rating;
 use App\Models\Comment;
 use App\Observers\RatingObserver;
-use App\Observers\CommentObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +28,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Rating::observe(RatingObserver::class);
-        Comment::observe(CommentObserver::class);
     }
 }

@@ -15,31 +15,28 @@ class Rating extends Model
         'customer_id',
         'vehicle_id',
         'admin_id',
-        'rating',
-        'feedback',
-        'status', // include new status column
+        'rating',   // 数值评分 (1–5)
+        'feedback', // 用户文字反馈
+        'status',   // pending, approved, rejected
     ];
 
-    /**
-     * Scope for approved ratings
-     */
+    // === 查询作用域 ===
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
 
-    /**
-     * Scope for pending ratings
-     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope for rejected ratings
-     */
     public function scopeRejected($query)
     {
         return $query->where('status', 'rejected');
     }
 
+    // === 关联关系 ===
     public function customer()
     {
         return $this->belongsTo(Customer::class);
@@ -50,5 +47,3 @@ class Rating extends Model
         return $this->belongsTo(Vehicle::class);
     }
 }
-
-?>

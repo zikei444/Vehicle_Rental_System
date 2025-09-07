@@ -4,7 +4,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RatingApiController;
 use App\Http\Controllers\Api\VehicleApiController;
-use App\Http\Controllers\Api\CommentApiController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -35,9 +34,7 @@ Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStat
 // Ratings api
 
 Route::prefix('vehicles/{vehicle}')->group(function () {
-    Route::get('/comments', [CommentApiController::class, 'index']);
-    Route::post('/comments', [CommentApiController::class, 'store']);
-
-    Route::get('/ratings', [RatingApiController::class, 'index']);
-    Route::post('/ratings', [RatingApiController::class, 'store']);
+    Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取评论列表
+    Route::post('/ratings', [RatingApiController::class, 'store']);  // 提交评分 + 评论
+    Route::get('/ratings/average', [RatingApiController::class, 'average']); // 获取平均分
 });
