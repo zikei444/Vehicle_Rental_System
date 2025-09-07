@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\RatingService;
 use App\Models\Vehicle;
+use App\Models\Rating;
 use Illuminate\Http\Request;
+
 
 class RatingApiController extends Controller
 {
@@ -39,5 +41,19 @@ class RatingApiController extends Controller
     public function average($vehicleId) {
         $vehicle = Vehicle::findOrFail($vehicleId);
         return response()->json($this->ratingService->getAverageRating($vehicle));
+    }
+
+    // Check if customer has rated a vehicle ADDED BY ZK
+    public function hasRated($vehicleId, $customerId)
+    {
+        $hasRated = Rating::where('customer_id', $customerId)
+                          ->where('vehicle_id', $vehicleId)
+                          ->exists();
+
+        return response()->json([
+            'customer_id' => $customerId,
+            'vehicle_id' => $vehicleId,
+            'has_rated' => $hasRated
+        ]);
     }
 }

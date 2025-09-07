@@ -5,11 +5,11 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\AdminVehicleController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservationController;
-use App\Http\Controllers\ReservationHistoryController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\VehicleReviewController;
 use App\Http\Controllers\AdminRatingController;
-
+use App\Http\Controllers\RatingController;    ////////// CHECK THIS
+ 
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -34,6 +34,8 @@ Route::prefix('admin')->group(function () {
     Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 });
 
+
+// =================== USERS RESERVATION ROUTES ===================
 // Redirect to the reservation process page
 Route::get('reservation/process', [ReservationController::class, 'process'])
      ->name('reservation.process');
@@ -55,7 +57,7 @@ Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
     ->name('reservation.my');
 
 // To view reservation his (for customers)
-Route::get('/my-reservations/history', [ReservationController::class, 'history'])
+Route::get('/my-reservations/history', [ReservationController::class, 'reservationHistory'])
     ->name('reservations.history');
 
 // =================== ADMIN RESERVATION ROUTES ===================
@@ -71,7 +73,6 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 
 
 // // =================== CUSTOMER FEEDBACK ROUTES ===================
-// routes/web.php
 
 // 车辆评分页面
 Route::prefix('vehicles/{vehicle}')->group(function () {
@@ -81,6 +82,10 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     // 显示平均评分
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
+
+// To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Route::get('/ratings/create/{vehicle}', [RatingController::class, 'create'])
+    ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
 

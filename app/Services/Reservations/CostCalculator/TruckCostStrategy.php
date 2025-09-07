@@ -4,9 +4,19 @@ namespace App\Services\Reservations\CostCalculator;
 
 class TruckCostStrategy implements CostStrategy
 {
-    public function calculate($vehicle, $days)
+    public function calculate($vehicle, $days): array
     {
-        //10% extra fee need to be charge
-        return ($vehicle['rental_price'] * $days) * 1.1;
+        $base = $vehicle['rental_price'] * $days;
+        $extra = $base * 0.1; // 10% extra fee
+        $total = $base + $extra;
+
+        return [
+            'total' => $total,
+            'breakdown' => [
+                'base_rental' => $base,
+                'extra_fee' => $extra,
+            ],
+            'message' => "Base: RM{$base}, Extra 10% fee: RM{$extra}"
+        ];
     }
 }
