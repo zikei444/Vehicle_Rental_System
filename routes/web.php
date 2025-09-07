@@ -5,9 +5,9 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\AdminVehicleController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservationController;
-use App\Http\Controllers\RatingController;
 use App\Http\Controllers\ReservationHistoryController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\VehicleReviewController;
 
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
@@ -67,33 +67,19 @@ Route::patch('/admin/reservations/{id}/update-status', [AdminReservationControll
 Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'destroy'])
     ->name('admin.reservations.destroy');
 
-// =================== CUSTOMER FEEDBACK ROUTES ===================
-Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
-Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
-
-// =================== ADMIN FEEDBACK ROUTES ===================
-// (No middleware for now – free access)
-Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
-Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
-// // =================== CUSTOMER ROUTES ===================
-// Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
-// Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
 
 
-// // =================== ADMIN ROUTES ===================
-// Route::middleware(['auth', 'admin'])->group(function () {
-//     Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
-//     Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
-// });
-Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
-// Show feedback/rating form
-Route::get('/ratings/create/{reservation}', [RatingController::class, 'create'])->name('ratings.create');
-// Submit the feedback/rating form
-Route::post('/ratings/store/{reservation}', [RatingController::class, 'store'])->name('ratings.store');
-Route::get('/reservations/history', [ReservationHistoryController::class, 'index'])
-     //->middleware('auth')
-     ->name('reservations.history');  
-     
+// // =================== CUSTOMER FEEDBACK ROUTES ===================
+// routes/web.php
+
+// 车辆评分页面
+Route::prefix('vehicles/{vehicle}')->group(function () {
+    // 显示评分列表
+    Route::get('/ratings', [VehicleReviewController::class, 'showRatings']);
+
+    // 显示平均评分
+    Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
+});
 // Maintenance Route:
 Route::prefix('admin')->group(function () {
     // Show all maintenance records

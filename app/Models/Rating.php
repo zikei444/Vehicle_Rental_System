@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Customer;
-use App\Models\Vehicle;
 
 class Rating extends Model
 {
@@ -17,38 +15,28 @@ class Rating extends Model
         'admin_id',
         'rating',
         'feedback',
-        'status', // include new status column
+        'status',
     ];
 
-    /**
-     * Scope for approved ratings
-     */
+    // 查询作用域
+    public function scopeApproved($query) {
+        return $query->where('status', 'approved');
+    }
 
-    /**
-     * Scope for pending ratings
-     */
-    public function scopePending($query)
-    {
+    public function scopePending($query) {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope for rejected ratings
-     */
-    public function scopeRejected($query)
-    {
+    public function scopeRejected($query) {
         return $query->where('status', 'rejected');
     }
 
-    public function customer()
-    {
+    // 关联
+    public function customer() {
         return $this->belongsTo(Customer::class);
     }
 
-    public function vehicle()
-    {
+    public function vehicle() {
         return $this->belongsTo(Vehicle::class);
     }
 }
-
-?>

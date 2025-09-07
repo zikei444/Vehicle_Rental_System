@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Providers;
-use App\Models\Rating;
 use Illuminate\Support\ServiceProvider;
+
+use App\Models\Rating;
+use App\Models\Comment;
 use App\Observers\RatingObserver;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
