@@ -1,45 +1,85 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="bg-success text-white p-3 rounded">Reservation Process</h1>
+<div class="container py-4">
+
+    <!-- Page Title -->
+    <h1 class="bg-success text-white p-4 rounded shadow-sm text-center">
+        Reservation
+    </h1>
 
     @if($vehicle)
-        <div class="card p-3 shadow-sm">
-            <p><strong>Vehicle:</strong> {{ $vehicle['brand'] }} {{ $vehicle['model'] }} ({{ $vehicle['type'] }})</p>
-            <p><strong>Price per day:</strong> RM {{ $vehicle['rental_price'] }}</p>
+        <div class="card shadow-lg mt-4 border-0">
+            <div class="card-body">
+                <!-- Vehicle Info -->
+                <div class="d-flex align-items-center mb-4">
+                    <div class="me-3">
+                        <i class="bi bi-car-front-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 text-success">{{ $vehicle['brand'] }} {{ $vehicle['model'] }}</h4>
+                        <p class="mb-0 text-muted">Type: {{ $vehicle['type'] }}</p>
+                        <p class="mb-0 fw-bold">RM {{ $vehicle['rental_price'] }} / day</p>
+                    </div>
+                </div>
 
-            <form id="reservation-form">
-                @csrf
-                <input type="hidden" name="vehicle_id" value="{{ $vehicle['id'] }}">
+                <!-- Reservation Form -->
+                <form id="reservation-form">
+                    @csrf
+                    <input type="hidden" name="vehicle_id" value="{{ $vehicle['id'] }}">
 
-                <label>Pickup Date:</label>
-                <input type="date" name="pickup_date" id="pickup_date" class="form-control mb-3" required>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">📅 Pickup Date</label>
+                            <input type="date" name="pickup_date" id="pickup_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">🕑 Number of Days</label>
+                            <input type="number" name="days" id="days" class="form-control" min="1" required>
+                        </div>
+                    </div>
+                </form>
 
-                <label>Number of Days:</label>
-                <input type="number" name="days" id="days" class="form-control mb-3" min="1" required>
-            </form>
+                <!-- Cost Result -->
+                <div id="cost-result" class="alert mt-4" style="display:none;"></div>
 
-            <div id="cost-result" class="alert alert-info mt-3" style="display:none;"></div>
-
-            <!-- Proceed form (hidden until cost is shown) -->
-            <form id="proceed-form" action="{{ route('reservation.confirm') }}" method="POST" style="display:none;">
-                @csrf
-                <input type="hidden" name="vehicle_id" id="confirm_vehicle_id">
-                <input type="hidden" name="pickup_date" id="confirm_pickup">
-                <input type="hidden" name="return_date" id="confirm_return">
-                <input type="hidden" name="days" id="confirm_days">
-                <input type="hidden" name="total_cost" id="confirm_total">
-                <button type="submit" class="btn btn-primary mt-3">Proceed to Payment</button>
-            </form>
+                <!-- Proceed form -->
+                <form id="proceed-form" action="{{ route('reservation.confirm') }}" method="POST" style="display:none;">
+                    @csrf
+                    <input type="hidden" name="vehicle_id" id="confirm_vehicle_id">
+                    <input type="hidden" name="pickup_date" id="confirm_pickup">
+                    <input type="hidden" name="return_date" id="confirm_return">
+                    <input type="hidden" name="days" id="confirm_days">
+                    <input type="hidden" name="total_cost" id="confirm_total">
+                    <button type="submit" class="btn btn-primary w-100 mt-3 fw-semibold shadow-sm">
+                        💳 Proceed to Payment
+                    </button>
+                </form>
+            </div>
         </div>
     @else
-        <p>Vehicle not found.</p>
+        <div class="alert alert-danger mt-4 shadow-sm">
+            Vehicle not found.
+        </div>
     @endif
 
-    <a href="{{ url('vehicles') }}" class="btn btn-secondary mt-3">Back to Vehicle Selection</a>
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <a href="{{ url('vehicles') }}" class="btn btn-outline-secondary px-4">
+            Back to Vehicle Selection
+        </a>
+    </div>
 </div>
 
+@if(isset($error_popup))
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        alert("{{ $error_popup }}"); // simple alert
+    });
+</script>
+@endif
+
+<!-- Script -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const pickupInput = document.getElementById("pickup_date");
@@ -69,14 +109,15 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.error) {
                     resultDiv.style.display = "block";
-                    resultDiv.className = "alert alert-danger mt-3";
+                    resultDiv.className = "alert alert-danger mt-4";
                     resultDiv.innerText = data.error;
                     proceedForm.style.display = "none";
                 } else {
                     resultDiv.style.display = "block";
-                    resultDiv.className = "alert alert-success mt-3";
+                    resultDiv.className = "alert alert-success mt-4";
                     resultDiv.innerHTML = `
-                        <h4>Total Cost: RM ${data.totalCost}</h4>
+                        <h5 class="mb-2">✅ Reservation Details</h5>
+                        <p><strong>Total Cost:</strong> <span class="fw-bold text-success">RM ${parseFloat(data.totalCost).toFixed(2)}</span></p>
                         <p><strong>Pickup:</strong> ${data.pickup}</p>
                         <p><strong>Return:</strong> ${data.return}</p>
                         <p><strong>Days:</strong> ${data.days}</p>

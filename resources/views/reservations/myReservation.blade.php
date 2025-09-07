@@ -1,50 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="bg-primary text-white p-3 rounded">My Current Reservation</h1>
+<div class="container my-5">
+    <h2 class="mb-4 text-center text-primary">My Reservation</h2>
 
-    @if(count($reservations) === 0)
-        <div class="alert alert-info">You have no current reservations.</div>
-    @else
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped mt-3">
-                <thead>
-                    <tr>
-                        <th>Reservation ID</th>
-                        <th>Vehicle</th>
-                        <th>Registration Number</th>
-                        <th>Type</th>
-                        <th>Pickup Date</th>
-                        <th>Return Date</th>
-                        <th>Days</th>
-                        <th>Total Cost</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($reservations as $res)
-                        <tr>
-                            <td>{{ $res['id'] }}</td>
-                            <td>
-                                @if($res['vehicle'])
-                                    {{ $res['vehicle']['brand'] ?? '' }} {{ $res['vehicle']['model'] ?? '' }}
-                                @else
-                                    N/A
-                                @endif
-                            </td>
-                            <td>{{ $res['vehicle']['registration_number'] ?? 'N/A' }}</td>
-                            <td>{{ $res['vehicle']['type'] ?? 'N/A' }}</td>
-                            <td>{{ $res['pickup_date'] }}</td>
-                            <td>{{ $res['return_date'] }}</td>
-                            <td>{{ $res['days'] }}</td>
-                            <td>RM {{ $res['total_cost'] }}</td>
-                            <td>{{ ucfirst($res['status']) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    @if($reservation)
+        <div class="card shadow-lg rounded-4 border-0">
+            <div class="card-header bg-gradient-primary text-white rounded-top-4 py-3 text-center">
+                <h5 class="mb-0"><i class="bi bi-car-front-fill me-2"></i> Ongoing Reservation</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Vehicle:</strong></span>
+                        <span>{{ $reservation->vehicle->brand ?? 'Unknown' }} {{ $reservation->vehicle->model ?? '' }} ({{ $reservation->vehicle->registration_number ?? 'Unknown' }})</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Pickup:</strong></span>
+                        <span>{{ $reservation->pickup_date }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Return:</strong></span>
+                        <span>{{ $reservation->return_date }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Days:</strong></span>
+                        <span>{{ $reservation->days }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Total Cost:</strong></span>
+                        <span class="text-success fw-bold">RM {{ number_format($reservation->total_cost, 2) }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><strong>Status:</strong></span>
+                        <span class="badge bg-info text-dark">{{ ucfirst($reservation->status ?? 'Ongoing') }}</span>
+                    </li>
+                </ul>
+
+                <div class="text-center mt-3">
+                    <a href="{{ url('vehicles') }}" class="btn btn-primary btn-lg shadow-sm">
+                        <i class="bi bi-arrow-left-circle me-2"></i> Back to Vehicles
+                    </a>
+                </div>
+            </div>
         </div>
+    @else
+        <div class="alert alert-info shadow-sm d-flex align-items-center rounded-4" role="alert">
+            <i class="bi bi-info-circle me-2 fs-4"></i>
+            <div>You have no ongoing reservations.</div>
+        </div>
+    @endif
+
+    @if(isset($noOngoing) && $noOngoing)
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Ongoing Reservation',
+                text: 'You currently have no ongoing reservations.',
+                confirmButtonColor: '#0d6efd'
+            });
+        });
+    </script>
     @endif
 </div>
 @endsection
