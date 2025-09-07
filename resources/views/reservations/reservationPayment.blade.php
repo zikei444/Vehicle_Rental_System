@@ -1,34 +1,43 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="bg-primary text-white p-3 rounded">Reservation Payment</h1>
+<div class="container py-4">
+    <h1 class="bg-success text-white p-4 rounded shadow-sm text-center">
+        <i class="bi bi-credit-card"></i> Reservation Payment
+    </h1>
 
     {{-- Display validation errors --}}
     @if ($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger shadow-sm">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li><i class="bi bi-exclamation-circle"></i> {{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    <div class="card p-3 shadow-sm">
-        @if($vehicle)
-            <p><strong>Vehicle:</strong> {{ $vehicle['brand'] ?? '' }} {{ $vehicle['model'] ?? '' }}</p>
-        @else
-            <p class="text-danger">Vehicle details not available.</p>
-        @endif
+    <div class="card shadow-lg p-4">
+        {{-- Vehicle Summary --}}
+        <div class="mb-3">
+            @if($vehicle)
+                <h4 class="text-secondary"><i class="bi bi-car-front-fill"></i> Vehicle Summary</h4>
+                <p class="mb-1"><strong>Vehicle:</strong> {{ $vehicle['brand'] ?? '' }} {{ $vehicle['model'] ?? '' }}</p>
+            @else
+                <p class="text-danger"><i class="bi bi-exclamation-triangle"></i> Vehicle details not available.</p>
+            @endif
 
-        <p><strong>Pickup Date:</strong> {{ $pickup_date }}</p>
-        <p><strong>Return Date:</strong> {{ $return_date }}</p>
-        <p><strong>Days:</strong> {{ $days }}</p>
-        <p><strong>Total Cost:</strong> RM {{ $total_cost }}</p>
+            <p class="mb-1"><strong>Pickup Date:</strong> {{ $pickup_date }}</p>
+            <p class="mb-1"><strong>Return Date:</strong> {{ $return_date }}</p>
+            <p class="mb-1"><strong>Days:</strong> {{ $days }}</p>
+            <p class="fw-bold text-success h5">
+                <i class="bi bi-cash-coin"></i> Total Cost: RM {{ number_format($total_cost, 2) }}
+            </p>
+        </div>
 
         <hr>
 
+        {{-- Payment Form --}}
         <form action="{{ route('reservation.payment.process') }}" method="POST">
             @csrf
             <input type="hidden" name="vehicle_id" value="{{ $vehicle['id'] }}">
@@ -37,20 +46,26 @@
             <input type="hidden" name="days" value="{{ $days }}">
             <input type="hidden" name="total_cost" value="{{ $total_cost }}">
 
-            <h4>Select Payment Method</h4>
+            <h4 class="text-primary"><i class="bi bi-wallet2"></i> Select Payment Method</h4>
 
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" required>
-                <label class="form-check-label" for="cash">Cash on Delivery</label>
+            <div class="list-group mb-3">
+                <label class="list-group-item">
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="cash" value="cash" required>
+                    <i class="bi bi-cash"></i> Cash on Delivery
+                </label>
+                <label class="list-group-item">
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="card" value="card">
+                    <i class="bi bi-credit-card-2-front"></i> Credit/Debit Card
+                </label>
+                <label class="list-group-item">
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="bank" value="bank_transfer">
+                    <i class="bi bi-bank"></i> Bank Transfer
+                </label>
             </div>
 
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
-                <label class="form-check-label" for="card">Credit/Debit Card</label>
-            </div>
-
-            <div id="card-fields" class="mt-3 p-3 border rounded d-none">
-                <h5>Card Details</h5>
+            {{-- Card Fields --}}
+            <div id="card-fields" class="mt-3 p-3 border rounded d-none bg-light shadow-sm">
+                <h5 class="text-dark"><i class="bi bi-credit-card"></i> Card Details</h5>
                 <div class="mb-2">
                     <label>Cardholder Name</label>
                     <input type="text" name="card_name" class="form-control" placeholder="John Doe">
@@ -75,18 +90,16 @@
                 </div>
             </div>
 
-            <div class="form-check mt-3">
-                <input class="form-check-input" type="radio" name="payment_method" id="bank" value="bank_transfer">
-                <label class="form-check-label" for="bank">Bank Transfer</label>
-            </div>
-
-            <div id="bank-fields" class="mt-3 p-3 border rounded d-none">
-                <h5>Scan QR Code to Pay</h5>
-                <img src="{{ asset('images/bank_qr_placeholder.png') }}" alt="Bank QR" width="200">
+            {{-- Bank Transfer --}}
+            <div id="bank-fields" class="mt-3 p-3 border rounded d-none bg-light shadow-sm text-center">
+                <h5><i class="bi bi-qr-code-scan"></i> Scan QR Code to Pay</h5>
+                <img src="{{ asset('images/bank_qr_placeholder.png') }}" alt="Bank QR" class="img-fluid mb-2" style="max-width:200px;">
                 <p class="text-muted">Please scan this QR code with your bank app to complete payment.</p>
             </div>
 
-            <button type="submit" class="btn btn-success mt-3">Confirm Payment</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3 fw-semibold shadow-sm">
+                <i class="bi bi-check-circle"></i> Confirm Payment
+            </button>
         </form>
     </div>
 </div>

@@ -54,6 +54,10 @@ Route::post('/reservation/payment-process', [ReservationController::class, 'paym
 Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
     ->name('reservation.my');
 
+// To view reservation his (for customers)
+Route::get('/my-reservations/history', [ReservationController::class, 'history'])
+    ->name('reservations.history');
+
 // =================== ADMIN RESERVATION ROUTES ===================
 Route::get('/admin/reservations', [AdminReservationController::class, 'reservations'])
     ->name('admin.reservations.index');
