@@ -63,7 +63,6 @@ Route::patch('/admin/reservations/{id}/update-status', [AdminReservationControll
 Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'destroy'])
     ->name('admin.reservations.destroy');
 
-<<<<<<< HEAD
 // =================== CUSTOMER FEEDBACK ROUTES ===================
 Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
 Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
@@ -72,7 +71,6 @@ Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('
 // (No middleware for now – free access)
 Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
 Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
-=======
 // // =================== CUSTOMER ROUTES ===================
 // Route::get('/feedback', [RatingController::class, 'index'])->name('ratings.index');
 // Route::post('/rental/{rental}/rate', [RatingController::class, 'store'])->name('ratings.store');
@@ -119,4 +117,3 @@ Route::prefix('admin')->group(function () {
     Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
         ->name('maintenance.destroy');
 });
->>>>>>> 4237f6c7827c954e409a66df53c3acf6267c0be0

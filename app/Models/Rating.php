@@ -24,7 +24,6 @@ class Rating extends Model
      * Scope for approved ratings
      */
 
-<<<<<<< HEAD
     /**
      * Scope for pending ratings
      */
@@ -50,8 +49,6 @@ class Rating extends Model
     {
         return $this->belongsTo(Vehicle::class);
     }
-=======
->>>>>>> 4237f6c7827c954e409a66df53c3acf6267c0be0
 }
 
 ?>
