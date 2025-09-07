@@ -57,7 +57,12 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 //     Route::get('/admin/feedback', [RatingController::class, 'manage'])->name('ratings.manage');
 //     Route::post('/admin/feedback/{id}/update', [RatingController::class, 'updateStatus'])->name('ratings.updateStatus');
 // });
-Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
+//Route::get('/rental/{rental}/rate', [RatingController::class, 'create'])->name('ratings.create');
+Route::get('/ratings/{reservation}/create', [RatingController::class, 'create'])->name('ratings.create');
+Route::post('/ratings', [RatingController::class, 'store'])->name('ratings.store');
+Route::get('/history', [ReservationHistoryController::class, 'index'])->name('reservation.history');
+
+
 // Show feedback/rating form
 Route::get('/ratings/create/{reservation}', [RatingController::class, 'create'])->name('ratings.create');
 // Submit the feedback/rating form
