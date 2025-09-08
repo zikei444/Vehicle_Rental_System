@@ -4,7 +4,6 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 
 use App\Models\Rating;
-use App\Models\Comment;
 use App\Observers\RatingObserver;
 use Illuminate\Pagination\Paginator;
 

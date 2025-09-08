@@ -1,29 +1,27 @@
 <?php
-
+// app/Observers/RatingObserver.php
 namespace App\Observers;
 
 use App\Models\Rating;
-use Illuminate\Support\Facades\Log;
 
-class RatingObserver
-{
-    public function created(Rating $rating): void {
-        $this->updateVehicleAverage($rating);
-
-        if (!empty($rating->feedback)) {
-            Log::info("新评分通知: 车辆ID {$rating->vehicle_id}, 用户ID {$rating->customer_id}, 分数 {$rating->rating}, 评论: {$rating->feedback}");
+class RatingObserver {
+    public function created(Rating $rating) {
+        if ($rating->status === 'approved') {
+            $this->updateVehicleAverage($rating);
         }
     }
 
-    public function updated(Rating $rating): void {
+    public function updated(Rating $rating) {
+        if ($rating->status === 'approved') {
+            $this->updateVehicleAverage($rating);
+        }
+    }
+
+    public function deleted(Rating $rating) {
         $this->updateVehicleAverage($rating);
     }
 
-    public function deleted(Rating $rating): void {
-        $this->updateVehicleAverage($rating);
-    }
-
-    private function updateVehicleAverage(Rating $rating): void {
+    private function updateVehicleAverage(Rating $rating) {
         $vehicle = $rating->vehicle;
         if ($vehicle) {
             $avg = $vehicle->ratings()->approved()->avg('rating');
