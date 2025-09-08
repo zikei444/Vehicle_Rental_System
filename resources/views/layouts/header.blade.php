@@ -18,23 +18,28 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url('/vehicles') }}">Vehicles</a>
                 </li>
-
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url('/contact') }}">Contact</a>
                 </li>
-            @if(session()->has('user'))
-                <li class="nav-item">
-                    <span class="nav-link">Welcome, {{ session('user')['name'] ?? 'User' }}</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('logout') }}">Logout</a>
-                </li>
-            @else
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('login') }}">Login</a>
-                </li>
-            @endif
 
+                @auth
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ Auth::user()->name }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            Logout
+                        </a>
+                    </li>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                @else
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
+                    </li>
+                @endauth
             </ul>
         </div>
     </div>

@@ -142,32 +142,28 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 
 // ================== LOGIN =============================
 // Redirect to login page
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', [App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
 
 // Submit login form
-Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.submit');
+
+// Logout
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
 
 //=================== DASHBOARD =============================
-
-// Redirect to CUSTOMER dashboard
-Route::get('/customerSide', function () {
+Route::get('/customer/dashboard', function () {
     return view('dashboards.customerSide');
-})->name('customer.dashboard');
+})->name('customer.dashboard')->middleware('auth');
 
-// ==================== Back to Login Page (Logout button) ========================
-Route::get('/logout', function () {
-    session()->forget('user');
-    return redirect('/login')->with('success', 'You have been logged out.');
-})->name('logout');
+
+Route::get('/admin/dashboard', function () {
+    return view('dashboards.adminSide');
+})->name('admin.dashboard')->middleware('auth');
 
 
 // ============================== ADMIN ONLY =================================
 // Admin dashboard
-Route::middleware([admin::class])->group(function () {
-    Route::get('/adminSide', function () {
-        return view('dashboards.adminSide');
-    })->name('admin.dashboard');
-
     // Redirect to Customer Account Management Page
     Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customerManagement');
 
@@ -178,7 +174,7 @@ Route::middleware([admin::class])->group(function () {
     Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])->name('admin.customer.update');
 
 
-});
+;
 
 // ========================= UPDATE PROFILE (CUSTOMER) ======================
 // Edit profile
