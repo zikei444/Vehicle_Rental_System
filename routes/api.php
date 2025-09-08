@@ -34,13 +34,12 @@ Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']);
 Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStatus']);
 
 // Ratings api
+Route::post('/ratings', [RatingApiController::class, 'store']); // 提交评分
 
 Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取approved评论
-    Route::post('/ratings', [RatingApiController::class, 'store']);  // 提交评论+评分
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
-
 // Maintenance API
 Route::prefix('maintenances')->group(function () {
     Route::get('/',        [MaintenanceApiController::class, 'index']);   // List all maintenances

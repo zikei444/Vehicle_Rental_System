@@ -33,6 +33,13 @@ class Reservation extends Model
     {
         return $query->where('status', 'completed');
     }
+    public function hasRated(): bool
+    {
+    // 当前 reservation 对应的 vehicle 是否已经被该用户评分
+    return Rating::where('vehicle_id', $this->vehicle_id)
+                 ->where('customer_id', auth()->id())
+                 ->exists();
+    }
 }
 
 ?>

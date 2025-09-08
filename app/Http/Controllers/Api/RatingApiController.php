@@ -2,7 +2,7 @@
 
 // app/Http/Controllers/Api/RatingApiController.php
 namespace App\Http\Controllers\Api;
-
+use App\Models\Rating; // ✅ 加上这一行
 use App\Http\Controllers\Controller;
 use App\Services\RatingService;
 use App\Models\Vehicle;
@@ -19,25 +19,47 @@ class RatingApiController extends Controller {
     public function index($vehicleId) {
         return response()->json($this->ratingService->getApprovedRatings($vehicleId));
     }
-
-    // 用户提交评分+评论
-    public function store(Request $request, $vehicleId) {
+    public function store(Request $request)
+    {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'feedback' => 'nullable|string|max:500',
+            'vehicle_id'  => 'required|exists:vehicles,id',
+            'rating'      => 'required|integer|min:1|max:5',
+            'feedback'    => 'nullable|string|max:500',
         ]);
 
-        return response()->json(
-            $this->ratingService->addRating(
-                $request->customer_id,
-                $vehicleId,
-                $request->rating,
-                $request->feedback
-            ),
-            201
-        );
+        $rating = Rating::create([
+            'customer_id' => $request->customer_id,
+            'vehicle_id'  => $request->vehicle_id,
+            'rating'      => $request->rating,
+            'feedback'    => $request->feedback,
+            'status'      => 'pending', // 默认状态
+        ]);
+
+        return response()->json([
+            'message' => 'Rating submitted successfully',
+            'rating' => $rating
+        ], 201);
     }
+
+    // 用户提交评分+评论
+    // public function store(Request $request, $vehicleId) {
+    //     $request->validate([
+    //         'customer_id' => 'required|exists:customers,id',
+    //         'rating' => 'required|integer|min:1|max:5',
+    //         'feedback' => 'nullable|string|max:500',
+    //     ]);
+
+    //     return response()->json(
+    //         $this->ratingService->addRating(
+    //             $request->customer_id,
+    //             $vehicleId,
+    //             $request->rating,
+    //             $request->feedback
+    //         ),
+    //         201
+    //     );
+    // }
 
     // 获取平均分
     public function rating($vehicleId) {

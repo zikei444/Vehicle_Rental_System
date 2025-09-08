@@ -39,4 +39,5 @@ class Rating extends Model
     public function vehicle() {
         return $this->belongsTo(Vehicle::class);
     }
+    
 }

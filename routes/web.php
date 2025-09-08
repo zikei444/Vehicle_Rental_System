@@ -87,10 +87,14 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
 Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, 'showRatings']);
+// 显示单条 reservation 的评分详情
+Route::get('/reservations/{reservation}/rating', [VehicleReviewController::class, 'viewRating'])
+    ->name('ratings.viewRating');
 
-// To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//Route::get('/ratings/create/{vehicle}', [VehicleReviewController::class, 'create'])
-    //->name('rating.create');
+//看rating
+
+Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])
+    ->name('reservation.ratings.show');
 
 // To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])
