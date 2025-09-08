@@ -27,18 +27,18 @@
                 @foreach($ratings as $rating)
                     <tr>
                         <td>{{ $rating->id }}</td>
-                        <td>{{ $rating->vehicle->name ?? 'N/A' }}</td>
-                        <td>{{ $rating->customer->name ?? 'N/A' }}</td>
+                        <td>{{ $rating->customer_id ?? 'N/A' }}</td>
+                        <td>{{ $rating->vehicle_id ?? 'N/A' }}</td>
                         <td>{{ $rating->rating }}</td>
                         <td>{{ $rating->feedback ?? '无' }}</td>
                         <td>{{ $rating->status }}</td>
                         <td>
                             @if($rating->status === 'pending')
-                                <form method="POST" action="{{ route('admin.ratings.approve', $rating->id) }}" style="display:inline;">
+                                <form method="POST" action="{{ route('ratings_admin.approve', $rating->id) }}" style="display:inline;">
                                     @csrf
                                     <button type="submit">批准</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.ratings.reject', $rating->id) }}" style="display:inline;">
+                                <form method="POST" action="{{ route('ratings_admin.reject', $rating->id) }}" style="display:inline;">
                                     @csrf
                                     <button type="submit">拒绝</button>
                                 </form>

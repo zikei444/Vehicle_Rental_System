@@ -11,7 +11,7 @@ class AdminRatingController extends Controller
     public function index()
     {
         $ratings = Rating::with(['customer', 'vehicle'])->get();
-        return view('admin.ratings.index', compact('ratings'));
+        return view('ratings_admin.index', compact('ratings'));
     }
 
     // 批准评论
