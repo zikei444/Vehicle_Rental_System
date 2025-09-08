@@ -2,17 +2,25 @@
 
 namespace App\Services\Factories;
 
-use App\Models\User;
+use App\Models\AdminUser;
+use App\Models\CustomerUser;
 
 class UserFactory
 {
-    public static function create(string $role, array $data): User
+    public static function create($role, $data)
     {
-        return new User([
-            'name' => $data['name'] ?? null,
-            'email' => $data['email'] ?? null,
-            'password' => bcrypt($data['password']),
-            'role' => 'customer', // Only customer can register
-        ]);
+        if ($role === 'admin') {
+            $user = new AdminUser();
+        } else {
+            $user = new CustomerUser(); // now points to users table
+        }
+
+        $user->name = $data['name'] ?? null;
+        $user->email = $data['email'] ?? null;
+        $user->role = $data['role'] ?? $role;
+        $user->password = $data['password'] ?? null;
+
+        return $user;
     }
 }
+

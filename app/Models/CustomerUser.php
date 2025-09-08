@@ -2,11 +2,24 @@
 
 namespace App\Models;
 
-class CustomerUser extends User
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class CustomerUser extends Authenticatable
 {
-    public function __construct(array $attributes = [])
+    use HasFactory;
+
+    protected $table = 'users'; // <--- important
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
+
+    public function customer()
     {
-        parent::__construct($attributes);
-        $this->role = 'customer';
+        return $this->hasOne(Customer::class, 'user_id');
     }
 }
