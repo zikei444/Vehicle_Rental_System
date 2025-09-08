@@ -19,6 +19,11 @@ class RatingService {
             'status' => 'pending', // 默认待审核
         ]);
     }
+    public function hasRated($customerId, $vehicleId) {
+        return Rating::where('customer_id', $customerId)
+                     ->where('vehicle_id', $vehicleId)
+                     ->exists();
+    }
 }
 
 
@@ -35,12 +40,12 @@ class RatingService {
 //     }
 
 //     // 检查用户是否对该车打过分
-//     public function hasRated(int $customerId, int $vehicleId): bool
-//     {
-//         return Rating::where('customer_id', $customerId)
-//             ->where('vehicle_id', $vehicleId)
-//             ->exists();
-//     }
+// public function hasRated(int $customerId, int $vehicleId): bool
+//      {
+//          return Rating::where('customer_id', $customerId)
+//              ->where('vehicle_id', $vehicleId)
+//              ->exists();
+//      }
 
 //     // 返回 JSON（方便直接给 API 用）
 //     public function hasRatedJson(int $customerId, int $vehicleId)

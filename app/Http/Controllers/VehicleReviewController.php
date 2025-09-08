@@ -14,7 +14,11 @@ class VehicleReviewController extends Controller
     public function __construct(RatingService $ratingService) {
         $this->ratingService = $ratingService;
     }
-
+    public function create($vehicleId)
+    {
+        $vehicle = \App\Models\Vehicle::findOrFail($vehicleId);
+        return view('ratings.create', compact('vehicle'));
+    }
     public function showRatings(Request $request, $vehicleId) {
         try {
             $useApi = $request->query('use_api', false);
@@ -24,7 +28,7 @@ class VehicleReviewController extends Controller
                 if ($response->failed()) throw new \Exception("Failed to fetch ratings");
                 $ratings = $response->json();
             } else {
-                $ratings = $this->ratingService->getRatings($vehicleId);
+                $ratings = $this->ratingService->getApprovedRatings($vehicleId);
             }
 
             return view('ratings.index', compact('ratings'));

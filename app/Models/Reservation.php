@@ -27,9 +27,7 @@ class Reservation extends Model
     {
         return $this->hasOne(Rating::class);
     }
-    public function getHasRatedAttribute() {
-        return $this->is_rated;  // 这样 Blade 里就能用 $reservation->hasRated
-    }
+
     // Scope for completed rentals
     public function scopeCompleted($query)
     {

@@ -1,52 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2>Rate Your Rental</h2>
-    <p>Vehicle: <strong>{{ $rental->vehicle->brand }} {{ $rental->vehicle->model }}</strong></p>
+<div class="container my-5">
+    <h2>为 {{ $vehicle->brand ?? '车辆' }} {{ $vehicle->model ?? '' }} 评分</h2>
 
-    <form id="ratingForm">
-        @csrf
-        <input type="hidden" name="rental_id" value="{{ $rental->id }}">
-        <input type="hidden" name="vehicle_id" value="{{ $rental->vehicle->id }}">
-        <input type="hidden" name="user_id" value="{{ $rental->customer->user_id }}">
+    <div id="success-message" class="alert alert-success d-none"></div>
+    <div id="error-message" class="alert alert-danger d-none"></div>
 
+    <form id="rating-form">
+        <input type="hidden" id="vehicle_id" value="{{ $vehicle->id }}">
+        <input type="hidden" id="customer_id" value="{{ auth()->id() }}"> <!-- 登录用户 ID -->
         <div class="mb-3">
-            <label>Rating (1-5):</label>
-            <input type="number" name="rating" min="1" max="5" class="form-control" required>
+            <label for="rating">评分 (1-5)</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" class="form-control" required>
         </div>
-
         <div class="mb-3">
-            <label>Feedback:</label>
-            <textarea name="comment" class="form-control"></textarea>
+            <label for="feedback">评论（可选）</label>
+            <textarea id="feedback" name="feedback" class="form-control"></textarea>
         </div>
-
-        <button type="submit" class="btn btn-primary">Submit Rating</button>
+        <button type="submit" class="btn btn-primary">提交评分</button>
     </form>
 </div>
 
 <script>
+document.getElementById('rating-form').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-$("#review-form").on("submit", function(e) {
-        e.preventDefault();
+    const vehicleId = document.getElementById('vehicle_id').value;
+    const customerId = document.getElementById('customer_id').value;
+    const rating = document.getElementById('rating').value;
+    const feedback = document.getElementById('feedback').value;
 
-        $.ajax({
-            url: `/api/vehicles/${vehicleId}/review`,
-            method: "POST",
-            data: {
-                score: $("#score").val(),
-                content: $("#content").val()
-            },
-            success: function(response) {
-                $("#response-box").text(JSON.stringify(response, null, 4));
-                alert("Review submitted successfully!");
-                $("#review-form")[0].reset();
-            },
-            error: function(xhr) {
-                $("#response-box").text(JSON.stringify(xhr.responseJSON, null, 4));
-                alert("Error: " + xhr.responseJSON.message);
-            }
-        });
+    fetch(`/api/vehicles/${vehicleId}/ratings`, {  // 调整为 API 路由
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // API 路由不需要 CSRF
+        },
+        body: JSON.stringify({
+            customer_id: customerId,
+            rating: rating,
+            feedback: feedback
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('error-message').textContent = data.error;
+            document.getElementById('error-message').classList.remove('d-none');
+            document.getElementById('success-message').classList.add('d-none');
+        } else {
+            document.getElementById('success-message').textContent = '评分提交成功！';
+            document.getElementById('success-message').classList.remove('d-none');
+            document.getElementById('error-message').classList.add('d-none');
+            document.getElementById('rating').value = '';
+            document.getElementById('feedback').value = '';
+        }
+    })
+    .catch(err => {
+        document.getElementById('error-message').textContent = '提交失败，请重试';
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('success-message').classList.add('d-none');
     });
+});
 </script>
 @endsection
