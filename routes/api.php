@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RatingApiController;
 use App\Http\Controllers\Api\VehicleApiController;
 use App\Http\Controllers\Api\MaintenanceApiController;
+use App\Http\Controllers\Api\ReservationApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,14 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::post('/ratings', [RatingApiController::class, 'store']);  // 提交评论+评分
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
+
+
+// Reservation Api
+Route::get('/reservations', [ReservationApiController::class, 'index']);  // semua
+Route::get('/reservations/{id}', [ReservationApiController::class, 'show']);  // satu id
+Route::post('/reservations', [ReservationApiController::class, 'store']);   // tambah
+Route::put('/reservations/{id}', [ReservationApiController::class, 'update']);   // update
+Route::delete('/reservations/{id}', [ReservationApiController::class, 'destroy']);  // buang satu
 
 // Maintenance API
 Route::prefix('maintenances')->group(function () {
