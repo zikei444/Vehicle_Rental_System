@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RatingApiController;
 use App\Http\Controllers\Api\VehicleApiController;
+use App\Http\Controllers\Api\MaintenanceApiController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,3 +41,11 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
 
+// Maintenance API
+Route::prefix('maintenances')->group(function () {
+    Route::get('/',        [MaintenanceApiController::class, 'index']);   // List all maintenances
+    Route::post('/',       [MaintenanceApiController::class, 'store']);   // Create maintenance
+    Route::get('/{id}',    [MaintenanceApiController::class, 'show']);    // Get details
+    Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // Edit & Update
+    Route::delete('/{id}', [MaintenanceApiController::class, 'destroy']); // Delete
+});
