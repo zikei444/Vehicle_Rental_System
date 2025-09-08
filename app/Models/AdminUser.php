@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Models\User;
-use App\Models\FAQ;
-use App\Models\Vehicle;
 
 class AdminUser extends User
 {

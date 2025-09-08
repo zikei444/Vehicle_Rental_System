@@ -2,26 +2,17 @@
 
 namespace App\Services\Factories;
 
-use App\Models\AdminUser;
-use App\Models\CustomerUser;
+use App\Models\User;
 
 class UserFactory
 {
-    public static function create($role, $data)
+    public static function create(string $role, array $data): User
     {
-        if ($role === 'admin') {
-            $user = new AdminUser();
-        } else {
-            $user = new CustomerUser();
-        }
-
-        // Assign API data to the model
-        $user->id = $data['id'] ?? null;
-        $user->name = $data['name'] ?? null;
-        $user->email = $data['email'] ?? null;
-        $user->role = $data['role'] ?? null;
-        $user->phone = $data['phone'] ?? null;
-
-        return $user;
+        return new User([
+            'name' => $data['name'] ?? null,
+            'email' => $data['email'] ?? null,
+            'password' => bcrypt($data['password']),
+            'role' => 'customer', // Only customer can register
+        ]);
     }
 }
