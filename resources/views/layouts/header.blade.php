@@ -22,10 +22,19 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url('/contact') }}">Contact</a>
                 </li>
-
+            @if(session()->has('user'))
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url('/login') }}">Login</a>
+                    <span class="nav-link">Welcome, {{ session('user')['name'] ?? 'User' }}</span>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('logout') }}">Logout</a>
+                </li>
+            @else
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('login') }}">Login</a>
+                </li>
+            @endif
+
             </ul>
         </div>
     </div>

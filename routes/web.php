@@ -122,3 +122,59 @@ Route::prefix('admin')->group(function () {
     Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
         ->name('maintenance.destroy');
 });
+
+
+// Belum siap -- wx
+// ================== REGISTRATION =========================
+// Redirect to registration page
+Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+
+// Submit registration form
+Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
+
+// ================== LOGIN =============================
+// Redirect to login page
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+
+// Submit login form
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+
+//=================== DASHBOARD =============================
+
+// Redirect to CUSTOMER dashboard
+Route::get('/customerSide', function () {
+    return view('dashboards.customerSide');
+})->name('customer.dashboard');
+
+// ==================== Back to Login Page (Logout button) ========================
+Route::get('/logout', function () {
+    session()->forget('user');
+    return redirect('/login')->with('success', 'You have been logged out.');
+})->name('logout');
+
+
+// ============================== ADMIN ONLY =================================
+// Admin dashboard
+Route::middleware([admin::class])->group(function () {
+    Route::get('/adminSide', function () {
+        return view('dashboards.adminSide');
+    })->name('admin.dashboard');
+
+    // Redirect to Customer Account Management Page
+    Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customerManagement');
+
+    // Display customer account list
+    Route::get('/admin/profile', [CustomerController::class, 'index'])->name('admin.customerManagement');
+
+    // Update customer account
+    Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])->name('admin.customer.update');
+
+
+});
+
+// ========================= UPDATE PROFILE (CUSTOMER) ======================
+// Edit profile
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+// Update (Save button) profile
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
