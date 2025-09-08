@@ -81,9 +81,12 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     // 显示平均评分
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
+// To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Route::get('/ratings/create/{vehicle}', [VehicleReviewController::class, 'create'])
+    //->name('rating.create');
 
 // To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Route::get('/ratings/create/{vehicle}', [VehicleReviewController::class, 'create'])
+Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])
     ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
