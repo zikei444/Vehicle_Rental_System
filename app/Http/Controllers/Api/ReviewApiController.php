@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/ReviewApiController.php
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -27,10 +26,28 @@ class ReviewApiController extends Controller {
             'content' => 'nullable|string|max:500'
         ]);
 
-        // 保存评分
-        $rating = $this->ratingService->addRating($vehicleId, $request->score);
+        // 获取当前用户 ID（假设用 Laravel Auth）
+        $customerId = auth()->id(); 
+        if (!$customerId) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
-        // 保存评论（如果有内容）
+        // 检查是否已评分
+        if ($this->ratingService->hasRated($customerId, $vehicleId)) {
+            return response()->json([
+                'message' => 'You have already rated this vehicle.'
+            ], 400);
+        }
+
+        // 保存评分
+        $rating = $this->ratingService->addRating(
+            $vehicleId,
+            $customerId,
+            $request->score,
+            $request->content
+        );
+
+        // 如果有评论，另外保存
         $comment = null;
         if (!empty($request->content)) {
             $comment = $this->commentService->addComment($vehicleId, $request->content);
@@ -44,7 +61,7 @@ class ReviewApiController extends Controller {
     }
 
     /**
-     * 获取该车所有评分和评论
+     * 获取车辆所有评分和评论
      */
     public function index($vehicleId) {
         $vehicle = Vehicle::with(['ratings', 'comments'])->findOrFail($vehicleId);
@@ -56,54 +73,16 @@ class ReviewApiController extends Controller {
             'comments'        => $vehicle->comments
         ], 200);
     }
+
+    /**
+     * 检查用户是否已对该车评分
+     */
+    public function hasRated($vehicleId) {
+        $customerId = auth()->id(); 
+        if (!$customerId) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        return $this->ratingService->hasRatedJson($customerId, $vehicleId);
+    }
 }
-
-
-// class RatingApiController extends Controller
-// {
-//     protected $ratingService;
-
-//     public function __construct(RatingService $ratingService) {
-//         $this->ratingService = $ratingService;
-//     }
-
-//     public function index($vehicleId) {
-//         return response()->json($this->ratingService->getRatings($vehicleId));
-//     }
-
-//     public function store(Request $request, $vehicleId) {
-//         $request->validate([
-//             'customer_id' => 'required|exists:customers,id',
-//             'rating'      => 'required|integer|min:1|max:5',
-//             'feedback'    => 'nullable|string|max:500',
-//         ]);
-
-//         $rating = $this->ratingService->addRating(
-//             $vehicleId,
-//             $request->customer_id,
-//             $request->rating,
-//             $request->feedback
-//         );
-
-//         return response()->json($rating, 201);
-//     }
-
-//     public function average($vehicleId) {
-//         $vehicle = Vehicle::findOrFail($vehicleId);
-//         return response()->json($this->ratingService->getAverageRating($vehicle));
-//     }
-
-//     // Check if customer has rated a vehicle ADDED BY ZK
-//     public function hasRated($vehicleId, $customerId)
-//     {
-//         $hasRated = Rating::where('customer_id', $customerId)
-//                           ->where('vehicle_id', $vehicleId)
-//                           ->exists();
-
-//         return response()->json([
-//             'customer_id' => $customerId,
-//             'vehicle_id' => $vehicleId,
-//             'has_rated' => $hasRated
-//         ]);
-//     }
-// }
