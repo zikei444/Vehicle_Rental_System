@@ -26,6 +26,8 @@ class RatingObserver {
         if ($vehicle) {
             $avg = $vehicle->ratings()->approved()->avg('rating');
             $vehicle->update(['average_rating' => $avg ?? 0]);
+            $vehicle->saveQuietly(); // ✅ 避免 Observer 死循环
+
         }
     }
 }
