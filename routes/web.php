@@ -8,7 +8,6 @@ use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\VehicleReviewController;
 use App\Http\Controllers\AdminRatingController;
-use App\Http\Controllers\RatingController;    ////////// CHECK THIS
  
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
@@ -84,7 +83,7 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
 });
 
 // To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Route::get('/ratings/create/{vehicle}', [RatingController::class, 'create'])
+Route::get('/ratings/create/{vehicle}', [VehicleReviewController::class, 'create'])
     ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
