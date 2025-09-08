@@ -52,7 +52,7 @@
                         @endif
                     </td>
 
-                    <td>{{ \Illuminate\Support\Carbon::parse($r->service_date)->format('Y-m-d') }}</td>
+                    <td>{{ \Illuminate\Support\Carbon::parse($r->service_date)->format('d-m-Y') }}</td>
                     <td>{{ number_format($r->cost, 2) }}</td>
                     
                     <td>

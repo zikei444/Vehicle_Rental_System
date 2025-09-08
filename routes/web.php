@@ -95,8 +95,8 @@ Route::prefix('admin')->group(function () {
     Route::post('/ratings/{id}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
 });
 
+// // =================== ADMIN MANAGE MAINTENANCE ===================
 
-// Maintenance Route:
 Route::prefix('admin')->group(function () {
     // Show all maintenance records
     Route::get('/maintenance', [MaintenanceController::class, 'index'])

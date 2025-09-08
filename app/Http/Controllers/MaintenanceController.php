@@ -41,8 +41,8 @@ class MaintenanceController extends Controller
             'vehicle_id'       => 'required|exists:vehicles,id',
             'maintenance_type' => 'required|string|max:255',
             'service_date'     => 'required|date|after_or_equal:today',
-            'cost'             => 'nullable|numeric|min:0',
-            'notes'            => 'nullable|string',
+            'cost'             => 'nullable|numeric|min:1',
+            'notes'            => 'nullable|string|max:500',
         ]);
 
         $vehicle = Vehicle::findOrFail($request->vehicle_id);
