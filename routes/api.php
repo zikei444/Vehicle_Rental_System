@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\RatingApiController;
+use App\Http\Controllers\Api\ReviewApiController;
 use App\Http\Controllers\Api\VehicleApiController;
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +35,6 @@ Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStat
 
 Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/reviews', [ReviewApiController::class, 'index']);   // 获取该车所有评分+评论
-    Route::post('/review', [ReviewApiController::class, 'store']);  // 提交评分+可选评论
+    Route::post('/review', [ReviewApiController::class, 'store']);  // 提交评分+评论
     // //    Route::get('/ratings/average', [RatingApiController::class, 'average']); // 获取平均分
 });
