@@ -7,12 +7,10 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Vehicle;
 use App\Models\Maintenance;
 
-class MaintenanceController extends Controller
-{
+class MaintenanceController extends Controller {
     // ---------- LIST ----------
     // GET /maintenance
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $vehicleId = $request->query('vehicle_id');
 
         $records = Maintenance::with('vehicle')
@@ -25,8 +23,7 @@ class MaintenanceController extends Controller
 
     // ---------- CREATE FORM ----------
     // GET /maintenance/create
-    public function create()
-    {
+    public function create() {
         $vehicles = Vehicle::where('availability_status', Vehicle::AVAILABLE)
             ->orderBy('id')->get();
 
@@ -35,17 +32,17 @@ class MaintenanceController extends Controller
 
     // ---------- STORE ----------
     // POST /maintenance
-    public function store(Request $request)
-    {
-        $request->validate([
-            'vehicle_id'       => 'required|exists:vehicles,id',
-            'maintenance_type' => 'required|string|max:255',
+    public function store(Request $request) {
+        $validated = $request->validate([
+            'vehicle_id'       => 'required|integer|exists:vehicles,id',
+            'admin_id'         => 'required|integer|exists:admins,id',
+            'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date|after_or_equal:today',
             'cost'             => 'nullable|numeric|min:1',
             'notes'            => 'nullable|string|max:500',
         ]);
 
-        $vehicle = Vehicle::findOrFail($request->vehicle_id);
+        $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
 
         if ($vehicle->availability_status !== Vehicle::AVAILABLE) {
             return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])
@@ -61,17 +58,17 @@ class MaintenanceController extends Controller
                         ->withInput();
         }
 
-        DB::transaction(function () use ($request, $vehicle) {
+        DB::transaction(function () use ($validated, $vehicle) {
             // State Pattern: Available -> Under Maintenance
             $vehicle->getState()->markAsUnderMaintenance();
 
             Maintenance::create([
                 'vehicle_id'       => $vehicle->id,
-                // 'admin_id'         => auth('admin')->id() ?? null,
-                'maintenance_type' => $request->maintenance_type,
-                'service_date'     => $request->service_date,
-                'cost'             => $request->cost,
-                'notes'            => $request->notes,
+                'admin_id'         => $validated['admin_id'],
+                'maintenance_type' => $validated['maintenance_type'],
+                'service_date'     => $validated['service_date'],
+                'cost'             => $validated['cost']  ?? null,
+                'notes'            => $validated['notes'] ?? null,
                 'status'           => 'Scheduled',
             ]);
         });
@@ -81,18 +78,17 @@ class MaintenanceController extends Controller
 
     // ---------- EDIT FORM ----------
     // GET /maintenance/{maintenance}/edit
-    public function edit(Maintenance $maintenance)
-    {
+    public function edit(Maintenance $maintenance) {
         $vehicles = Vehicle::orderBy('id')->get();
         return view('maintenance.edit', compact('maintenance', 'vehicles'));
     }
 
     // ---------- UPDATE ----------
     // PUT /maintenance/{maintenance}
-    public function update(Request $request, Maintenance $maintenance)
-    {
+    public function update(Request $request, Maintenance $maintenance) {
         $request->validate([
-            'maintenance_type' => 'required|string|max:255',
+            'admin_id'         => 'required|integer|exists:admins,id',
+            'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date',
             'status'           => 'required|in:Scheduled,Completed,Cancelled',
             'cost'             => 'nullable|numeric|min:0',
@@ -105,6 +101,7 @@ class MaintenanceController extends Controller
 
         DB::transaction(function () use ($request, $maintenance, $vehicle, $fromStatus, $toStatus) {
             $maintenance->fill([
+                'admin_id'         => $request->admin_id,
                 'maintenance_type' => $request->maintenance_type,
                 'service_date'     => $request->service_date,
                 'status'           => $toStatus,
@@ -138,8 +135,7 @@ class MaintenanceController extends Controller
 
     // ---------- DELETE ----------
     // DELETE /maintenance/{maintenance}
-    public function destroy(Maintenance $maintenance)
-    {
+    public function destroy(Maintenance $maintenance) {
         $vehicle = $maintenance->vehicle;
         $wasScheduled = $maintenance->status === 'Scheduled';
 

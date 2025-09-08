@@ -4,32 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Services\MaintenanceService;
-use App\Models\Maintenance; // only used for index pagination (lightweight)
+use App\Models\Maintenance;
 
 class MaintenanceApiController extends Controller
 {
-    protected MaintenanceService $service;
-
-    public function __construct(MaintenanceService $service)
-    {
-        $this->service = $service;
-    }
-
     /**
      * GET /api/maintenances
-     * Return paginated maintenances (for admin dashboards)
      */
     public function index(Request $request)
     {
         $perPage = (int) $request->query('per_page', 10);
 
-        // light pagination directly; the rest use the service
-        $page = Maintenance::orderByDesc('service_date')
-            ->paginate($perPage);
+        $page = Maintenance::orderByDesc('service_date')->paginate($perPage);
 
-        // if you prefer to keep *everything* in the service layer,
-        // we can move this into the service later.
         return response()->json([
             'data' => $page->items(),
             'meta' => [
@@ -43,12 +30,15 @@ class MaintenanceApiController extends Controller
 
     /**
      * GET /api/vehicles/{vehicle}/maintenances
-     * Convenience endpoint: all maintenances by vehicle
+     * Convenience: all maintenances for a vehicle
      */
     public function byVehicle(int $vehicle)
     {
-        // calls service->allByVehicle(), which returns JsonResponse
-        return $this->service->allByVehicle($vehicle);
+        $all = Maintenance::where('vehicle_id', $vehicle)
+            ->orderByDesc('service_date')
+            ->get();
+
+        return response()->json(['data' => $all]);
     }
 
     /**
@@ -56,44 +46,85 @@ class MaintenanceApiController extends Controller
      */
     public function show(int $id)
     {
-        return $this->service->find($id);
+        $m = Maintenance::find($id);
+        if (!$m) {
+            return response()->json(['error' => 'Maintenance not found'], 404);
+        }
+        return response()->json(['data' => $m]);
     }
 
     /**
      * POST /api/maintenances
+     * Create. Uses your real column names.
+     * Status default = "Scheduled"
      */
     public function store(Request $request)
     {
-        // basic validation — tweak rules to match your schema
         $data = $request->validate([
-            'vehicle_id'   => ['required','integer','exists:vehicles,id'],
-            'type'         => ['required','string','max:50'],   // routine/repair/inspection
-            'status'       => ['required','string','max:50'],   // scheduled/in_progress/completed
-            'service_date' => ['required','date'],
-            'completed_at' => ['nullable','date'],
-            'cost'         => ['nullable','numeric','min:1'],
-            'notes'        => ['nullable','string','max:500'],
+            'vehicle_id'       => 'required|integer|exists:vehicles,id',
+            'admin_id'         => 'required|integer|exists:admins,id',
+            'maintenance_type' => 'required|string|max:50',
+            'service_date'     => 'required|date',
+            'cost'             => 'nullable|numeric|min:0',
+            'notes'            => 'nullable|string|max:1000',
+            'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
+            'completed_at'     => 'sometimes|nullable|date',
         ]);
 
-        return $this->service->create($data);
+        // force default if not provided
+        if (!isset($data['status'])) {
+            $data['status'] = 'Scheduled';
+        }
+
+        $m = Maintenance::create($data);
+
+        // if status came in as Completed/Cancelled at creation, let State set side-effects
+        // (completed_at, vehicle state, etc.)
+        if (in_array($m->status, ['Completed','Cancelled'])) {
+            // normalize via state so completed_at etc. is set consistently
+            $m->transitionTo($m->status);
+        }
+
+        return response()->json(['data' => $m], 201);
     }
 
     /**
      * PUT /api/maintenances/{id}
+     * Update normal fields; if "status" present, switch via State pattern.
      */
-    public function update(int $id, Request $request)
+    public function update(Request $request, int $id)
     {
-        $data = $request->validate([
-            'vehicle_id'   => ['sometimes','integer','exists:vehicles,id'],
-            'type'         => ['sometimes','string','max:50'],
-            'status'       => ['sometimes','string','max:50'],
-            'service_date' => ['sometimes','date'],
-            'completed_at' => ['sometimes','nullable','date'],
-            'cost'         => ['sometimes','numeric','min:0'],
-            'notes'        => ['sometimes','nullable','string','max:1000'],
+        $m = Maintenance::find($id);
+        if (!$m) {
+            return response()->json(['error' => 'Maintenance not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'vehicle_id'       => 'sometimes|integer|exists:vehicles,id',
+            'admin_id'         => 'sometimes|integer|exists:admins,id',
+            'maintenance_type' => 'sometimes|string|max:50',
+            'service_date'     => 'sometimes|date',
+            'cost'             => 'sometimes|numeric|min:0',
+            'notes'            => 'sometimes|nullable|string|max:1000',
+            'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
+            'completed_at'     => 'sometimes|nullable|date',
         ]);
 
-        return $this->service->update($id, $data);
+        // 1) pull out status (if any) to handle via State
+        $newStatus = $validated['status'] ?? null;
+        unset($validated['status']);
+
+        // 2) update other fields first
+        if (!empty($validated)) {
+            $m->update($validated);
+        }
+
+        // 3) if status provided AND different, do a safe transition
+        if ($newStatus && $newStatus !== $m->status) {
+            $m = $m->transitionTo($newStatus); // State pattern call
+        }
+
+        return response()->json(['data' => $m]);
     }
 
     /**
@@ -101,6 +132,12 @@ class MaintenanceApiController extends Controller
      */
     public function destroy(int $id)
     {
-        return $this->service->delete($id);
+        $m = Maintenance::find($id);
+        if (!$m) {
+            return response()->json(['error' => 'Maintenance not found'], 404);
+        }
+
+        $m->delete();
+        return response()->json(['data' => ['message' => 'Maintenance deleted successfully']]);
     }
 }
