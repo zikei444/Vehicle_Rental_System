@@ -107,33 +107,44 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(res => res.json())
             .then(data => {
-                if (data.error) {
-                    resultDiv.style.display = "block";
-                    resultDiv.className = "alert alert-danger mt-4";
-                    resultDiv.innerText = data.error;
-                    proceedForm.style.display = "none";
-                } else {
-                    resultDiv.style.display = "block";
-                    resultDiv.className = "alert alert-success mt-4";
-                    resultDiv.innerHTML = `
-                        <h5 class="mb-2">✅ Reservation Details</h5>
-                        <p><strong>Total Cost:</strong> <span class="fw-bold text-success">RM ${parseFloat(data.totalCost).toFixed(2)}</span></p>
-                        <p><strong>Pickup:</strong> ${data.pickup}</p>
-                        <p><strong>Return:</strong> ${data.return}</p>
-                        <p><strong>Days:</strong> ${data.days}</p>
-                    `;
+            if (data.error) {
+                resultDiv.style.display = "block";
+                resultDiv.className = "alert alert-danger mt-4";
+                resultDiv.innerText = data.error;
+                proceedForm.style.display = "none";
+            } else {
+                resultDiv.style.display = "block";
+                resultDiv.className = "alert alert-success mt-4";
 
-                    // Populate hidden form fields
-                    document.getElementById("confirm_vehicle_id").value = data.vehicle_id;
-                    document.getElementById("confirm_pickup").value = data.pickup;
-                    document.getElementById("confirm_return").value = data.return;
-                    document.getElementById("confirm_days").value = data.days;
-                    document.getElementById("confirm_total").value = data.totalCost;
-
-                    // Show proceed form
-                    proceedForm.style.display = "block";
+                // Build breakdown HTML
+                let breakdownHtml = '';
+                if (data.breakdown) {
+                    breakdownHtml = '<ul class="mb-2">';
+                    for (const [key, value] of Object.entries(data.breakdown)) {
+                        breakdownHtml += `<li><strong>${key.replace('_', ' ')}:</strong> RM ${parseFloat(value).toFixed(2)}</li>`;
+                    }
+                    breakdownHtml += '</ul>';
                 }
-            });
+
+                resultDiv.innerHTML = `
+                    <h5 class="mb-2">✅ Reservation Details</h5>
+                    <p><strong>Total Cost:</strong> <span class="fw-bold text-success">RM ${parseFloat(data.totalCost).toFixed(2)}</span></p>
+                    <p><strong>Pickup:</strong> ${data.pickup}</p>
+                    <p><strong>Return:</strong> ${data.return}</p>
+                    <p><strong>Days:</strong> ${data.days}</p>
+                    <p><em>${data.message}</em></p>
+                `;
+
+                // Populate hidden form fields
+                document.getElementById("confirm_vehicle_id").value = data.vehicle_id;
+                document.getElementById("confirm_pickup").value = data.pickup;
+                document.getElementById("confirm_return").value = data.return;
+                document.getElementById("confirm_days").value = data.days;
+                document.getElementById("confirm_total").value = data.totalCost;
+
+                proceedForm.style.display = "block";
+            }
+        });
         }
     }
 

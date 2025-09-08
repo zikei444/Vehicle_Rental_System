@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Reservation;
 use App\Services\VehicleService;
+use App\Services\RatingService;
 use App\Services\Reservations\CostCalculator\CarCostStrategy;
 use App\Services\Reservations\CostCalculator\TruckCostStrategy;
 use App\Services\Reservations\CostCalculator\VanCostStrategy;
@@ -13,11 +14,15 @@ use App\Services\Reservations\CostCalculator\VanCostStrategy;
 class ReservationController extends Controller
 {
     private VehicleService $vehicleService;
-    private string $vehicleApi = '/api/vehicles';
+    private RatingService $ratingService;
 
-    public function __construct(VehicleService $vehicleService)
+    private string $vehicleApi = '/api/vehicles';
+    private string $ratingApi = '/api/ratings';
+
+    public function __construct(VehicleService $vehicleService, RatingService $ratingService)
     {
         $this->vehicleService = $vehicleService;
+        $this->ratingService = $ratingService;
     }
 
     /**
@@ -27,7 +32,8 @@ class ReservationController extends Controller
     {
         if ($useApi) {
             $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
-            if ($response->failed()) return null;
+            if ($response->failed())
+                return null;
             return $response->json()['data'] ?? null;
         } else {
             // Internal service returns JsonResponse, so unwrap it
@@ -45,8 +51,8 @@ class ReservationController extends Controller
      */
     public function process(Request $request)
     {
-        $vehicleId = (int)$request->query('vehicle_id');
-        $useApi = (bool)$request->query('use_api', false);
+        $vehicleId = (int) $request->query('vehicle_id');
+        $useApi = (bool) $request->query('use_api', false);
 
         $vehicle = $this->getVehicleJson($vehicleId, $useApi);
 
@@ -62,8 +68,8 @@ class ReservationController extends Controller
      */
     public function calculateAjax(Request $request)
     {
-        $vehicleId = (int)$request->vehicle_id;
-        $useApi = (bool)$request->query('use_api', false);
+        $vehicleId = (int) $request->vehicle_id;
+        $useApi = (bool) $request->query('use_api', false);
 
         $vehicle = $this->getVehicleJson($vehicleId, $useApi);
         if (!$vehicle) {
@@ -76,21 +82,23 @@ class ReservationController extends Controller
 
         $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($vehicle['type']) . "CostStrategy";
         $strategy = new $strategyClass();
-        $totalCost = $strategy->calculate($vehicle, $days);
+        $costDetails = $strategy->calculate($vehicle, $days);
 
         return response()->json([
             'vehicle_id' => $vehicleId,
-            'totalCost'  => $totalCost,
-            'days'       => $days,
-            'pickup'     => $pickup->format('Y-m-d'),
-            'return'     => $return->format('Y-m-d'),
+            'totalCost' => $costDetails['total'],
+            'breakdown' => $costDetails['breakdown'],
+            'message' => $costDetails['message'],
+            'days' => $days,
+            'pickup' => $pickup->format('Y-m-d'),
+            'return' => $return->format('Y-m-d'),
         ]);
     }
 
     // Confifm reservation
     public function confirm(Request $request)
     {
-        $customerId = 1; // TODO: replace with Auth::id()
+        $customerId = 1; // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         // Check if customer already has an ongoing reservation
         $hasOngoing = Reservation::where('customer_id', $customerId)
@@ -100,13 +108,14 @@ class ReservationController extends Controller
         if ($hasOngoing) {
             // Instead of back(), pass a flag to the view to show a dialog
             return view('reservations.reservationProcess', [
-                'vehicle' => $this->getVehicleJson((int)$request->vehicle_id, (bool)$request->query('use_api', false)),
+                'vehicle' => $this->getVehicleJson((int) $request->vehicle_id, (bool) $request->query('use_api', false)),
                 'error_popup' => 'You already have an ongoing reservation. Please complete it before booking another vehicle.',
             ]);
         }
 
-        $vehicle = $this->getVehicleJson((int)$request->vehicle_id, (bool)$request->query('use_api', false));
-        if (!$vehicle) return back()->with('error', 'Vehicle not found');
+        $vehicle = $this->getVehicleJson((int) $request->vehicle_id, (bool) $request->query('use_api', false));
+        if (!$vehicle)
+            return back()->with('error', 'Vehicle not found');
 
         return view('reservations.reservationPayment', [
             'vehicle' => $vehicle,
@@ -117,74 +126,74 @@ class ReservationController extends Controller
         ]);
     }
 
-/**
- * Payment processing + reservation creation
- */
-public function paymentProcess(Request $request)
-{
-    // 1️⃣ Validate input
-    $validated = $request->validate([
-        'vehicle_id'     => 'required|integer',
-        'pickup_date'    => 'required|date',
-        'return_date'    => 'required|date',
-        'days'           => 'required|integer|min:1',
-        'total_cost'     => 'required|numeric|min:0',
-        'payment_method' => 'required|in:cash,card,bank_transfer',
-    ]);
-
-    $customerId = 1; // TODO: replace with Auth::id()
-
-    // 2️⃣ Create reservation
-    $reservation = Reservation::create(array_merge($validated, ['customer_id' => $customerId]));
-
-    // 3️⃣ Determine if using API
-    $useApi = (bool)$request->query('use_api', false);
-
-    // 4️⃣ Fetch vehicle consistently
-    $vehicleData = $this->getVehicleJson($validated['vehicle_id'], $useApi);
-    $vehicle = is_array($vehicleData) ? (object)$vehicleData : $vehicleData;
-
-    // 5️⃣ Safety fallback if vehicle data is missing
-    if (!$vehicle) {
-        $vehicle = (object)[
-            'id' => $validated['vehicle_id'],
-            'registration_number' => 'Unknown',
-            'brand' => 'Unknown',
-            'model' => '',
-            'type' => 'Unknown',
-            'availability_status' => 'Unknown',
-            'rental_price' => 0,
-        ];
-    }
-
-    // 6️⃣ Update vehicle status
-    if ($useApi) {
-        Http::post(url($this->vehicleApi . '/update-status'), [
-            'vehicle_id' => $validated['vehicle_id'],
-            'status'     => 'rented',
+    /**
+     * Payment processing + reservation creation
+     */
+    public function paymentProcess(Request $request)
+    {
+        // 1️⃣ Validate input
+        $validated = $request->validate([
+            'vehicle_id' => 'required|integer',
+            'pickup_date' => 'required|date',
+            'return_date' => 'required|date',
+            'days' => 'required|integer|min:1',
+            'total_cost' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,bank_transfer',
         ]);
-    } else {
-        $this->vehicleService->updateStatus($validated['vehicle_id'], 'rented');
+
+        $customerId = 1; // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // 2️⃣ Create reservation
+        $reservation = Reservation::create(array_merge($validated, ['customer_id' => $customerId]));
+
+        // 3️⃣ Determine if using API
+        $useApi = (bool) $request->query('use_api', false);
+
+        // 4️⃣ Fetch vehicle consistently
+        $vehicleData = $this->getVehicleJson($validated['vehicle_id'], $useApi);
+        $vehicle = is_array($vehicleData) ? (object) $vehicleData : $vehicleData;
+
+        // 5️⃣ Safety fallback if vehicle data is missing
+        if (!$vehicle) {
+            $vehicle = (object) [
+                'id' => $validated['vehicle_id'],
+                'registration_number' => 'Unknown',
+                'brand' => 'Unknown',
+                'model' => '',
+                'type' => 'Unknown',
+                'availability_status' => 'Unknown',
+                'rental_price' => 0,
+            ];
+        }
+
+        // 6️⃣ Update vehicle status
+        if ($useApi) {
+            Http::post(url($this->vehicleApi . '/update-status'), [
+                'vehicle_id' => $validated['vehicle_id'],
+                'status' => 'rented',
+            ]);
+        } else {
+            $this->vehicleService->updateStatus($validated['vehicle_id'], 'rented');
+        }
+
+        // 7️⃣ Return Blade view
+        return view('reservations.reservationSuccess', [
+            'reservation_id' => $reservation->id,
+            'vehicle' => $vehicle,
+            'pickup_date' => $validated['pickup_date'],
+            'return_date' => $validated['return_date'],
+            'days' => $validated['days'],
+            'total_cost' => $validated['total_cost'],
+            'payment_method' => ucfirst(str_replace('_', ' ', $validated['payment_method'])),
+        ]);
     }
 
-    // 7️⃣ Return Blade view
-    return view('reservations.reservationSuccess', [
-        'reservation_id' => $reservation->id,
-        'vehicle'        => $vehicle,
-        'pickup_date'    => $validated['pickup_date'],
-        'return_date'    => $validated['return_date'],
-        'days'           => $validated['days'],
-        'total_cost'     => $validated['total_cost'],
-        'payment_method' => ucfirst(str_replace('_', ' ', $validated['payment_method'])),
-    ]);
-}
-
-   /**
+    /**
      * Show the current ongoing reservation
      */
     public function myReservations(Request $request)
     {
-        $customerId = 1; // TODO: replace with Auth::id()
+        $customerId = 1; // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         $useApi = (bool) $request->query('use_api', false);
 
         // Fetch the first ongoing reservation
@@ -211,7 +220,7 @@ public function paymentProcess(Request $request)
 
                 // Safety check if vehicle data is missing
                 if (!$reservation->vehicle) {
-                    $reservation->vehicle = (object)[
+                    $reservation->vehicle = (object) [
                         'brand' => 'Unknown',
                         'model' => '',
                         'rental_price' => 0,
@@ -221,7 +230,7 @@ public function paymentProcess(Request $request)
 
             } else {
                 // No vehicle_id in reservation
-                $reservation->vehicle = (object)[
+                $reservation->vehicle = (object) [
                     'brand' => 'Unknown',
                     'model' => '',
                     'rental_price' => 0,
@@ -237,32 +246,47 @@ public function paymentProcess(Request $request)
     }
 
     /**
- * Show reservation history for a customer
- */
-public function history(Request $request)
-{
-    $customerId = 1; // TODO: replace with Auth::id() for real login
+     * Show reservation history for a customer
+     */
+    public function reservationHistory(Request $request)
+    {
+        $customerId = 1; // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        $useApi = (bool) $request->query('use_api', false);
 
-    $reservations = Reservation::where('customer_id', $customerId)
-        ->whereIn('status', ['completed', 'cancelled'])
-        ->orderBy('return_date', 'desc')
-        ->get();
+        $reservations = Reservation::where('customer_id', $customerId)
+            ->orderBy('pickup_date', 'desc')
+            ->get();
 
-    // Fetch vehicle info for each reservation
-    foreach ($reservations as $reservation) {
-        if ($reservation->vehicle_id) {
-            $vehicleData = $this->getVehicleJson($reservation->vehicle_id, false); // internal service
-            $reservation->vehicle = is_array($vehicleData) ? (object)$vehicleData : $vehicleData;
-        } else {
-            $reservation->vehicle = (object)[
-                'brand' => 'Unknown',
-                'model' => '',
-                'registration_number' => 'Unknown',
-            ];
+        foreach ($reservations as $res) {
+            // Vehicle
+            $vehicleData = $this->getVehicleJson($res->vehicle_id, $useApi);
+
+            // Convert to object for Blade
+            if ($vehicleData instanceof \Illuminate\Http\JsonResponse) {
+                $vehicleData = $vehicleData->getData(true)['data'] ?? null;
+            }
+            $res->vehicle = is_array($vehicleData) ? (object)$vehicleData : $vehicleData;
+
+            // Safety fallback
+            if (!$res->vehicle) {
+                $res->vehicle = (object)[
+                    'brand' => 'Unknown',
+                    'model' => '',
+                    'registration_number' => 'Unknown',
+                    'type' => 'Unknown',
+                    'rental_price' => 0
+                ];
+            }
+
+            // Rating
+            if ($useApi) {
+                $ratingResponse = Http::get(url($this->ratingApi . "/has-rated/{$res->vehicle_id}/{$customerId}"))->json();
+                $res->hasRated = $ratingResponse['has_rated'] ?? false;
+            } else {
+                $res->hasRated = $this->ratingService->hasRated($customerId, $res->vehicle_id);
+            }
         }
+
+        return view('reservations.reservationHistory', compact('reservations', 'useApi'));
     }
-
-    return view('reservations.reservationHistory', compact('reservations'));
-}
-
 }

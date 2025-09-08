@@ -4,9 +4,19 @@ namespace App\Services\Reservations\CostCalculator;
 
 class VanCostStrategy implements CostStrategy
 {
-    public function calculate($vehicle, $days)
+    public function calculate($vehicle, $days): array
     {
-        //insurance fee RM50
-        return ($vehicle['rental_price'] * $days) + 50;
+        $base = $vehicle['rental_price'] * $days;
+        $insurance = 50; // flat RM50 insurance
+        $total = $base + $insurance;
+
+        return [
+            'total' => $total,
+            'breakdown' => [
+                'base_rental' => $base,
+                'insurance' => $insurance,
+            ],
+            'message' => "Base: RM{$base}, Insurance: RM{$insurance}"
+        ];
     }
 }

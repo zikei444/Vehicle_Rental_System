@@ -20,6 +20,11 @@
                     <p><strong>Return:</strong> {{ $reservation->return_date }}</p>
                     <p><strong>Days:</strong> {{ $reservation->days }}</p>
                     <p><strong>Total Cost:</strong> RM {{ number_format($reservation->total_cost, 2) }}</p>
+                    @if($reservation->hasRated)
+                        <button class="btn btn-success" disabled>Rated</button>
+                    @else
+                        <a href="{{ route('rating.create', ['vehicle' => $reservation->vehicle_id]) }}" class="btn btn-primary">Rate Vehicle</a>
+                        @endif
                 </div>
             </div>
         @endforeach
