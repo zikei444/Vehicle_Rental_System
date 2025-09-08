@@ -8,6 +8,7 @@ use App\Models\User;
 
 class Customer extends Model
 {
+
     protected $table = 'customers';
 
     protected $fillable = [

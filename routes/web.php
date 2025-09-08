@@ -8,6 +8,11 @@ use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\VehicleReviewController;
 use App\Http\Controllers\AdminRatingController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProfileController;
+
  
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
@@ -125,3 +130,55 @@ Route::prefix('admin')->group(function () {
     Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
         ->name('maintenance.destroy');
 });
+
+
+// Belum siap -- wx
+// ================== REGISTRATION =========================
+// Redirect to registration page
+Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+
+// Submit registration form
+Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
+
+// ================== LOGIN =============================
+// Redirect to login page
+Route::get('/login', [App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
+
+// Submit login form
+Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.submit');
+
+// Logout
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+//=================== DASHBOARD =============================
+Route::get('/customer/dashboard', function () {
+    return view('dashboards.customerSide');
+})->name('customer.dashboard')->middleware('auth');
+
+
+Route::get('/admin/dashboard', function () {
+    return view('dashboards.adminSide');
+})->name('admin.dashboard')->middleware('auth');
+
+
+// ============================== ADMIN ONLY =================================
+// Admin dashboard
+    // Redirect to Customer Account Management Page
+    Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customerManagement');
+
+    // Display customer account list
+    Route::get('/admin/profile', [CustomerController::class, 'index'])->name('admin.customerManagement');
+
+    // Update customer account
+    Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])->name('admin.customer.update');
+
+
+;
+
+// ========================= UPDATE PROFILE (CUSTOMER) ======================
+// Edit profile
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+// Update (Save button) profile
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
