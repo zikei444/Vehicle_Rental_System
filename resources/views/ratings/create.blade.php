@@ -26,18 +26,27 @@
 </div>
 
 <script>
-document.getElementById('ratingForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    let formData = new FormData(this);
-    let data = Object.fromEntries(formData.entries());
 
-    let res = await fetch('/api/ratings', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
+$("#review-form").on("submit", function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: `/api/vehicles/${vehicleId}/review`,
+            method: "POST",
+            data: {
+                score: $("#score").val(),
+                content: $("#content").val()
+            },
+            success: function(response) {
+                $("#response-box").text(JSON.stringify(response, null, 4));
+                alert("Review submitted successfully!");
+                $("#review-form")[0].reset();
+            },
+            error: function(xhr) {
+                $("#response-box").text(JSON.stringify(xhr.responseJSON, null, 4));
+                alert("Error: " + xhr.responseJSON.message);
+            }
+        });
     });
-    let json = await res.json();
-    alert(json.message);
-});
 </script>
 @endsection

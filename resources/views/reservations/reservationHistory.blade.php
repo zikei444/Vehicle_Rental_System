@@ -23,11 +23,81 @@
                     @if($reservation->hasRated)
                         <button class="btn btn-success" disabled>Rated</button>
                     @else
-                        <a href="{{ route('rating.create', ['vehicle' => $reservation->vehicle_id]) }}" class="btn btn-primary">Rate Vehicle</a>
-                        @endif
+                            <button class="btn btn-primary" onclick="openModal({{ $reservation->id }})">
+                                Rate Now
+                            </button>                        @endif
                 </div>
             </div>
         @endforeach
     @endif
 </div>
+
+<!-- Rate Modal -->
+<div class="modal" id="rateModal" style="display:none; position:fixed; top:20%; left:35%; width:30%; background:#fff; border:1px solid #ccc; padding:20px; z-index:1000;">
+    <h4>Rate Vehicle</h4>
+    <form id="rateForm">
+        <label for="score">Rating (1-5):</label>
+        <select id="score" name="score" class="form-control" required>
+            <option value="">--Select--</option>
+            <option value="1">1 ⭐</option>
+            <option value="2">2 ⭐⭐</option>
+            <option value="3">3 ⭐⭐⭐</option>
+            <option value="4">4 ⭐⭐⭐⭐</option>
+            <option value="5">5 ⭐⭐⭐⭐⭐</option>
+        </select>
+        <br>
+        <label for="content">Comment (optional):</label>
+        <textarea id="content" name="content" class="form-control" rows="3"></textarea>
+        <input type="hidden" id="reservation_id">
+        <br>
+        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </form>
+</div>
+
+<!-- new added by xy -->
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function openModal(reservationId) {
+        $("#reservation_id").val(reservationId);
+        $("#rateModal").show();
+    }
+
+    function closeModal() {
+        $("#rateModal").hide();
+        $("#rateForm")[0].reset();
+    }
+
+    $("#rateForm").on("submit", function(e) {
+        e.preventDefault();
+
+        const reservationId = $("#reservation_id").val();
+
+        $.ajax({
+            url: `/api/reservations/${reservationId}/review`,
+            method: "POST",
+            data: {
+                score: $("#score").val(),
+                content: $("#content").val()
+            },
+            success: function(response) {
+                alert("Review submitted!");
+                closeModal();
+
+                // 更新该条记录显示
+                $(`#reservation-${reservationId}`).html(`
+                    <button class="btn btn-success" disabled>
+                        Rated (${response.rating.score}⭐)
+                    </button>
+                    ${response.comment ? `<p class="mt-2"><em>"${response.comment.content}"</em></p>` : ""}
+                `);
+            },
+            error: function(xhr) {
+                alert("Error: " + (xhr.responseJSON.error || "Failed"));
+            }
+        });
+    });
+</script>
+
+
 @endsection

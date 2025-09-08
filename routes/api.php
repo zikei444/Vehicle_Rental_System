@@ -34,7 +34,7 @@ Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStat
 // Ratings api
 
 Route::prefix('vehicles/{vehicle}')->group(function () {
-    Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取评论列表
-    Route::post('/ratings', [RatingApiController::class, 'store']);  // 提交评分 + 评论
-    Route::get('/ratings/average', [RatingApiController::class, 'average']); // 获取平均分
+    Route::get('/reviews', [ReviewApiController::class, 'index']);   // 获取该车所有评分+评论
+    Route::post('/review', [ReviewApiController::class, 'store']);  // 提交评分+可选评论
+    // //    Route::get('/ratings/average', [RatingApiController::class, 'average']); // 获取平均分
 });
