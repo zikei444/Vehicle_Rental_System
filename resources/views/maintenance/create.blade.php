@@ -35,7 +35,7 @@
 
             <div>
                 <label for="cost">Cost (RM)</label>
-                <input id="cost" type="number" step="10.00" min="1" name="cost" placeholder="RM 0.00" class="form-control mb-3" required>
+                <input id="cost" type="number" step="any" min="1" name="cost" placeholder="RM 0.00" class="form-control mb-3" required>
             </div>
 
             <div>
