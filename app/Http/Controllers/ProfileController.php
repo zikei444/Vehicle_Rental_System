@@ -3,65 +3,51 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Models\User;
 
-
-// Customer Change Their Own
 class ProfileController extends Controller
 {
-    private $userApi;
-
-    public function __construct()
-    {
-        $this->userApi = 'http://127.0.0.1/Vehicle_Rental_System/public/api/userApi.php';
-    }
-
+    // Show the profile edit form
     public function edit()
     {
-        $user = session('user');
+        $user = auth()->user()->load('customer'); // eager load customer relation
 
-        if (!$user || !$user->id) {
+        if (!$user) {
             return redirect()->route('login')->withErrors('You must log in first.');
         }
 
-        $response = Http::get($this->userApi . "?action=get&id=" . $user->id);
-
-        if ($response->successful() && $response->json('status') === 'success') {
-            $userData = (object) $response->json('data');
-            return view('user.profile', compact('userData'));
-        }
-
-        return view('user.profile', ['userData' => $user]);
+        return view('user.profile', [
+            'userData' => [
+                'name'    => $user->name,
+                'email'   => $user->email,
+                'phone'   => $user->customer->phoneNo ?? '', // use customer relation
+            ]
+        ]);
     }
 
 
+    // Handle profile update
     public function update(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'username' => 'required|string|max:255',
             'phone'    => 'required|string|max:20',
         ]);
 
-        $user = session('user');
+        $user = auth()->user()->load('customer');
 
-        if (!$user || !$user->id) {
+        if (!$user) {
             return redirect()->route('login')->withErrors('You must log in first.');
         }
 
-        $response = Http::asForm()->put($this->userApi . '?action=update&id=' . $user->id, [
-            'username' => $request->username,
-            'phone'    => $request->phone,
-        ]);
+        $user->name = $validated['username'];
+        $user->save();
 
-        if ($response->successful() && $response->json('status') === 'success') {
-            $user->name = $request->username;
-            $user->phone = $request->phone;
-            session(['user' => $user]);
-
-            return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
+        if ($user->customer) {
+            $user->customer->update(['phoneNo' => $validated['phone']]);
         }
 
-        return back()->withErrors('Failed to update profile.');
+        return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
     }
 
 }
