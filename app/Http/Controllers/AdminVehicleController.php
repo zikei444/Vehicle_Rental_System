@@ -6,15 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Services\Facade\VehicleManagementFacade;
 
+
 class AdminVehicleController extends Controller
 {
-    private VehicleManagementFacade $facade;
-
-    public function __construct(VehicleManagementFacade $facade)
-    {
-        $this->facade = $facade;
-    }
-
     // ====== LISTING ======
     public function index()
     {
@@ -31,7 +25,7 @@ class AdminVehicleController extends Controller
     // ====== STORE VEHICLE ======
     public function store(Request $request)
     {
-        $this->facade->createVehicle($request);
+        VehicleManagementFacade::createVehicle($request); // Facade call
         return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully.');
     }
 
@@ -52,14 +46,14 @@ class AdminVehicleController extends Controller
     // ====== UPDATE VEHICLE ======
     public function update(Request $request, $id)
     {
-        $this->facade->updateVehicle($request, $id);
+        VehicleManagementFacade::updateVehicle($request, $id); // Facade call
         return redirect()->route('vehicles.index')->with('success', 'Vehicle updated successfully.');
     }
 
     // ====== DELETE VEHICLE ======
     public function destroy($id)
     {
-        $this->facade->deleteVehicle($id);
+        VehicleManagementFacade::deleteVehicle($id); // Facade call
         return redirect()->route('vehicles.index')->with('success', 'Vehicle deleted successfully.');
     }
 }
