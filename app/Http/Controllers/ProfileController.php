@@ -3,30 +3,48 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Services\ReservationService;
 
 class ProfileController extends Controller
 {
-    // Show the profile edit form
+    private $reservationService;
+
+    public function __construct(ReservationService $reservationService)
+    {
+        $this->reservationService = $reservationService;
+    }
+
+    // Show the profile edit form 
     public function edit()
     {
-        $user = auth()->user()->load('customer'); // eager load customer relation
+        $user = auth()->user()->load('customer');
 
         if (!$user) {
             return redirect()->route('login')->withErrors('You must log in first.');
         }
 
+        // Call API from reservation service
+        $reservationsJson = $this->reservationService->allByCustomer($user->id);
+        $reservations = collect($reservationsJson->getData(true)['data']);
+
+        // Count by status
+        $reservationSummary = [
+            'ongoing'   => $reservations->where('status', 'ongoing')->count(),
+            'cancelled' => $reservations->where('status', 'cancelled')->count(),
+            'completed' => $reservations->where('status', 'completed')->count(),
+        ];
+
         return view('user.profile', [
             'userData' => [
-                'name'    => $user->name,
-                'email'   => $user->email,
-                'phone'   => $user->customer->phoneNo ?? '', // use customer relation
-            ]
+                'name'  => $user->name,
+                'email' => $user->email,
+                'phone' => $user->customer->phoneNo ?? '',
+            ],
+            'reservationSummary' => $reservationSummary
         ]);
     }
 
-
-    // Handle profile update
+    // Update profile
     public function update(Request $request)
     {
         $validated = $request->validate([
@@ -49,5 +67,4 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
     }
-
 }

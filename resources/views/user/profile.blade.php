@@ -14,7 +14,7 @@
         margin: auto;
     }
 
-    td{
+    td, th{
         text-align: left;
         vertical-align: middle;
         font-size: 20px;
@@ -43,55 +43,90 @@
         border-radius: 5px;
         margin: 0px 10px;
     }
+
+    #reservation td, th{
+        border: 1px solid #106748;
+        width: 150px;
+        text-align: center;
+    }
+
+    .box{
+        padding: 20px 0px;
+    }
 </style>
 
 <div class="container">
-    <h1>Profile</h1>
-    @php
-        $userObj = session('user');
+    <div class = "box">
+        <h1>Profile</h1>
+        @php
+            $userObj = session('user');
 
-        if(isset($userData)) {
-            $userObj = (object) $userData;
-        }
-    @endphp
+            if(isset($userData)) {
+                $userObj = (object) $userData;
+            }
+        @endphp
 
-    <form action="{{ route('profile.update') }}" method="POST">
-        @csrf
-        @method('PUT')
+        <form action="{{ route('profile.update') }}" method="POST">
+            @csrf
+            @method('PUT')
 
-        <table>
+            <table>
+                <tr>
+                    <td>Username</td>
+                    <td>
+                        <input type="text" name="username"
+                            value="{{ old('username', $userObj->name ?? '') }}"
+                            {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Phone</td>
+                    <td>
+                        <input type="text" name="phone"
+                            value="{{ old('phone', $userObj->phone ?? $userObj->phoneNo ?? '') }}"
+                            {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan = "2" style = "width : 250px ; text-align : center" >
+                        @if(request()->get('edit') !== 'true')
+                            <a href="{{ route('profile.edit', ['edit' => 'true']) }}">
+                                <button type="button" style = "background: #FFFFBD">Edit</button>
+                            </a>
+                        @else
+                            <button type="submit" style = "background: #84D6B8">Save</button>
+                            <a href="{{ route('profile.edit') }}">
+                                <button type="button" style = "background: #F6685E">Cancel</button>
+                            </a>
+                        @endif
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class = "box">
+        <h2>Reservation Summary</h2>
+        </br>
+        <table id="reservation">
             <tr>
-                <td>Username</td>
-                <td>
-                    <input type="text" name="username"
-                        value="{{ old('username', $userObj->name ?? '') }}"
-                        {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
-                </td>
+                <th>Status</th>
+                <th>Number</th>
             </tr>
             <tr>
-                <td>Phone</td>
-                <td>
-                    <input type="text" name="phone"
-                        value="{{ old('phone', $userObj->phone ?? $userObj->phoneNo ?? '') }}"
-                        {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
-                </td>
+                <td style = "color: blue">Ongoing</td>
+                <td>{{ $reservationSummary['ongoing'] ?? 0 }}</td>            
             </tr>
             <tr>
-                <td colspan = "2" style = "width : 250px ; text-align : center" >
-                    @if(request()->get('edit') !== 'true')
-                        <a href="{{ route('profile.edit', ['edit' => 'true']) }}">
-                            <button type="button" style = "background: #FFFFBD">Edit</button>
-                        </a>
-                    @else
-                        <button type="submit" style = "background: #84D6B8">Save</button>
-                        <a href="{{ route('profile.edit') }}">
-                            <button type="button" style = "background: #F6685E">Cancel</button>
-                        </a>
-                    @endif
-                </td>
+                <td style = "color: green">Completed</td>
+                <td>{{ $reservationSummary['completed'] ?? 0 }}</td>            
+            </tr>
+            <tr>
+                <td style = "color: red">Cancelled</td>
+                <td>{{ $reservationSummary['cancelled'] ?? 0 }}</td>                
             </tr>
         </table>
-    </form>
+    </div>
 
 </div>
 @endsection
