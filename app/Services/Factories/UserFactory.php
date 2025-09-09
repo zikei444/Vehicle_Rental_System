@@ -4,6 +4,7 @@ namespace App\Services\Factories;
 
 use App\Models\AdminUser;
 use App\Models\CustomerUser;
+use Illuminate\Support\Facades\Hash;
 
 class UserFactory
 {
@@ -12,13 +13,13 @@ class UserFactory
         if ($role === 'admin') {
             $user = new AdminUser();
         } else {
-            $user = new CustomerUser(); // now points to users table
+            $user = new CustomerUser();
         }
 
         $user->name = $data['name'] ?? null;
         $user->email = $data['email'] ?? null;
         $user->role = $data['role'] ?? $role;
-        $user->password = $data['password'] ?? null;
+        $user->password = isset($data['password']) ? Hash::make($data['password']) : null;
 
         return $user;
     }

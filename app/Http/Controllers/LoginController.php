@@ -10,28 +10,37 @@ class LoginController extends Controller
     // Show login form
     public function showLoginForm()
     {
-        return view('user.login'); // Blade file at resources/views/user/login.blade.php
+        return view('user.login'); 
     }
 
-    // Handle login request
+    // Login
     public function login(Request $request)
     {
         // Validate form input
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->validate(
+            [
+                'email' => ['required', 'email'],
+                'password' => ['required'],
+            ],
+            [
+                'email.required' => 'Email is required.',
+                'email.email' => 'Please enter a valid email address.',
+                'password.required' => 'Password is required.',
+            ]
+        );
 
-        // Attempt login
+        // Login
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             // Redirect based on role
             if (Auth::user()->role === 'admin') {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.dashboard')
+                                 ->with('success', 'Welcome back, Admin!');
             }
 
-            return redirect()->route('customer.dashboard');
+            return redirect()->route('customer.dashboard')
+                             ->with('success', 'Welcome back!');
         }
 
         // Login failed
@@ -47,6 +56,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('success', 'You have been logged out successfully.');
     }
 }
