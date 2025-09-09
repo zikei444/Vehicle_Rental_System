@@ -42,20 +42,20 @@
             <td><a href = "{{ route('admin.customerManagement')}}">Customer Account Management</a></td>
         </tr>
         <tr>
-            <td><a href = "{{ route('admin.customerManagement')}}"><img src="{{ asset('images/dashboard/vehicle_icon.png') }}" alt="Vehicle Management" class = "icon"></a></td>
-            <td><a href = "{{ route('admin.customerManagement')}}">Vehicle Management</a></td>
+            <td><a href = "{{ route('admin.vehicles.index')}}"><img src="{{ asset('images/dashboard/vehicle_icon.png') }}" alt="Vehicle Management" class = "icon"></a></td>
+            <td><a href = "{{ route('admin.vehicles.index')}}">Vehicle Management</a></td>
         </tr>
         <tr>
-            <td><a href = "{{ route('admin.customerManagement')}}"><img src="{{ asset('images/dashboard/reservation_icon.png') }}" alt="Reservation Management" class = "icon"></a></td>
-            <td><a href = "{{ route('admin.customerManagement')}}">Reservation Management</a></td>
+            <td><a href = "{{ route('admin.reservations.index')}}"><img src="{{ asset('images/dashboard/reservation_icon.png') }}" alt="Reservation Management" class = "icon"></a></td>
+            <td><a href = "{{ route('admin.reservations.index')}}">Reservation Management</a></td>
         </tr>
         <tr>
             <td><a href = "{{ route('admin.customerManagement')}}"><img src="{{ asset('images/dashboard/rating_icon.png') }}" alt="Rating & Feedback Management" class = "icon"></a></td>
             <td><a href = "{{ route('admin.customerManagement')}}">Rating & Feedback Management</a></td>
         </tr>
         <tr>
-            <td><a href = "{{ route('admin.customerManagement')}}"><img src="{{ asset('images/dashboard/maintenance_icon.png') }}" alt="Maintenance Management" class = "icon"></a></td>
-            <td><a href = "{{ route('admin.customerManagement')}}">Maintenance Management</a></td>
+            <td><a href = "{{ route('maintenance.index')}}"><img src="{{ asset('images/dashboard/maintenance_icon.png') }}" alt="Maintenance Management" class = "icon"></a></td>
+            <td><a href = "{{ route('maintenance.index')}}">Maintenance Management</a></td>
         </tr>
     </table>
 </div>
