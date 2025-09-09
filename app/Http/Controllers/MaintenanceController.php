@@ -35,7 +35,6 @@ class MaintenanceController extends Controller {
     public function store(Request $request) {
         $validated = $request->validate([
             'vehicle_id'       => 'required|integer|exists:vehicles,id',
-            'admin_id'         => 'required|integer|exists:admins,id',
             'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date|after_or_equal:today',
             'cost'             => 'nullable|numeric|min:1',
@@ -64,7 +63,6 @@ class MaintenanceController extends Controller {
 
             Maintenance::create([
                 'vehicle_id'       => $vehicle->id,
-                'admin_id'         => $validated['admin_id'],
                 'maintenance_type' => $validated['maintenance_type'],
                 'service_date'     => $validated['service_date'],
                 'cost'             => $validated['cost']  ?? null,
@@ -73,7 +71,7 @@ class MaintenanceController extends Controller {
             ]);
         });
 
-        return redirect()->route('maintenance.index')->with('ok', 'Maintenance scheduled');
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance successfully scheduled.');
     }
 
     // ---------- EDIT FORM ----------
@@ -87,7 +85,6 @@ class MaintenanceController extends Controller {
     // PUT /maintenance/{maintenance}
     public function update(Request $request, Maintenance $maintenance) {
         $request->validate([
-            'admin_id'         => 'required|integer|exists:admins,id',
             'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date',
             'status'           => 'required|in:Scheduled,Completed,Cancelled',
@@ -101,7 +98,6 @@ class MaintenanceController extends Controller {
 
         DB::transaction(function () use ($request, $maintenance, $vehicle, $fromStatus, $toStatus) {
             $maintenance->fill([
-                'admin_id'         => $request->admin_id,
                 'maintenance_type' => $request->maintenance_type,
                 'service_date'     => $request->service_date,
                 'status'           => $toStatus,
@@ -130,7 +126,7 @@ class MaintenanceController extends Controller {
             }
         });
 
-        return back()->with('ok', 'Maintenance updated');
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully updated.');
     }
 
     // ---------- DELETE ----------
@@ -151,6 +147,6 @@ class MaintenanceController extends Controller {
             }
         }
 
-        return redirect()->route('maintenance.index')->with('ok', 'Maintenance deleted');
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted.');
     }
 }

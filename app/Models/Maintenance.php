@@ -11,16 +11,17 @@ use App\States\Maintenance\Cancelled;
 
 class Maintenance extends Model {
     protected $fillable = [
-        'vehicle_id', 'admin_id', 'maintenance_type', 'status', 'service_date', 'completed_at', 'cost', 'notes'
+        'vehicle_id', 'maintenance_type', 'status', 'service_date', 'completed_at', 'cost', 'notes'
     ];
 
     public function vehicle() {
         return $this->belongsTo(\App\Models\Vehicle::class, 'vehicle_id');
     }
 
-    public function admin() {
-        return $this->belongsTo(\App\Models\Admin::class, 'admin_id');
-    }
+    protected $casts = [
+        'service_date' => 'date',
+        'completed_at' => 'datetime',
+    ];
 
     // Map status string to state class
     public function state(): MaintenanceStatus {
