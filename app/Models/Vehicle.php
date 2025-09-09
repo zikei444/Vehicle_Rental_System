@@ -26,6 +26,9 @@ class Vehicle extends Model
         'rental_price',
         'availability_status',
         'image',
+        'insurance_doc',       
+        'registration_doc',    
+        'roadtax_doc',  
     ];
 
     // use constants to avoid typos everywhere

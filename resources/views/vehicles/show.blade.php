@@ -65,7 +65,52 @@
         </div>
     </div>
 
-    <a href="{{ $back_route }}" class="btn btn-secondary">Back to List</a>
+    <div class="card mb-3">
+        <div class="card-header">
+            Vehicle Documents
+            <button class="btn btn-sm btn-primary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#adminDocs" aria-expanded="false" aria-controls="adminDocs">
+                Show / Hide Documents
+            </button>
+        </div>
+        <div class="collapse" id="adminDocs">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-2">
+                        <p><strong>Insurance Document</strong></p>
+                        @if($vehicle->insurance_doc)
+                            <a href="{{ asset('documents/vehicles/' . $vehicle->insurance_doc) }}" target="_blank">
+                                View Document
+                            </a>
+                        @else
+                            <span class="text-muted">Not uploaded</span>
+                        @endif
+                    </div>
+                    <div class="col-md-4 text-center mb-2">
+                        <p><strong>Registration Document</strong></p>
+                        @if($vehicle->registration_doc)
+                            <a href="{{ asset('documents/vehicles/' . $vehicle->registration_doc) }}" target="_blank">
+                                View Document
+                            </a>
+                        @else
+                            <span class="text-muted">Not uploaded</span>
+                        @endif
+                    </div>
+                    <div class="col-md-4 text-center mb-2">
+                        <p><strong>Road Tax Document</strong></p>
+                        @if($vehicle->roadtax_doc)
+                            <a href="{{ asset('documents/vehicles/' . $vehicle->roadtax_doc) }}" target="_blank">
+                                View Document
+                            </a>
+                        @else
+                            <span class="text-muted">Not uploaded</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Back to List</a>
 
 </div>
 @endsection
