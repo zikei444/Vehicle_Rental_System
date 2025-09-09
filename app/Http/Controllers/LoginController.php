@@ -10,10 +10,10 @@ class LoginController extends Controller
     // Show login form
     public function showLoginForm()
     {
-        return view('user.login'); // Blade file at resources/views/user/login.blade.php
+        return view('user.login'); 
     }
 
-    // Handle login request
+    // Login
     public function login(Request $request)
     {
         // Validate form input
@@ -29,7 +29,7 @@ class LoginController extends Controller
             ]
         );
 
-        // Attempt login
+        // Login
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 

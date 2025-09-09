@@ -38,7 +38,7 @@ class RegisterController extends Controller
             ]
         );
 
-        // Create user using Factory (role: customer)
+        // Create user using Factory
         $user = UserFactory::create('customer', [
             'name' => $validated['username'],
             'email' => $validated['email'],
