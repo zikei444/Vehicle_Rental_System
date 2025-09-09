@@ -14,16 +14,19 @@
                 <p><strong>Pickup:</strong> {{ $reservation->pickup_date }}</p>
                 <p><strong>Return:</strong> {{ $reservation->return_date }}</p>
                 <p><strong>Total Cost:</strong> RM {{ number_format($reservation->total_cost, 2) }}</p>
-                @if($reservation->hasRated())
-                    <button class="btn btn-success" disabled>Rated</button>
-                    <a href="{{ route('ratings.viewRating', $reservation->id) }}" class="btn btn-info text-white">
-                     View Rating
-                    </a>
-                @else
-                    <button class="btn btn-primary" onclick="openModal({{ $reservation->id }}, {{ $reservation->vehicle->id }})">
-                        Rate Now
-                    </button>
-                @endif
+        @if($reservation->status === 'completed')
+            @if($reservation->hasRated())
+                <button class="btn btn-success" disabled>Rated</button>
+                <a href="{{ route('ratings.viewRating', $reservation->id) }}" class="btn btn-info text-white">
+                    View Rating
+                </a>
+            @else
+                <button class="btn btn-primary" onclick="openModal({{ $reservation->id }}, {{ $reservation->vehicle->id }})">
+                    Rate Now
+                </button>
+            @endif
+        @endif
+
 
             </div>
         </div>
@@ -85,7 +88,7 @@ $("#rateForm").on("submit", function(e) {
     const content = $("#content").val();
 
     $.ajax({
-        url: `/api/ratings`,
+        url: "{{ route('ratings.store') }}",
         method: "POST",
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -94,6 +97,7 @@ $("#rateForm").on("submit", function(e) {
         data: JSON.stringify({
             customer_id: {{ auth()->id() ?? 1 }}, // 登录用户
             vehicle_id: vehicleId,
+            reservation_id: reservationId,
             rating: score,
             feedback: content
         }),
@@ -106,7 +110,7 @@ $("#rateForm").on("submit", function(e) {
             $(`#reservation-${reservationId} button`).replaceWith(
                 `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>`
             );
-        }
+        },
 
         error: function(xhr) {
             const msg = xhr.responseJSON?.error || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(', ') : 'Failed');

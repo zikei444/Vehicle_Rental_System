@@ -96,6 +96,7 @@ Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, '
 // 显示单条 reservation 的评分详情
 Route::get('/reservations/{reservation}/rating', [VehicleReviewController::class, 'viewRating'])
     ->name('ratings.viewRating');
+Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
 //看rating
 
@@ -143,8 +144,6 @@ Route::prefix('admin')->group(function () {
         ->name('maintenance.destroy');
 });
 
-
-// Belum siap -- wx
 // ================== REGISTRATION =========================
 // Redirect to registration page
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
@@ -190,7 +189,12 @@ Route::get('/admin/dashboard', function () {
 
 // ========================= UPDATE PROFILE (CUSTOMER) ======================
 // Edit profile
-Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::get('/profile', [ProfileController::class, 'edit'])
+    ->name('profile.edit')
+    ->middleware('auth');
 
 // Update (Save button) profile
-Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::put('/profile', [ProfileController::class, 'update'])
+    ->name('profile.update')
+    ->middleware('auth');
+

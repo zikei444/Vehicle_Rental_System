@@ -13,7 +13,7 @@ class CustomerController extends Controller
     {
         // Retrieve all customers using ORM
         $customers = User::where('role', 'customer')
-            ->with('customer') // eager load customer details like phone
+            ->with('customer')
             ->get();
 
         // Format data for blade
@@ -25,8 +25,8 @@ class CustomerController extends Controller
                 'email'       => $user->email,
                 'phoneNo'     => $user->customer->phoneNo ?? '-',
                 'role'        => $user->role,
-                'created_at'  => $user->created_at->format('Y-m-d H:i:s'),   // include time
-                'updated_at'  => $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : null, // include time
+                'created_at'  => $user->created_at->format('Y-m-d H:i:s'),
+                'updated_at'  => $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : null,
             ];
         });
 
@@ -45,7 +45,7 @@ class CustomerController extends Controller
 
         $user = User::findOrFail($id);
         $user->name = $validated['username'];
-        $user->save(); // updated_at is automatically refreshed
+        $user->save();
 
         if ($user->customer) {
             $user->customer->update(['phoneNo' => $validated['phone']]);
