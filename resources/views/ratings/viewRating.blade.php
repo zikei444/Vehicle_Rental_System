@@ -21,5 +21,7 @@
             @endif
         </div>
     </div>
+    <p><strong>Admin Reply:</strong> {{ $rating->admin_reply ?? 'No reply yet' }}</p>
+
 </div>
 @endsection

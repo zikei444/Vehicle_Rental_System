@@ -113,8 +113,10 @@ Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::cl
 
 Route::prefix('admin')->group(function () {
     Route::get('/ratings', [AdminRatingController::class, 'index'])->name('ratings_admin.index');
-    Route::post('/ratings/{id}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
-    Route::post('/ratings/{id}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
+    Route::post('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
+    Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
+    Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
+
 });
 
 // // =================== ADMIN MANAGE MAINTENANCE ===================

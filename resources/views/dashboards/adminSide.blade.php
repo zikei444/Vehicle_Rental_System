@@ -50,8 +50,8 @@
             <td><a href = "{{ route('admin.reservations.index')}}">Reservation Management</a></td>
         </tr>
         <tr>
-            <td><a href = "{{ route('admin.customerManagement')}}"><img src="{{ asset('images/dashboard/rating_icon.png') }}" alt="Rating & Feedback Management" class = "icon"></a></td>
-            <td><a href = "{{ route('admin.customerManagement')}}">Rating & Feedback Management</a></td>
+            <td><a href = "{{ route('ratings_admin.index')}}"><img src="{{ asset('images/dashboard/rating_icon.png') }}" alt="Rating & Feedback Management" class = "icon"></a></td>
+            <td><a href = "{{ route('ratings_admin.index')}}">Rating & Feedback Management</a></td>
         </tr>
         <tr>
             <td><a href = "{{ route('maintenance.index')}}"><img src="{{ asset('images/dashboard/maintenance_icon.png') }}" alt="Maintenance Management" class = "icon"></a></td>

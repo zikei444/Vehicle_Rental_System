@@ -4,10 +4,53 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use App\Models\Vehicle;
 use App\Models\Maintenance;
+use App\Models\MaintenanceService;
 
 class MaintenanceController extends Controller {
+    private MaintenanceService $maintenanceService;
+    private string $maintenanceApi = '/api/maintenances';
+
+    public function __construct(MaintenanceService $maintenanceService)
+    {
+        $this->maintenanceService = $maintenanceService;
+    }
+
+    private function getMaintenanceJson(int $id, bool $useApi): ?array
+    {
+        if ($useApi) {
+            $response = Http::timeout(10)->get(url($this->maintenanceApi . '/' . $id));
+            if ($response->failed()) {
+                return null;
+            }
+            return $response->json(); // Maintenance API already returns raw model
+        } else {
+            $jsonResponse = $this->maintenanceService->find($id);
+            if ($jsonResponse instanceof \Illuminate\Http\JsonResponse) {
+                return $jsonResponse->getData(true)['data'] ?? null;
+            }
+            return is_array($jsonResponse) ? $jsonResponse : null;
+        }
+    }
+
+    public function index(Request $request)
+    {
+        $useApi = (bool) $request->query('use_api', false);
+
+        if ($useApi) {
+            $response = Http::get(url($this->maintenanceApi));
+            $records = $response->ok() ? $response->json() : [];
+        } else {
+            $records = $this->maintenanceService->allByVehicle($request->query('vehicle_id'))->getData(true)['data'] ?? [];
+        }
+
+        return view('maintenance.index', ['records' => $records]);
+    }
+
+
+
     // ---------- LIST ----------
     // GET /maintenance
     public function index(Request $request) {
@@ -147,6 +190,6 @@ class MaintenanceController extends Controller {
             }
         }
 
-        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted.');
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted');
     }
 }
