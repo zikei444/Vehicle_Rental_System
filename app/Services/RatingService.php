@@ -2,6 +2,7 @@
 
 // app/Services/RatingService.php
 namespace App\Services;
+use Illuminate\Http\JsonResponse; 
 
 use App\Models\Rating;
 
@@ -19,10 +20,26 @@ class RatingService {
             'status' => 'pending', // 默认待审核
         ]);
     }
+
     public function hasRated($customerId, $vehicleId) {
         return Rating::where('customer_id', $customerId)
                      ->where('vehicle_id', $vehicleId)
                      ->exists();
+    }
+    
+    public function getVehicleRatingSummary(int $vehicleId): JsonResponse
+    {
+        $ratings = Rating::where('vehicle_id', $vehicleId);
+
+        $count = $ratings->count();
+
+        $data = [
+            'vehicle_id' => $vehicleId,
+            'average'    => $count > 0 ? round($ratings->avg('rating'), 1) : null,
+            'count'      => $count,
+        ];
+
+        return response()->json(['data' => $data]);
     }
 }
 
