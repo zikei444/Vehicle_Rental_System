@@ -69,6 +69,21 @@
             <input type="file" name="image" class="form-control" id="image">
         </div>
 
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="insurance_doc" class="form-label">Insurance Document</label>
+                <input type="file" name="insurance_doc" class="form-control" id="insurance_doc">
+            </div>
+            <div class="col-md-4">
+                <label for="registration_doc" class="form-label">Registration Document</label>
+                <input type="file" name="registration_doc" class="form-control" id="registration_doc">
+            </div>
+            <div class="col-md-4">
+                <label for="roadtax_doc" class="form-label">Road Tax Document</label>
+                <input type="file" name="roadtax_doc" class="form-control" id="roadtax_doc">
+            </div>
+        </div>
+
         {{-- Type-Specific Fields --}}
         <div id="carFields" class="type-specific {{ $vehicle['type'] == 'car' ? '' : 'd-none' }}">
             <h4>Car Details</h4>

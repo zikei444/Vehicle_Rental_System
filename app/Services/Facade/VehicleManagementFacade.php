@@ -28,6 +28,9 @@ class VehicleManagementFacade
                 'registration_number' => 'required|string|max:50|unique:vehicles,registration_number',
                 'rental_price' => 'required|numeric|min:0',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
+                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',  // max 5MB
+                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             ]);
 
             $vehicle = Vehicle::create($validated);
@@ -38,6 +41,17 @@ class VehicleManagementFacade
                 $imageName = time() . '_' . $image->getClientOriginalName();
                 $image->move(public_path('images/vehicles'), $imageName);
                 $vehicle->update(['image' => $imageName]);
+            }
+
+            // Handle insurance, registration papers, roadtax
+            $docs = ['insurance_doc', 'registration_doc', 'roadtax_doc'];
+            foreach ($docs as $doc) {
+                if ($request->hasFile($doc)) {
+                    $file = $request->file($doc);
+                    $fileName = time() . '_' . $doc . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('documents/vehicles'), $fileName);
+                    $vehicle->update([$doc => $fileName]);
+                }
             }
 
             $this->handleTypeSpecificData($vehicle, $request);
@@ -60,6 +74,9 @@ class VehicleManagementFacade
                 'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,' . $id,
                 'rental_price' => 'required|numeric|min:0',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
+                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             ]);
 
             $vehicle->update($validated);
@@ -72,12 +89,23 @@ class VehicleManagementFacade
                 $vehicle->update(['image' => $imageName]);
             }
 
+            // Update documents
+            $docs = ['insurance_doc', 'registration_doc', 'roadtax_doc'];
+            foreach ($docs as $doc) {
+                if ($request->hasFile($doc)) {
+                    $file = $request->file($doc);
+                    $fileName = time() . '_' . $doc . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('documents/vehicles'), $fileName);
+                    $vehicle->update([$doc => $fileName]);
+                }
+            }
+
             $this->handleTypeSpecificData($vehicle, $request, true);
 
             return $vehicle;
         });
     }
-
+    
     // ===== DELETE VEHICLE =====
     public function deleteVehicle(int $id): void
     {
