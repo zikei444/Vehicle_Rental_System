@@ -26,8 +26,8 @@
             <td>{{ $rating->feedback }}</td>
             <td class="status">{{ ucfirst($rating->status) }}</td>
             <td class="reply">
-                @if($rating->admin_reply)
-                    {{ $rating->admin_reply }}
+                @if($rating->adminreply)
+                    {{ $rating->adminreply }}
                 @else
                     <input type="text" class="form-control form-control-sm reply-input" 
                            placeholder="Reply to user" data-id="{{ $rating->id }}">
