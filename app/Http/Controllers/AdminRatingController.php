@@ -14,15 +14,37 @@ class AdminRatingController extends Controller
         return view('ratings_admin.index', compact('ratings'));
     }
 
-    // 批准评论
-    public function approve($id)
+    // // 批准评论
+    // public function approve($id)
+    // {
+    //     $rating = Rating::findOrFail($id);
+    //     $rating->update(['status' => 'approved']);
+
+    //     return redirect()->back()->with('success', '评论已批准');
+    // }
+    public function approve(Request $request, Rating $rating)
     {
-        $rating = Rating::findOrFail($id);
-        $rating->update(['status' => 'approved']);
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+        ]);
 
-        return redirect()->back()->with('success', '评论已批准');
+        $rating->status = $request->status;
+        $rating->save();
+
+    return response()->json(['success'=>true]);
     }
+    //回复
+     public function reply(Request $request, Rating $rating)
+    {
+        $request->validate([
+            'reply' => 'required|string|max:500',
+        ]);
 
+        $rating->adminreply = $request->reply;
+        $rating->save();
+
+    return response()->json(['success'=>true]);
+    }
     // 拒绝评论
     public function reject($id)
     {

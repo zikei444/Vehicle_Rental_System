@@ -17,6 +17,7 @@ class Rating extends Model
         'rating',
         'feedback',
         'status',
+        'adminreply',
     ];
     public function reservation() {
         return $this->belongsTo(Reservation::class);
