@@ -39,6 +39,21 @@
     @include('layouts.header')
 
     <main class="content-wrapper container mt-4">
+        @if(session('ok'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                {{ session('ok') }}
+            </div>
+
+            <script>
+                setTimeout(() => {
+                    const alert = document.querySelector('.alert');
+                    if (alert) {
+                        bootstrap.Alert.getOrCreateInstance(alert).close();
+                    }
+                }, 5000); 
+            </script>
+        @endif
+
         @yield('content')
     </main>
 
