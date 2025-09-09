@@ -11,7 +11,7 @@
             <th>Customer</th>
             <th>Vehicle</th>
             <th>Rating</th>
-            <th>Feedback</th>
+            <th>Comment</th>
             <th>Status</th>
             <th>Admin Reply</th>
             <th>Actions</th>
