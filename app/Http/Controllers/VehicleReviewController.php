@@ -77,55 +77,115 @@ class VehicleReviewController extends Controller
         /**
          * View rating for a reservation
          */
+        // public function viewRating($reservationId)
+        // {
+        //     // 先获取预约信息及车辆
+        //     $reservation = Reservation::with('vehicle')->findOrFail($reservationId);
+
+        //     // 查找该用户对该车辆的评分
+        //     $rating = Rating::where('vehicle_id', $reservation->vehicle_id)
+        //                     ->where('customer_id', $reservation->customer_id)
+        //                     ->approved()
+        //                     ->first();
+
+        //     return view('ratings.viewRating', compact('reservation', 'rating'));
+        // }
         public function viewRating($reservationId)
         {
-            // 先获取预约信息及车辆
+            // 获取预约信息及车辆
             $reservation = Reservation::with('vehicle')->findOrFail($reservationId);
 
-            // 查找该用户对该车辆的评分
+            // 查找该用户对该车辆的评分（自己提交的评分，不论状态）
             $rating = Rating::where('vehicle_id', $reservation->vehicle_id)
                             ->where('customer_id', $reservation->customer_id)
-                            ->approved()
                             ->first();
+
+            // 如果没有自己的评分，则只显示已批准的评分
+            if (!$rating) {
+                $rating = Rating::where('vehicle_id', $reservation->vehicle_id)
+                                ->approved()
+                                ->first();
+            }
 
             return view('ratings.viewRating', compact('reservation', 'rating'));
         }
 
+
             /**
              * Store new rating
              */
+            // public function store(Request $request)
+            // {
+
+            //     $request->validate([
+            //         'vehicle_id' => 'required|exists:vehicles,id',
+            //         'reservation_id' => 'required|exists:reservations,id', 
+            //         'rating' => 'required|integer|min:1|max:5',
+            //         'feedback' => 'nullable|string',
+            //     ]);
+            //     $reservationId = $request->reservation_id;
+            //     $vehicleId = $request->vehicle_id;
+            //     $customerId = auth()->id();
+
+
+            // // 检查是否已经评价过
+            // //if ($this->ratingService->hasRated($customerId, $reservationId)) {
+            //    if (Rating::where('customer_id', $request->$customerId)
+            //   ->where('reservation_id', $request->reservation_id)
+            //   ->exists()) {
+            //        return response()->json(['error' => 'You have already rated this vehicle.'], 403);
+            // }
+
+            //     $rating = $this->ratingService->addRating(
+            //         $customerId,
+            //         $vehicleId,
+            //         $reservationId,
+            //         $request->rating,
+            //         $request->feedback
+            //     );
+
+            //     return response()->json(['rating' => $rating], 200);
+            // }
             public function store(Request $request)
-            {dd($request->all());
+            {
+                try {
+                    $request->validate([
+                        'vehicle_id'     => 'required|exists:vehicles,id',
+                        'reservation_id' => 'required|exists:reservations,id',
+                        'rating'         => 'required|integer|min:1|max:5',
+                        'feedback'       => 'nullable|string',
+                    ]);
 
-                $request->validate([
-                    'vehicle_id' => 'required|exists:vehicles,id',
-                    'reservation_id' => 'required|exists:reservations,id', 
-                    'rating' => 'required|integer|min:1|max:5',
-                    'feedback' => 'nullable|string',
-                ]);
-                $reservationId = $request->reservation_id;
-                $vehicleId = $request->vehicle_id;
-                $customerId = auth()->id();
+                $customerId = 1; // ✅ 先固定
+                // $customerId = auth()->id(); // 以后再改回登录的用户                    
+                if (!$customerId) {
+                        return response()->json(['error' => 'User not logged in'], 401);
+                    }
 
+                    // 检查是否已经评价过
+                    if (Rating::where('customer_id', $customerId)
+                        ->where('reservation_id', $request->reservation_id)
+                        ->exists()) {
+                        return response()->json(['error' => 'Already rated'], 403);
+                    }
 
-            // 检查是否已经评价过
-            //if ($this->ratingService->hasRated($customerId, $reservationId)) {
-               if (Rating::where('customer_id', $customerId)
-              ->where('reservation_id', $request->reservation_id)
-              ->exists()) {
-                   return response()->json(['error' => 'You have already rated this vehicle.'], 403);
+                    $rating = Rating::create([
+                        'customer_id'    => $customerId,
+                        'vehicle_id'     => $request->vehicle_id,
+                        'reservation_id' => $request->reservation_id,
+                        'rating'         => $request->rating,
+                        'feedback'       => $request->feedback,
+                        'status'         => 'pending',
+                    ]);
+
+                    return response()->json(['success' => true, 'data' => $rating]);
+
+                } catch (\Exception $e) {
+                    \Log::error("Rating store error: ".$e->getMessage());
+                    return response()->json(['error' => $e->getMessage()], 500);
+                }
             }
 
-                $rating = $this->ratingService->addRating(
-                    $customerId,
-                    $vehicleId,
-                    $reservationId,
-                    $request->rating,
-                    $request->feedback
-                );
-
-                return response()->json(['rating' => $rating], 200);
-            }
     /**
      * Show average rating
      */
