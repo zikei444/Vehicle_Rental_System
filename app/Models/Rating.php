@@ -18,7 +18,9 @@ class Rating extends Model
         'feedback',
         'status',
     ];
-
+    public function reservation() {
+        return $this->belongsTo(Reservation::class);
+    }
     // 查询作用域
     public function scopeApproved($query) {
         return $query->where('status', 'approved');

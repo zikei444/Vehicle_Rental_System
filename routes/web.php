@@ -87,9 +87,11 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
 Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, 'showRatings']);
+
 // 显示单条 reservation 的评分详情
-Route::get('/reservations/{reservation}/rating', [VehicleReviewController::class, 'viewRating'])
+Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'viewRating'])
     ->name('ratings.viewRating');
+
 Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
 //看rating

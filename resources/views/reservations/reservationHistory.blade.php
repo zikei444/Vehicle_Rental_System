@@ -14,18 +14,23 @@
                 <p><strong>Pickup:</strong> {{ $reservation->pickup_date }}</p>
                 <p><strong>Return:</strong> {{ $reservation->return_date }}</p>
                 <p><strong>Total Cost:</strong> RM {{ number_format($reservation->total_cost, 2) }}</p>
-        @if($reservation->status === 'completed')
+       @if($reservation->status === 'completed')
             @if($reservation->hasRated())
-                <button class="btn btn-success" disabled>Rated</button>
-                <a href="{{ route('ratings.viewRating', $reservation->id) }}" class="btn btn-info text-white">
+                <button class="btn btn-success" disabled>
+                    Rated ({{ optional($reservation->rating)->rating ?? '' }}⭐)
+                </button>
+                <a href="{{ route('ratings.viewRating', $reservation->id) }}" 
+                    class="btn btn-info text-white">
                     View Rating
                 </a>
             @else
-                <button class="btn btn-primary" onclick="openModal({{ $reservation->id }}, {{ $reservation->vehicle->id }})">
+                <button class="btn btn-primary" 
+                        onclick="openModal({{ $reservation->id }}, {{ $reservation->vehicle->id }})">
                     Rate Now
                 </button>
             @endif
         @endif
+
 
 
             </div>
@@ -87,37 +92,66 @@ $("#rateForm").on("submit", function(e) {
     const score = $("#score").val();
     const content = $("#content").val();
 
-    $.ajax({
-        url: "{{ route('ratings.store') }}",
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        contentType: "application/json",
-        data: JSON.stringify({
-            customer_id: {{ auth()->id() ?? 1 }}, // 登录用户
-            vehicle_id: vehicleId,
-            reservation_id: reservationId,
-            rating: score,
-            feedback: content
-        }),
-        success: function(response) {
+$.ajax({
+    url: "{{ route('ratings.store') }}",
+    method: "POST",
+    headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    },
+    data: {
+        vehicle_id: vehicleId,
+        reservation_id: reservationId,
+        rating: score,
+        feedback: content
+    },
+    success: function(response) {
             $("#success-message").removeClass('d-none').text('Review submitted successfully!');
             $("#error-message").addClass('d-none');
             closeModal();
 
             // 更新按钮为 Rated
             $(`#reservation-${reservationId} button`).replaceWith(
-                `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>`
+        `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>
+        <a href="/ratings/view/${reservationId}" class="btn btn-info text-white">View Rating</a>`
             );
-        },
+    },
+    error: function(xhr) {
+        console.log(xhr.responseText);
+        alert("Error: " + (xhr.responseJSON?.error || 'Failed'));
+    }
+});
 
-        error: function(xhr) {
-            const msg = xhr.responseJSON?.error || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(', ') : 'Failed');
-            $("#error-message").removeClass('d-none').text(msg);
-            $("#success-message").addClass('d-none');
-        }
-    });
+    // $.ajax({
+    //     url: "{{ route('ratings.store') }}",
+    //     method: "POST",
+    //     headers: {
+    //         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    //     },
+    //     contentType: "application/json",
+    //     data: JSON.stringify({
+    //         customer_id: {{ auth()->id() ?? 1 }}, // 登录用户
+    //         vehicle_id: vehicleId,
+    //         reservation_id: reservationId,
+    //         rating: score,
+    //         feedback: content
+    //     }),
+    //     success: function(response) {
+    //         $("#success-message").removeClass('d-none').text('Review submitted successfully!');
+    //         $("#error-message").addClass('d-none');
+    //         closeModal();
+
+    //         // 更新按钮为 Rated
+    //         $(`#reservation-${reservationId} button`).replaceWith(
+    //             `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>`
+    //         );
+    //     },
+
+    //     error: function(xhr) {
+    //         const msg = xhr.responseJSON?.error || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(', ') : 'Failed');
+    //         $("#error-message").removeClass('d-none').text(msg);
+    //         $("#success-message").addClass('d-none');
+    //     }
+    // });
 });
 
 </script>
