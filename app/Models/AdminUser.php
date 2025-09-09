@@ -12,4 +12,10 @@ class AdminUser extends User
         $this->role = 'admin';
     }
 
+    public function maintenances()
+    {
+        return $this->hasMany(\App\Models\Maintenance::class, 'admin_id');
+    }
+
+
 }

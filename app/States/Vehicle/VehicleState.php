@@ -4,12 +4,10 @@ namespace App\States\Vehicle;
 
 use App\Models\Vehicle;
 
-abstract class VehicleState
-{
+abstract class VehicleState {
     protected $vehicle;
 
-    public function __construct(Vehicle $vehicle)
-    {
+    public function __construct(Vehicle $vehicle) {
         $this->vehicle = $vehicle;
     }
 

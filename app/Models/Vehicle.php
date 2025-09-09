@@ -11,6 +11,7 @@ use App\Models\Van;
 use App\Models\Maintenance;
 use App\States\Vehicle\AvailableState;
 use App\States\Vehicle\UnderMaintenanceState;
+use App\States\Vehicle\VehicleState;
 
 class Vehicle extends Model
 {
@@ -61,7 +62,7 @@ class Vehicle extends Model
     // Scope to filter available vehicles
     public function scopeAvailable($query)
     {
-        return $query->where('availability_status', 'available');
+        return $query->where('availability_status', self::AVAILABLE);
     }
 
     // Scope to filter by type (car/truck/van)
@@ -77,23 +78,20 @@ class Vehicle extends Model
     }
 
     // State Pattern
-    private $state;
+    private ?VehicleState $state = null;
 
-    public function setState($state)
-    {
+    public function setState(VehicleState $state): void {
         $this->state = $state;
     }
 
-    public function getState()
-    {
+    public function getState(): VehicleState {
+        // If no state object is set yet, create one based on the current DB value.
+        // - If availability_status is "under_maintenance", wrap the Vehicle in an UnderMaintenanceState.
+        // - Otherwise (available, reserved, rented, etc.), default to AvailableState.
         if (!$this->state) {
-            // map DB value to a State object
-            if ($this->availability_status === self::UNDER_MAINTENANCE) {
-                $this->state = new UnderMaintenanceState($this);
-            } else {
-                // default to AvailableState for any other value
-                $this->state = new AvailableState($this);
-            }
+            $this->state = $this->availability_status === self::UNDER_MAINTENANCE
+                ? new UnderMaintenanceState($this)
+                : new AvailableState($this);
         }
         return $this->state;
     }
