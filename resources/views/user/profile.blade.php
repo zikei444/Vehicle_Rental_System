@@ -56,6 +56,25 @@
 </style>
 
 <div class="container">
+
+    @if ($errors->any())
+        <div class="alert alert-danger shadow-sm">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li><i class="bi bi-exclamation-circle"></i> {{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success shadow-sm">
+            <ul class="mb-0">
+                <li><i class="bi bi-check-circle"></i> {{ session('success') }}</li>
+            </ul>
+        </div>
+    @endif
+
     <div class = "box">
         <h1>Profile</h1>
         @php
