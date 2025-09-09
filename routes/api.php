@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\RatingApiController;
 use App\Http\Controllers\Api\VehicleApiController;
 use App\Http\Controllers\Api\MaintenanceApiController;
 use App\Http\Controllers\Api\ReservationApiController;
+use App\Http\Controllers\Api\UserApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,3 +58,6 @@ Route::prefix('maintenances')->group(function () {
     Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // Edit & Update
     Route::delete('/{id}', [MaintenanceApiController::class, 'destroy']); // Delete
 });
+
+// User APi
+Route::get('/user/customer-id', [UserApiController::class, 'getCustomerId']);

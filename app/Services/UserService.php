@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 
 class UserService
@@ -92,5 +93,22 @@ class UserService
             'created_at' => $u->created_at?->toDateTimeString(),
             'updated_at' => $u->updated_at?->toDateTimeString(),
         ];
+    }
+
+    public function getCustomerIdByUserId(int $userId): JsonResponse
+    {
+        $customer = Customer::where('user_id', $userId)->first();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'customer_id' => $customer->id
+        ]);
     }
 }
