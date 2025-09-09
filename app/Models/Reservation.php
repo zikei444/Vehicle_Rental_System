@@ -36,7 +36,7 @@ class Reservation extends Model
     public function hasRated(): bool
     {
     // 当前 reservation 对应的 vehicle 是否已经被该用户评分
-    return Rating::where('vehicle_id', $this->vehicle_id)
+    return Rating::where('reservation_id', $this->id)
                  ->where('customer_id', auth()->id())
                  ->exists();
     }

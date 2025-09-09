@@ -90,6 +90,7 @@ Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, '
 // 显示单条 reservation 的评分详情
 Route::get('/reservations/{reservation}/rating', [VehicleReviewController::class, 'viewRating'])
     ->name('ratings.viewRating');
+Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
 //看rating
 

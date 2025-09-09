@@ -12,6 +12,7 @@ class Rating extends Model
     protected $fillable = [
         'customer_id',
         'vehicle_id',
+        'reservation_id',
         'admin_id',
         'rating',
         'feedback',
