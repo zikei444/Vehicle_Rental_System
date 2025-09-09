@@ -21,7 +21,7 @@
             @endif
         </div>
     </div>
-    <p><strong>Admin Reply:</strong> {{ $rating->admin_reply ?? 'No reply yet' }}</p>
+    <p><strong>Admin Reply:</strong> {{ $rating->adminreply ?? 'No reply yet' }}</p>
 
 </div>
 @endsection

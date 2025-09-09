@@ -22,6 +22,23 @@
                 <div class="text-success">Completed: {{ $maintenance->completed_at ? $maintenance->completed_at->timezone($tz)->format('Y-m-d H:i') : '—' }}</div>
             </div>
 
+            @php($v = $maintenance->vehicle)
+            <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold">Vehicle #{{ $maintenance->vehicle_id }}</div>
+                    <div>
+                        Brand: <span class="text-muted">{{ $v->brand ?? 'N/A' }}</span> |
+                        Model: <span class="text-muted">{{ $v->model ?? 'N/A' }}</span> |
+                        Year: <span class="text-muted">{{ $v->year_of_manufacture ?? 'N/A' }}</span> |
+                        Reg. No.: <span class="text-muted">{{ $v->registration_number ?? 'N/A' }}</span>
+                    </div>
+                </div>
+                <span class="badge bg-info text-dark">
+                    Status: {{ $v->availability_status ?? 'N/A' }}
+                </span>
+            </div>
+
+
             <div>
                 <label for="maintenance_type">Type</label>
                 <input id="maintenance_type" name="maintenance_type" value="{{ old('maintenance_type', $maintenance->maintenance_type) }}" placeholder="Enter Maintenance Service Type" class="form-control mb-3" required>
@@ -56,7 +73,7 @@
         </div>        
         <br>
         <button type="submit" class="btn btn-success">Update</button>
-        <a href="{{ route('maintenance.index') }}" class="btn btn-secondary">Back to All Maintenance Records</a>
+        <a href="{{ route('maintenance.index') }}" class="btn btn-outline-secondary">Back to All Maintenance Records</a>
     </form>
 </div>
 @endsection
