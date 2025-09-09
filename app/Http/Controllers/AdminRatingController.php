@@ -10,7 +10,7 @@ class AdminRatingController extends Controller
     // 显示所有评论（不管 pending/approved/rejected）
     public function index()
     {
-        $ratings = Rating::with(['customer', 'vehicle'])->get();
+        $ratings = Rating::with(['customer', 'reservation'])->get();
         return view('ratings_admin.index', compact('ratings'));
     }
 
