@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('admin_id')->nullable()->constrained()->onDelete('set null');
             $table->tinyInteger('rating'); // 1-5 分
             $table->text('feedback')->nullable(); // 可选评论
+            $table->text('adminreply')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
