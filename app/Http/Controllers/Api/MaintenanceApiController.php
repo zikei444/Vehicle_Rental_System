@@ -13,19 +13,7 @@ class MaintenanceApiController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = (int) $request->query('per_page', 10);
-
-        $page = Maintenance::orderByDesc('service_date')->paginate($perPage);
-
-        return response()->json([
-            'data' => $page->items(),
-            'meta' => [
-                'current_page' => $page->currentPage(),
-                'per_page'     => $page->perPage(),
-                'total'        => $page->total(),
-                'last_page'    => $page->lastPage(),
-            ]
-        ]);
+        return response()->json(Maintenance::orderByDesc('service_date')->get());
     }
 
     /**
@@ -38,7 +26,7 @@ class MaintenanceApiController extends Controller
             ->orderByDesc('service_date')
             ->get();
 
-        return response()->json(['data' => $all]);
+        return response()->json($all);
     }
 
     /**
@@ -50,7 +38,7 @@ class MaintenanceApiController extends Controller
         if (!$m) {
             return response()->json(['error' => 'Maintenance not found'], 404);
         }
-        return response()->json(['data' => $m]);
+        return response()->json($m);
     }
 
     /**
@@ -62,7 +50,6 @@ class MaintenanceApiController extends Controller
     {
         $data = $request->validate([
             'vehicle_id'       => 'required|integer|exists:vehicles,id',
-            'admin_id'         => 'required|integer|exists:admins,id',
             'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date',
             'cost'             => 'nullable|numeric|min:0',
@@ -85,7 +72,7 @@ class MaintenanceApiController extends Controller
             $m->transitionTo($m->status);
         }
 
-        return response()->json(['data' => $m], 201);
+        return response()->json($m, 201);
     }
 
     /**
@@ -101,7 +88,6 @@ class MaintenanceApiController extends Controller
 
         $validated = $request->validate([
             'vehicle_id'       => 'sometimes|integer|exists:vehicles,id',
-            'admin_id'         => 'sometimes|integer|exists:admins,id',
             'maintenance_type' => 'sometimes|string|max:50',
             'service_date'     => 'sometimes|date',
             'cost'             => 'sometimes|numeric|min:0',
@@ -124,7 +110,7 @@ class MaintenanceApiController extends Controller
             $m = $m->transitionTo($newStatus); // State pattern call
         }
 
-        return response()->json(['data' => $m]);
+        return response()->json($m);
     }
 
     /**
@@ -138,6 +124,6 @@ class MaintenanceApiController extends Controller
         }
 
         $m->delete();
-        return response()->json(['data' => ['message' => 'Maintenance deleted successfully']]);
+        return response()->json(['message' => 'Maintenance deleted successfully']);
     }
 }
