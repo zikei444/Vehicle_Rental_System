@@ -94,15 +94,14 @@ class VehicleReviewController extends Controller
 
     //     return view('ratings.viewRating', compact('reservation', 'rating'));
     // }
+
     public function viewRating($reservationId)
     {
         // 获取预约信息及车辆
         $reservation = Reservation::with('vehicle')->findOrFail($reservationId);
 
-        // 查找该用户对该车辆的评分（自己提交的评分，不论状态）
-        $rating = Rating::where('vehicle_id', $reservation->vehicle_id)
-            ->where('customer_id', $reservation->customer_id)
-            ->first();
+        // 直接用 reservation_id 来取唯一的评分和回复
+        $rating = Rating::where('reservation_id', $reservation->id)->first();
 
         // 如果没有自己的评分，则只显示已批准的评分
         if (!$rating) {
