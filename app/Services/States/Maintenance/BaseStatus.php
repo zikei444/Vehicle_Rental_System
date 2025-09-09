@@ -1,6 +1,6 @@
 <?php
 
-namespace App\States\Maintenance;
+namespace App\Services\Maintenance;
 
 use App\Models\Maintenance;
 use Illuminate\Validation\ValidationException;
