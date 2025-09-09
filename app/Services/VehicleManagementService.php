@@ -122,7 +122,7 @@ class VehicleManagementService
     }
 
     // ===== HANDLE TYPE-SPECIFIC DATA =====
-    private function handleTypeSpecificData(Vehicle $vehicle, Request $request, bool $update = false): void
+    private function handleTypeSpecificData(Vehicle $vehicle, Request $request): void
     {
         if ($vehicle->type === 'car') {
             $request->validate([
@@ -133,9 +133,10 @@ class VehicleManagementService
                 'fuel_efficiency' => 'nullable|numeric|min:0',
             ]);
 
-            $update
-                ? $vehicle->car->update($request->only(['fuel_type', 'transmission', 'seats', 'air_conditioning', 'fuel_efficiency']))
-                : $vehicle->car()->create($request->only(['fuel_type', 'transmission', 'seats', 'air_conditioning', 'fuel_efficiency']));
+            $vehicle->car()->updateOrCreate(
+                ['vehicle_id' => $vehicle->id],
+                $request->only(['fuel_type', 'transmission', 'seats', 'air_conditioning', 'fuel_efficiency'])
+            );
         }
 
         if ($vehicle->type === 'truck') {
@@ -145,9 +146,10 @@ class VehicleManagementService
                 'fuel_type' => 'required|in:petrol,diesel',
             ]);
 
-            $update
-                ? $vehicle->truck->update($request->only(['truck_type', 'load_capacity', 'fuel_type']))
-                : $vehicle->truck()->create($request->only(['truck_type', 'load_capacity', 'fuel_type']));
+            $vehicle->truck()->updateOrCreate(
+                ['vehicle_id' => $vehicle->id],
+                $request->only(['truck_type', 'load_capacity', 'fuel_type'])
+            );
         }
 
         if ($vehicle->type === 'van') {
@@ -157,9 +159,10 @@ class VehicleManagementService
                 'air_conditioning' => 'nullable|in:yes,no',
             ]);
 
-            $update
-                ? $vehicle->van->update($request->only(['passenger_capacity', 'fuel_type', 'air_conditioning']))
-                : $vehicle->van()->create($request->only(['passenger_capacity', 'fuel_type', 'air_conditioning']));
+            $vehicle->van()->updateOrCreate(
+                ['vehicle_id' => $vehicle->id],
+                $request->only(['passenger_capacity', 'fuel_type', 'air_conditioning'])
+            );
         }
     }
 }
