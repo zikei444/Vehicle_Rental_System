@@ -8,16 +8,20 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Maintenance;
 use App\Services\MaintenanceService;
+use App\Services\VehicleService;
 
 class MaintenanceController extends Controller
 {
     private MaintenanceService $maintenanceService;
+    private VehicleService $vehicleService;
+
     private string $maintenanceApi = '/api/maintenances';
     private string $vehicleApi     = '/api/vehicles';
 
-    public function __construct(MaintenanceService $maintenanceService)
+    public function __construct(MaintenanceService $maintenanceService, VehicleService $vehicleService)
     {
         $this->maintenanceService = $maintenanceService;
+        $this->vehicleService     = $vehicleService;
     }
 
     /**
@@ -92,32 +96,20 @@ class MaintenanceController extends Controller
         $useApi = (bool) $request->query('use_api', false);
 
         if ($useApi) {
-            // Pull vehicles from API and (optionally) filter to 'available'
+            // External path: fetch from API
             $resp = Http::get(url($this->vehicleApi));
-            if ($resp->failed()) {
-                // on failure, just send empty list
-                $vehicles = collect();
-            } else {
-                $list = $resp->json()['data'] ?? $resp->json() ?? [];
-                // if your API supports query filtering, you could call /api/vehicles?status=available instead
-                $vehicles = collect($list)->filter(fn($v) => ($v['availability_status'] ?? '') === 'available')->values();
-            }
-
-            // Pass as array of arrays; Blade reads data-* attributes from these
-            return view('maintenance.create', ['vehicles' => $vehicles]);
-        }
-
-        // Internal path: you used to query Vehicle model; since we avoid Vehicle::,
-        // we also fetch via API here for consistency.
-        $resp = Http::get(url($this->vehicleApi));
-        if ($resp->failed()) {
-            $vehicles = collect();
+            $list = $resp->json()['data'] ?? [];
+            $vehicles = collect($list)->filter(fn($v) => $v['availability_status'] === 'available')->values();
         } else {
-            $list = $resp->json()['data'] ?? $resp->json() ?? [];
-            $vehicles = collect($list)->filter(fn($v) => ($v['availability_status'] ?? '') === 'available')->values();
+            // Internal path: fetch from service
+            $jsonResponse = $this->vehicleService->all();
+            $list = $jsonResponse->getData(true)['data'] ?? [];
+            $vehicles = collect($list)->filter(fn($v) => $v['availability_status'] === 'available')->values();
         }
+
         return view('maintenance.create', ['vehicles' => $vehicles]);
     }
+
 
     // ---------- STORE ----------
     // POST /maintenance
@@ -133,54 +125,51 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string|max:500',
         ]);
 
-        // 1) Read vehicle via API
-        $vehResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id']));
-        if ($vehResp->failed()) {
-            return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
+        // --- Step 1: Fetch Vehicle ---
+        if ($useApi) {
+            // Call external API
+            $vehResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id']));
+            if ($vehResp->failed()) {
+                return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
+            }
+            $vehicle = $vehResp->json()['data'] ?? null;
+        } else {
+            // Internal path: use service (no Http:: back to localhost!)
+            $jsonResponse = $this->vehicleService->find($validated['vehicle_id']);
+            $vehicle = $jsonResponse->getData(true)['data'] ?? null;
         }
-        $vehicle = $vehResp->json()['data'] ?? $vehResp->json() ?? null;
+
         if (!$vehicle) {
             return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
         }
 
-        // 2) Guard: vehicle must be available
+        // --- Step 2: Guards ---
         if (($vehicle['availability_status'] ?? '') !== 'available') {
-            return back()
-                ->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])
-                ->withInput();
+            return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])->withInput();
         }
 
-        // 3) Guard: only one Scheduled maintenance per vehicle
-        $msResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id'] . '/maintenances'));
-        if ($msResp->failed()) {
-            return back()->withErrors(['vehicle_id' => 'Cannot verify existing maintenances for this vehicle'])->withInput();
+        // Check existing maintenances
+        if ($useApi) {
+            $msResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id'] . '/maintenances'));
+            $list = $msResp->json()['data'] ?? [];
+        } else {
+            $jsonResponse = $this->maintenanceService->allByVehicle($validated['vehicle_id']);
+            $list = $jsonResponse->getData(true)['data'] ?? [];
         }
-        $list = $msResp->json()['data'] ?? $msResp->json() ?? [];
+
         $alreadyScheduled = collect($list)->contains(fn ($m) => ($m['status'] ?? '') === 'Scheduled');
         if ($alreadyScheduled) {
-            return back()
-                ->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.'])
-                ->withInput();
+            return back()->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.'])->withInput();
         }
 
+        // --- Step 3: Create ---
         if ($useApi) {
-            // 4A) External path: create maintenance via API
             $payload = $validated + ['status' => 'Scheduled'];
             $resp = Http::post(url($this->maintenanceApi), $payload);
             if ($resp->failed()) {
                 return back()->withErrors(['api' => 'Failed to create maintenance via API'])->withInput();
             }
-
-            // 5A) Flip vehicle status via API
-            Http::post(url($this->vehicleApi . '/update-status'), [
-                'vehicle_id' => $validated['vehicle_id'],
-                'status'     => 'under_maintenance',
-            ]);
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance successfully scheduled.');
-        } 
-        else {
-            // 4B) Internal path: create maintenance row locally
+        } else {
             DB::transaction(function () use ($validated) {
                 Maintenance::create([
                     'vehicle_id'       => $validated['vehicle_id'],
@@ -191,15 +180,15 @@ class MaintenanceController extends Controller
                     'status'           => 'Scheduled',
                 ]);
             });
-
-            // 5B) Flip vehicle status via API (no local Vehicle::)
-            Http::post(url($this->vehicleApi . '/update-status'), [
-                'vehicle_id' => $validated['vehicle_id'],
-                'status'     => 'under_maintenance',
-            ]);
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance successfully scheduled.');
         }
+
+        // --- Step 4: Update vehicle status via API ---
+        Http::post(url($this->vehicleApi . '/update-status'), [
+            'vehicle_id' => $validated['vehicle_id'],
+            'status'     => 'under_maintenance',
+        ]);
+
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance successfully scheduled.');
     }
 
     // ---------- EDIT FORM ----------
@@ -227,10 +216,11 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
-        $toStatus = $request->status;
+        $toStatus   = $request->status;
+        $fromStatus = $maintenance->status;
 
         if ($useApi) {
-            // Update maintenance via API
+            // --- External API path ---
             $payload = [
                 'maintenance_type' => $request->maintenance_type,
                 'service_date'     => $request->service_date,
@@ -244,7 +234,7 @@ class MaintenanceController extends Controller
                 return back()->withErrors(['api' => 'Failed to update maintenance via API'])->withInput();
             }
 
-            // Adjust vehicle status via API (mirror your previous logic)
+            // Vehicle state via API
             if (in_array($toStatus, ['Completed', 'Cancelled'])) {
                 Http::post(url($this->vehicleApi . '/update-status'), [
                     'vehicle_id' => $maintenance->vehicle_id,
@@ -256,14 +246,9 @@ class MaintenanceController extends Controller
                     'status'     => 'under_maintenance',
                 ]);
             }
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully updated.');
-        } 
-        else {
-            // Internal: update row locally; adjust vehicle via API (no Vehicle::)
-            DB::transaction(function () use ($request, $maintenance, $toStatus) {
-                $fromStatus = $maintenance->status;
-
+        } else {
+            // --- Internal Service path ---
+            DB::transaction(function () use ($request, $maintenance, $fromStatus, $toStatus) {
                 $maintenance->fill([
                     'maintenance_type' => $request->maintenance_type,
                     'service_date'     => $request->service_date,
@@ -272,7 +257,6 @@ class MaintenanceController extends Controller
                     'notes'            => $request->notes,
                 ]);
 
-                // completed_at handling
                 if ($fromStatus !== 'Completed' && $toStatus === 'Completed') {
                     $maintenance->completed_at = now();
                 } elseif ($fromStatus === 'Completed' && $toStatus !== 'Completed') {
@@ -282,64 +266,55 @@ class MaintenanceController extends Controller
                 $maintenance->save();
             });
 
-            // Vehicle status via API (no local state objects)
+            // Vehicle state via Service (no Http call)
             if (in_array($toStatus, ['Completed', 'Cancelled'])) {
-                Http::post(url($this->vehicleApi . '/update-status'), [
-                    'vehicle_id' => $maintenance->vehicle_id,
-                    'status'     => 'available',
-                ]);
+                $this->vehicleService->updateStatus($maintenance->vehicle_id, 'available');
             } elseif ($toStatus === 'Scheduled') {
-                Http::post(url($this->vehicleApi . '/update-status'), [
-                    'vehicle_id' => $maintenance->vehicle_id,
-                    'status'     => 'under_maintenance',
-                ]);
+                $this->vehicleService->updateStatus($maintenance->vehicle_id, 'under_maintenance');
             }
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully updated.');
         }
+
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully updated.');
     }
+
 
     // ---------- DELETE ----------
     // DELETE /maintenance/{maintenance}
     public function destroy(Maintenance $maintenance)
     {
         $useApi = (bool) request()->query('use_api', false);
+        $vehicleId    = $maintenance->vehicle_id;
+        $wasScheduled = $maintenance->status === 'Scheduled';
 
         if ($useApi) {
+            // --- External API path ---
             $resp = Http::delete(url($this->maintenanceApi . '/' . $maintenance->id));
             if ($resp->failed()) {
                 return back()->withErrors(['api' => 'Failed to delete maintenance via API']);
             }
 
-            // After deleting, decide vehicle status. Simplest: set 'available'.
-            Http::post(url($this->vehicleApi . '/update-status'), [
-                'vehicle_id' => $maintenance->vehicle_id,
-                'status'     => 'available',
-            ]);
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted');
-        } 
-        else {
-            $vehicleId    = $maintenance->vehicle_id;
-            $wasScheduled = $maintenance->status === 'Scheduled';
-
+            if ($wasScheduled) {
+                Http::post(url($this->vehicleApi . '/update-status'), [
+                    'vehicle_id' => $vehicleId,
+                    'status'     => 'available',
+                ]);
+            }
+        } else {
+            // --- Internal Service path ---
             $maintenance->delete();
 
             if ($wasScheduled) {
-                // check remaining scheduled maintenances via API
-                $msResp = Http::get(url($this->vehicleApi . '/' . $vehicleId . '/maintenances'));
-                $list = $msResp->json()['data'] ?? $msResp->json() ?? [];
-                $stillScheduled = collect($list)->contains(fn ($m) => ($m['status'] ?? '') === 'Scheduled');
+                // check if still has other scheduled maintenances
+                $stillScheduled = Maintenance::where('vehicle_id', $vehicleId)
+                    ->where('status', 'Scheduled')
+                    ->exists();
 
                 if (!$stillScheduled) {
-                    Http::post(url($this->vehicleApi . '/update-status'), [
-                        'vehicle_id' => $vehicleId,
-                        'status'     => 'available',
-                    ]);
+                    $this->vehicleService->updateStatus($vehicleId, 'available');
                 }
             }
-
-            return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted');
         }
+
+        return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted');
     }
 }

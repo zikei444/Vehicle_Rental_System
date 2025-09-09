@@ -28,7 +28,8 @@
         <tbody>
             @forelse ($records as $r)
                 @php
-                    $isOverdue = $r->status === 'Scheduled' && \Illuminate\Support\Carbon::parse($r->service_date)->isPast();
+                    $serviceDate = \Carbon\Carbon::parse($r->service_date);
+                    $isOverdue = $r->status === 'Scheduled' && $serviceDate->isBefore(now()->startOfDay());
                 @endphp
                 <tr class="{{ $isOverdue ? 'table-warning' : '' }}">
 
@@ -52,7 +53,7 @@
                         @endif
                     </td>
 
-                    <td>{{ \Illuminate\Support\Carbon::parse($r->service_date)->format('d-m-Y') }}</td>
+                    <td>{{ $serviceDate->format('d-m-Y') }}</td>
                     <td>{{ number_format($r->cost, 2) }}</td>
                     
                     <td>
@@ -67,7 +68,7 @@
 
                         <span class="badge {{ $badge }}">{{ $r->status }}</span>
 
-                        @if ($isOverdue)
+                        @if($isOverdue)
                             <span class="badge bg-warning text-dark">Overdue</span>
                         @endif
                     </td>
@@ -87,9 +88,10 @@
                 </tr>
             @endforelse
         </tbody>
+
+
     </table>
 </div>
 
 {{ $records->links() }}
 @endsection
-
