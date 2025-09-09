@@ -49,11 +49,10 @@ class MaintenanceApiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'vehicle_id'       => 'required|integer|exists:vehicles,id',
             'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date',
-            'cost'             => 'nullable|numeric|min:0',
-            'notes'            => 'nullable|string|max:1000',
+            'cost'             => 'numeric|min:1',
+            'notes'            => 'nullable|string|max:500',
             'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
             'completed_at'     => 'sometimes|nullable|date',
         ]);
@@ -91,7 +90,7 @@ class MaintenanceApiController extends Controller
             'maintenance_type' => 'sometimes|string|max:50',
             'service_date'     => 'sometimes|date',
             'cost'             => 'sometimes|numeric|min:0',
-            'notes'            => 'sometimes|nullable|string|max:1000',
+            'notes'            => 'sometimes|nullable|string|max:500',
             'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
             'completed_at'     => 'sometimes|nullable|date',
         ]);
