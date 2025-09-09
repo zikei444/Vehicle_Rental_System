@@ -19,6 +19,18 @@
     </div>
 
     <div class="card mb-3">
+        <div class="card-header">Ratings</div>
+        <div class="card-body">
+            @if($vehicle->ratingSummary && $vehicle->ratingSummary['count'] > 0)
+                <p><strong>Average Rating:</strong> {{ $vehicle->ratingSummary['average'] }} / 5</p>
+                <p><strong>Total Reviews:</strong> {{ $vehicle->ratingSummary['count'] }}</p>
+            @else
+                <p>No ratings yet</p>
+            @endif
+        </div>
+    </div>
+
+    <div class="card mb-3">
         <div class="card-header">General Information</div>
         <div class="card-body">
             <p><strong>Brand:</strong> {{ $vehicle->brand }}</p>

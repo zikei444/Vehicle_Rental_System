@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Http\JsonResponse; 
 
 use App\Models\Rating;
 
@@ -26,7 +27,22 @@ class RatingService
                      ->where('reservation_id', $reservationId)
                      ->exists();
     }
+    
+    public function getVehicleRatingSummary(int $vehicleId): JsonResponse
+    {
+        $ratings = Rating::where('vehicle_id', $vehicleId);
 
+        $count = $ratings->count();
+
+        $data = [
+            'vehicle_id' => $vehicleId,
+            'average'    => $count > 0 ? round($ratings->avg('rating'), 1) : null,
+            'count'      => $count,
+        ];
+
+        return response()->json(['data' => $data]);
+    }
+    
     // 获取某车辆的平均评分
     public function getAverageRating(int $vehicleId): ?float
     {

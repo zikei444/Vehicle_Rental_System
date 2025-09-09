@@ -15,10 +15,15 @@ class RatingApiController extends Controller {
         $this->ratingService = $ratingService;
     }
 
+    public function summary($vehicleId) {
+        return $this->ratingService->getVehicleRatingSummary($vehicleId);
+    }
+
     // 获取审核通过的评论
     public function index($vehicleId) {
         return response()->json($this->ratingService->getApprovedRatings($vehicleId));
     }
+
     public function store(Request $request)
     {
         $request->validate([
