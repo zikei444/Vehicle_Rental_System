@@ -26,7 +26,7 @@ class AdminVehicleController extends Controller
     public function store(Request $request)
     {
         VehicleManagementFacade::createVehicle($request); // Facade call
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully.');
+        return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle added successfully.');
     }
 
     // ====== SHOW SINGLE VEHICLE ======
