@@ -43,6 +43,10 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
 
+Route::get('/ratings/summary/{vehicleId}', [RatingApiController::class, 'summary']); // Summary
+Route::get('/ratings/{vehicleId}', [RatingApiController::class, 'index']);          // Approved ratings
+Route::post('/ratings', [RatingApiController::class, 'store']);                     // Submit rating
+
 
 // Reservation Api
 Route::get('/reservations', [ReservationApiController::class, 'index']);  // semua
