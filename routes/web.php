@@ -38,11 +38,7 @@ Route::prefix('admin')->group(function () {
     Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 });
 
-Route::prefix('ratings')->group(function () {
-    Route::get('/summary/{vehicleId}', [RatingApiController::class, 'summary']);
-    Route::get('/{vehicleId}', [RatingApiController::class, 'index']);
-    Route::post('/', [RatingApiController::class, 'store']);
-});
+
 
 
 // =================== USERS RESERVATION ROUTES ===================
