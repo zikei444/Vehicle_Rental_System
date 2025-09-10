@@ -31,7 +31,8 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">📅 Pickup Date</label>
-                            <input type="date" name="pickup_date" id="pickup_date" class="form-control" required>
+                            <!-- Today and onwards can pick -->
+                            <input type="date" name="pickup_date" id="pickup_date" class="form-control" min="{{ \Carbon\Carbon::today()->toDateString() }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">🕑 Number of Days</label>

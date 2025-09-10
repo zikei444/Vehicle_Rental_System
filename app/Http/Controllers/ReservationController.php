@@ -104,6 +104,14 @@ class ReservationController extends Controller
     // Confifm reservation
     public function confirm(Request $request)
     {
+        // Check login first
+        if (!auth()->check()) {
+            return view('reservations.reservationProcess', [
+                'vehicle' => $this->getVehicleJson((int) $request->vehicle_id, (bool) $request->query('use_api', false)),
+                'error_popup' => 'You must be logged in to proceed to rent car.',
+            ]);
+        }
+
         $useApi = (bool) $request->query('use_api', false);
         $customerId = null;
 
@@ -167,7 +175,7 @@ class ReservationController extends Controller
         // 1️⃣ Validate input
         $validated = $request->validate([
             'vehicle_id' => 'required|integer',
-            'pickup_date' => 'required|date',
+            'pickup_date' => 'required|date|after_or_equal:today',
             'return_date' => 'required|date',
             'days' => 'required|integer|min:1',
             'total_cost' => 'required|numeric|min:0',
@@ -330,6 +338,54 @@ class ReservationController extends Controller
         }
 
         return view('reservations.myReservation', compact('reservation', 'noOngoing'));
+    }
+
+    /**
+     * Let mark reservation as completed
+     */
+    public function complete(Request $request, $id)
+    {
+        $useApi = (bool) $request->query('use_api', false);
+
+        $reservation = Reservation::findOrFail($id);
+        $reservation->status = 'completed';
+        $reservation->save();
+
+        // Update vehicle back to available
+        if ($useApi) {
+            Http::post(url($this->vehicleApi . '/update-status'), [
+                'vehicle_id' => $reservation->vehicle_id,
+                'status' => 'available',
+            ]);
+        } else {
+            $this->vehicleService->updateStatus($reservation->vehicle_id, 'available');
+        }
+
+        return redirect()->route('reservations.history')->with('success', 'Reservation marked as completed.');
+    }
+
+    /**
+     * Let customer cancel reservation
+     */
+    public function cancel(Request $request, $id)
+    {
+        $useApi = (bool) $request->query('use_api', false);
+
+        $reservation = Reservation::findOrFail($id);
+        $reservation->status = 'cancelled';
+        $reservation->save();
+
+        // Update vehicle back to available
+        if ($useApi) {
+            Http::post(url($this->vehicleApi . '/update-status'), [
+                'vehicle_id' => $reservation->vehicle_id,
+                'status' => 'available',
+            ]);
+        } else {
+            $this->vehicleService->updateStatus($reservation->vehicle_id, 'available');
+        }
+
+        return redirect()->route('reservations.history')->with('success', 'Reservation cancelled.');
     }
 
     /**

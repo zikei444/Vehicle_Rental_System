@@ -70,6 +70,12 @@ Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
 Route::get('/my-reservations/history', [ReservationController::class, 'reservationHistory'])
     ->name('reservations.history');
 
+// To mark as complete 
+Route::post('/reservations/{id}/complete', [ReservationController::class, 'complete'])->name('reservations.complete');
+
+// To mark as cancel 
+Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+
 // =================== ADMIN RESERVATION ROUTES ===================
 Route::get('/admin/reservations', [AdminReservationController::class, 'reservations'])
     ->name('admin.reservations.index');
@@ -157,10 +163,10 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 
 // ================== LOGIN =============================
 // Redirect to login page
-Route::get('/login', [App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
 // Submit login form
-Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.submit');
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
 // Logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
