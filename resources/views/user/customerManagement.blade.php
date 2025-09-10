@@ -4,110 +4,84 @@
 
 @section('content')
 
-<style>
-    .container {
-        text-align: center;
-        color: #106748;
-    }
+<div class="container py-5">
 
-    table {
-        margin: auto;
-    }
+    <h2 class="text-center mb-4">Customer Management</h2>
 
-    td, th {
-        text-align: center;
-        vertical-align: middle;
-        font-size: 15px;
-        padding: 20px 10px;
-        border: 1px solid #106748;
-    }
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-    th {
-        font-size: 20px;
-    }
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-    a {
-        color: #106748;
-    }
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-success">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone No</th>
+                    <th>Role</th>
+                    <th>Joined Date</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($customers as $cust)
+                    @php
+                        $editingId = request('edit_id');
+                        $isEditing = $editingId == $cust['user_id'];
+                    @endphp
+                    <tr>
+                        <form action="{{ $isEditing ? route('admin.customer.update', $cust['user_id']) : route('admin.customerManagement') }}" method="POST">
+                            @csrf
+                            @if($isEditing)
+                                @method('PUT')
+                            @endif
+                            <td>{{ $cust['customer_id'] }}</td>
 
-    .icon {
-        height: 120px;
-        width: 120px;
-    }
+                            @if($isEditing)
+                                <td><input type="text" name="username" class="form-control form-control-sm" value="{{ $cust['name'] }}" required></td>
+                                <td>{{ $cust['email'] }}</td>
+                                <td><input type="text" name="phone" class="form-control form-control-sm" value="{{ $cust['phoneNo'] }}" required></td>
+                            @else
+                                <td><input type="text" class="form-control form-control-sm" value="{{ $cust['name'] }}" disabled></td>
+                                <td>{{ $cust['email'] }}</td>
+                                <td><input type="text" class="form-control form-control-sm" value="{{ $cust['phoneNo'] }}" disabled></td>
+                            @endif
 
-    #login_url {
-        font-size: 15px;
-    }
+                            <td>{{ $cust['role'] }}</td>
+                            <td>{{ $cust['created_at'] }}</td>
+                            <td>{{ $cust['updated_at'] ?? '-' }}</td>
+                            
+                            <td class="d-flex justify-content-center gap-2">
+                                @if($isEditing)
+                                    <button type="submit" class="btn btn-success btn-sm">Save</button>
+                                    <a href="{{ route('admin.customerManagement') }}" class="btn btn-danger btn-sm">Cancel</a>
+                                @else
+                                    <a href="{{ route('admin.customerManagement', ['edit_id' => $cust['user_id']]) }}" class="btn btn-warning btn-sm">Edit</a>
+                                @endif
+                            </td>
+                        </form>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" class="text-center">No Customer Records</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-    button {
-        color: #0F3829;
-        font-size: 15px;
-        padding: 10px 20px;
-        border: 2px solid #106748;
-        border-radius: 5px;
-        margin: 0px 10px;
-        font-weight: bold;
-    }
-</style>
-
-<div>
-    <h1>Customer Management</h1>
-
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone No</th>
-            <th>Role</th>
-            <th>Joined Date</th>
-            <th>Updated At</th>
-            <th>Actions</th>
-        </tr>
-        @forelse($customers as $cust)
-            @php
-                $editingId = request('edit_id');
-                $isEditing = $editingId == $cust['user_id'];
-            @endphp
-            <tr>
-                <form action="{{ $isEditing ? route('admin.customer.update', $cust['user_id']) : route('admin.customerManagement') }}" method="POST">
-                    @csrf
-                    @if($isEditing)
-                        @method('PUT')
-                    @endif
-                    <td>{{ $cust['customer_id'] }}</td>
-
-                    @if($isEditing)
-                        <td><input type="text" name="username" value="{{ $cust['name'] }}" required></td>
-                        <td>{{ $cust['email'] }}</td>
-                        <td><input type="text" name="phone" value="{{ $cust['phoneNo'] }}" required></td>
-                    @else
-                        <td><input type="text" value="{{ $cust['name'] }}" disabled></td>
-                        <td>{{ $cust['email'] }}</td>
-                        <td><input type="text" value="{{ $cust['phoneNo'] }}" disabled></td>
-                    @endif
-
-                    <td>{{ $cust['role'] }}</td>
-                    <td>{{ $cust['created_at'] }}</td>
-                    <td>{{ $cust['updated_at'] ?? '-' }}</td>
-                    
-                    <td style = "width : 250px" ">
-                        @if($isEditing)
-                            <button type="submit" style = "background: #84D6B8">Save</button>
-                            <a href="{{ route('admin.customerManagement') }}">
-                                <button type="button" style = "background: #F6685E">Cancel</button>
-                            </a>
-                        @else
-                            <a href="{{ route('admin.customerManagement', ['edit_id' => $cust['user_id']]) }}">
-                                <button type="button" style = "background: #FFFFBD">Edit</button>
-                            </a>
-                        @endif
-                    </td>
-                </form>
-            </tr>
-        @empty
-            <tr><td colspan="8">No Customer Records</td></tr>
-        @endforelse
-    </table>
 </div>
 @endsection

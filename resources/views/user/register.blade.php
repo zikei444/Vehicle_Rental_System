@@ -4,60 +4,19 @@
 
 @section('content')
 
-<style>
-    .container{
-        text-align: center;
-        color: #106748;
-    }
-
-    table{
-        margin: auto;
-    }
-
-    td{
-        text-align: left;
-        vertical-align: middle;
-        font-size: 20px;
-        padding: 20px 10px;
-    }
-
-    a{
-        color: #106748;
-    }
-
-    .icon{
-        height: 120px;
-        width: 120px;
-    }
-
-    #login_url{
-        font-size: 15px
-    }
-
-    #btn_submit button {
-        color: #106748;
-        font-size: 20px;
-        padding: 10px 20px;
-        background: #E7EFEC;
-        border: 2px solid #106748;
-        border-radius: 5px;
-    }
-</style>
-
-<div class="container">
+<div class="container py-5">
 
     {{-- Display success message --}}
     @if (session('success'))
-        <div class="alert alert-success" role="alert">
-            <ul class="mb-0" style="list-style:none; padding:0;">
-                <li>{{ session('success') }}</li>
-            </ul>
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
     @endif
 
-    @if($errors->any())
-        <div class="alert alert-danger" role="alert">
-            <ul class="mb-0" style="list-style:none; padding:0;">
+    {{-- Display validation errors --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -65,70 +24,60 @@
         </div>
     @endif
 
-    <h1>Registration</h1>
-    
-    <form method="POST" action="{{ route('register.submit') }}">
-        @csrf
-        <table>
-            <tr>
-                <td>Username</td>
-                <td>:</td>
-                <td>
-                    <input type="text" name="username" value="{{ old('username') }}" required>
-                    @error('username')
-                        <div style="color:red; font-size:14px;">{{ $message }}</div>
-                    @enderror
-                </td>
-            </tr>
-            <tr>
-                <td>Email</td>
-                <td>:</td>
-                <td>
-                    <input type="text" name="email" value="{{ old('email') }}" required>
-                    @error('email')
-                        <div style="color:red; font-size:14px;">{{ $message }}</div>
-                    @enderror
-                </td>
-            </tr>
-            <tr>
-                <td>Phone Number</td>
-                <td>:</td>
-                <td>
-                    <input type="text" name="phone" value="{{ old('phone') }}" required>
-                    @error('phone')
-                        <div style="color:red; font-size:14px;">{{ $message }}</div>
-                    @enderror
-                </td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td>:</td>
-                <td>
-                    <input type="password" name="password" required>
-                    @error('password')
-                        <div style="color:red; font-size:14px;">{{ $message }}</div>
-                    @enderror
-                </td>
-            </tr>
-            <tr>
-                <td>Confirm Password</td>
-                <td>:</td>
-                <td>
-                    <input type="password" name="password_confirmation" required>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3" id="btn_submit" style="text-align:center">
-                    <button type="submit">Register</button>
-                </td>
-            </tr>
-        </table>
-    </form>
+    <div class="card shadow-sm mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Registration</h2>
 
-    <br>
-    <p id="login_url">
-        Already have an account? <a href="{{ route('login') }}">Click Here</a>
-    </p>
+            <form method="POST" action="{{ route('register.submit') }}">
+                @csrf
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" value="{{ old('username') }}" required>
+                    @error('username')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                    @error('email')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone" class="form-control" value="{{ old('phone') }}" required>
+                    @error('phone')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                    @error('password')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirmation" class="form-control" required>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Register</button>
+                </div>
+            </form>
+
+            <p class="text-center mt-3">
+                Already have an account? <a href="{{ route('login') }}">Click Here</a>
+            </p>
+        </div>
+    </div>
 
 </div>
 
