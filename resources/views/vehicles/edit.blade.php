@@ -67,20 +67,37 @@
         <div class="mb-3">
             <label for="image" class="form-label">Vehicle Image</label>
             <input type="file" name="image" class="form-control" id="image">
+            <small class="text-muted">Upload a new image to replace the current one.</small>
         </div>
+
 
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="insurance_doc" class="form-label">Insurance Document</label>
                 <input type="file" name="insurance_doc" class="form-control" id="insurance_doc">
+                @if(!empty($vehicle->insurance_doc))
+                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
+                @else
+                    <small class="text-muted">Upload a new document (optional).</small>
+                @endif
             </div>
             <div class="col-md-4">
                 <label for="registration_doc" class="form-label">Registration Document</label>
                 <input type="file" name="registration_doc" class="form-control" id="registration_doc">
+                @if(!empty($vehicle->registration_doc))
+                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
+                @else
+                    <small class="text-muted">Upload a new document (optional).</small>
+                @endif
             </div>
             <div class="col-md-4">
-                <label for="roadtax_doc" class="form-label">Road Tax Document</label>
+                <label for="roadtax_doc" class="form-label">Insurance Document</label>
                 <input type="file" name="roadtax_doc" class="form-control" id="roadtax_doc">
+                @if(!empty($vehicle->roadtax_doc))
+                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
+                @else
+                    <small class="text-muted">Upload a new document (optional).</small>
+                @endif
             </div>
         </div>
 
