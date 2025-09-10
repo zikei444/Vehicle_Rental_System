@@ -85,10 +85,10 @@
             }
         @endphp
 
+        <!-- Update Profile Form -->
         <form action="{{ route('profile.update') }}" method="POST">
             @csrf
             @method('PUT')
-
             <table>
                 <tr>
                     <td>Username</td>
@@ -106,22 +106,30 @@
                             {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
                     </td>
                 </tr>
-                <tr>
-                    <td colspan = "2" style = "width : 250px ; text-align : center" >
-                        @if(request()->get('edit') !== 'true')
-                            <a href="{{ route('profile.edit', ['edit' => 'true']) }}">
-                                <button type="button" style = "background: #FFFFBD">Edit</button>
-                            </a>
-                        @else
-                            <button type="submit" style = "background: #84D6B8">Save</button>
-                            <a href="{{ route('profile.edit') }}">
-                                <button type="button" style = "background: #F6685E">Cancel</button>
-                            </a>
-                        @endif
-                    </td>
-                </tr>
             </table>
+
+            <div style="text-align:center; margin-top:10px;">
+                @if(request()->get('edit') !== 'true')
+                    <a href="{{ route('profile.edit', ['edit' => 'true']) }}">
+                        <button type="button" style="background: #FFFFBD">Edit</button>
+                    </a>
+                @else
+                    <button type="submit" style="background: #84D6B8">Save</button>
+                    <a href="{{ route('profile.edit') }}">
+                        <button type="button" style="background: #F6685E">Cancel</button>
+                    </a>
+                @endif
+            </div>
         </form>
+
+<!-- Delete Account Form -->
+<form action="{{ route('profile.destroy') }}" method="POST" style="text-align:center; margin-top:20px;" 
+      onsubmit="return confirm('Are you sure you want to delete your account? After deletion, all your data cannot be restored!');">
+    @csrf
+    @method('DELETE')
+    <button type="submit" style="background: #F6685E; color: white;">Delete Account</button>
+</form>
+
     </div>
 
     <div class = "box">

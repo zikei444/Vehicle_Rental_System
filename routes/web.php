@@ -202,3 +202,8 @@ Route::put('/profile', [ProfileController::class, 'update'])
     ->name('profile.update')
     ->middleware('auth');
 
+// Delete account
+Route::delete('/profile', [ProfileController::class, 'destroy'])
+    ->name('profile.destroy')
+    ->middleware('auth');
+
