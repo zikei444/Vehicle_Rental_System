@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\ReservationService;
+use App\Services\Factories\UserFactory;
 
 class ProfileController extends Controller
 {
@@ -74,5 +75,21 @@ class ProfileController extends Controller
         }
 
         return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
+    }
+
+    // Delete account
+    public function destroy()
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['auth' => 'You must log in to delete your account.']);
+        }
+
+        UserFactory::deleteUser($user);
+
+        auth()->logout();
+
+        return redirect()->route('register')->with('success', 'Your account has been deleted successfully!');
     }
 }

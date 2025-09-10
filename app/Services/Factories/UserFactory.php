@@ -4,6 +4,7 @@ namespace App\Services\Factories;
 
 use App\Models\AdminUser;
 use App\Models\CustomerUser;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class UserFactory
@@ -22,6 +23,18 @@ class UserFactory
         $user->password = isset($data['password']) ? Hash::make($data['password']) : null;
 
         return $user;
+    }
+
+        public static function deleteUser(User $user)
+    {
+        // If the user has related customer/reservations, delete them first
+        if ($user->customer) {
+            $user->customer->reservations()->delete(); // delete related reservations
+            $user->customer->delete(); // delete customer profile
+        }
+
+        // Finally, delete user account
+        $user->delete();
     }
 }
 

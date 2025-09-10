@@ -4,72 +4,23 @@
 
 @section('content')
 
-<style>
-    .container{
-        text-align: center;
-        color: #106748;
-    }
+<div class="container py-5">
 
-    table{
-        margin: auto;
-    }
+    <h2 class="text-center mb-4">Login</h2>
 
-    td{
-        text-align: left;
-        vertical-align: middle;
-        font-size: 20px;
-        padding: 20px 10px;
-    }
-
-    a{
-        color: #106748;
-    }
-
-    .icon{
-        height: 120px;
-        width: 120px;
-    }
-
-    #login_url{
-        font-size: 15px
-    }
-
-    #btn_submit button {
-        color: #106748;
-        font-size: 20px;
-        padding: 10px 20px;
-        background: #E7EFEC;
-        border: 2px solid #106748;
-        border-radius: 5px;
-    }
-
-    /* Optional fade-out animation for alerts */
-    .fade-out {
-        animation: fadeOut 3s forwards;
-        animation-delay: 3s;
-    }
-    @keyframes fadeOut {
-        to {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
-</style>
-
-<div class="container">
-
-    <h1>Login</h1>
-
+    {{-- Success Message --}}
     @if(session('success'))
-        <div class="alert alert-success fade-out" role="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    @if($errors->any())
-        <div class="alert alert-danger" role="alert">
-            <ul class="mb-0" style="list-style:none; padding:0;">
-                @foreach($errors->all() as $error)
+    {{-- Error Messages --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
@@ -77,36 +28,40 @@
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
+    <div class="card shadow-sm mx-auto" style="max-width: 400px;">
+        <div class="card-body">
+            <form method="POST" action="{{ route('login.submit') }}">
+                @csrf
 
-    <form method="POST" action="{{ route('login.submit')}}">
-        @csrf
-        <table>
-            <tr>
-                <td>Email</td>
-                <td>:</td>
-                <td><input type="text" name="email" value="{{ old('email') }}" required></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td>:</td>
-                <td><input type="password" name="password" required></td>
-            </tr>
-            <tr>
-                <td colspan="3" id="btn_submit" style="text-align : center">
-                    <button type="submit">Login</button>
-                </td>
-            </tr>
-        </table>
-    </form>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                </div>
 
-    <p id="register_url">
-        Don't have account? <a href="{{ route('register')}}">Click Here</a>
-    </p>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        Login
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center mt-3">
+                Don't have an account? <a href="{{ route('register') }}">Register here</a>
+            </p>
+        </div>
+    </div>
 
 </div>
+
 @endsection
