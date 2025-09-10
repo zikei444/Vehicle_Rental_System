@@ -93,7 +93,7 @@
             {{-- Bank Transfer --}}
             <div id="bank-fields" class="mt-3 p-3 border rounded d-none bg-light shadow-sm text-center">
                 <h5><i class="bi bi-qr-code-scan"></i> Scan QR Code to Pay</h5>
-                <img src="{{ asset('images/bank_qr_placeholder.png') }}" alt="Bank QR" class="img-fluid mb-2" style="max-width:200px;">
+                <img src="{{ asset('images/bankTransfer.jpg') }}" alt="Bank QR" class="img-fluid mb-2" style="max-width:200px;">
                 <p class="text-muted">Please scan this QR code with your bank app to complete payment.</p>
             </div>
 

@@ -10,7 +10,7 @@ class Admin
     {
         $user = session('user'); // from your factory login
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('customer.dashboard')->withErrors(['error' => 'Access denied']);
+            return redirect()->route('customer.dashboard')->withErrors(['error' => 'You are not admin.']);
         }
 
         return $next($request);

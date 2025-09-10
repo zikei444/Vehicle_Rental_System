@@ -38,6 +38,28 @@
                 </ul>
 
                 <div class="text-center mt-3">
+                    <form action="{{ route('reservations.complete', $reservation->id) }}" 
+                        method="POST" 
+                        class="d-inline"
+                        onsubmit="return confirm('Mark this reservation as complete?');">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-lg shadow-sm me-2">
+                            <i class="bi bi-check-circle me-2"></i> Mark as Complete
+                        </button>
+                    </form>
+
+                    <form action="{{ route('reservations.cancel', $reservation->id) }}" 
+                        method="POST" 
+                        class="d-inline"
+                        onsubmit="return confirm('Are you sure you want to cancel this reservation? This cannot be undone.');">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-lg shadow-sm">
+                            <i class="bi bi-x-circle me-2"></i> Cancel Rental
+                        </button>
+                    </form>
+                </div>
+
+                <div class="text-center mt-3">
                     <a href="{{ url('vehicles') }}" class="btn btn-primary btn-lg shadow-sm">
                         <i class="bi bi-arrow-left-circle me-2"></i> Back to Vehicles
                     </a>
@@ -61,6 +83,7 @@
                 confirmButtonColor: '#0d6efd'
             });
         });
+        
     </script>
     @endif
 </div>

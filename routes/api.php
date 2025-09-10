@@ -43,10 +43,12 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
 
-Route::get('/ratings/summary/{vehicleId}', [RatingApiController::class, 'summary']); // Summary
-Route::get('/ratings/{vehicleId}', [RatingApiController::class, 'index']);          // Approved ratings
-Route::post('/ratings', [RatingApiController::class, 'store']);                     // Submit rating
 
+Route::prefix('ratings')->group(function () {
+    Route::get('/summary/{vehicleId}', [RatingApiController::class, 'summary']);
+    Route::get('/{vehicleId}', [RatingApiController::class, 'index']);
+    Route::post('/', [RatingApiController::class, 'store']);
+});
 
 // Reservation Api
 Route::get('/reservations', [ReservationApiController::class, 'index']);  // semua
@@ -54,6 +56,9 @@ Route::get('/reservations/{id}', [ReservationApiController::class, 'show']);  //
 Route::post('/reservations', [ReservationApiController::class, 'store']);   // tambah
 Route::put('/reservations/{id}', [ReservationApiController::class, 'update']);   // update
 Route::delete('/reservations/{id}', [ReservationApiController::class, 'destroy']);  // buang satu
+Route::get('/customers/{customerId}/reservations', [ReservationApiController::class, 'byCustomer']);  // based on cust id
+
+
 // Maintenance API
 Route::prefix('maintenances')->group(function () {
     Route::get('/',        [MaintenanceApiController::class, 'index']);   // List all maintenances

@@ -38,6 +38,9 @@ Route::prefix('admin')->group(function () {
     Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 });
 
+
+
+
 // =================== USERS RESERVATION ROUTES ===================
 // Redirect to the reservation process page
 Route::get('reservation/process', [ReservationController::class, 'process'])
@@ -62,6 +65,12 @@ Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
 // To view reservation his (for customers)
 Route::get('/my-reservations/history', [ReservationController::class, 'reservationHistory'])
     ->name('reservations.history');
+
+// To mark as complete 
+Route::post('/reservations/{id}/complete', [ReservationController::class, 'complete'])->name('reservations.complete');
+
+// To mark as cancel 
+Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 
 // =================== ADMIN RESERVATION ROUTES ===================
 Route::get('/admin/reservations', [AdminReservationController::class, 'reservations'])
@@ -150,10 +159,10 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 
 // ================== LOGIN =============================
 // Redirect to login page
-Route::get('/login', [App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
 // Submit login form
-Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.submit');
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
 // Logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -171,27 +180,36 @@ Route::get('/admin/dashboard', function () {
 
 
 // ============================== ADMIN ONLY =================================
-// Admin dashboard
+Route::middleware(['auth', 'admin'])->group(function () {
     // Redirect to Customer Account Management Page
-    Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customerManagement');
+    Route::get('/admin/customers', [CustomerController::class, 'index'])
+        ->name('admin.customerManagement');
 
-    // Display customer account list
-    Route::get('/admin/profile', [CustomerController::class, 'index'])->name('admin.customerManagement');
+    // Display customer account list (optional, same as above)
+    Route::get('/admin/profile', [CustomerController::class, 'index'])
+        ->name('admin.customerManagement');
 
     // Update customer account
-    Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])->name('admin.customer.update');
+    Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])
+        ->name('admin.customer.update');
+});
 
-
-;
 
 // ========================= UPDATE PROFILE (CUSTOMER) ======================
 // Edit profile
-Route::get('/profile', [ProfileController::class, 'edit'])
-    ->name('profile.edit')
-    ->middleware('auth');
+Route::middleware('auth')->group(function () {
 
-// Update (Save button) profile
-Route::put('/profile', [ProfileController::class, 'update'])
-    ->name('profile.update')
-    ->middleware('auth');
+    // Show profile edit form
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    // Update profile (Save button)
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    // Delete account
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+});
 

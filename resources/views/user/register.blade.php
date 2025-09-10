@@ -4,89 +4,81 @@
 
 @section('content')
 
-<style>
-    .container{
-        text-align: center;
-        color: #106748;
-    }
+<div class="container py-5">
 
-    table{
-        margin: auto;
-    }
+    {{-- Display success message --}}
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    td{
-        text-align: left;
-        vertical-align: middle;
-        font-size: 20px;
-        padding: 20px 10px;
-    }
+    {{-- Display validation errors --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-    a{
-        color: #106748;
-    }
+    <div class="card shadow-sm mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Registration</h2>
 
-    .icon{
-        height: 120px;
-        width: 120px;
-    }
+            <form method="POST" action="{{ route('register.submit') }}">
+                @csrf
 
-    #login_url{
-        font-size: 15px
-    }
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" value="{{ old('username') }}" required>
+                    @error('username')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
-    #btn_submit button {
-        color: #106748;
-        font-size: 20px;
-        padding: 10px 20px;
-        background: #E7EFEC;
-        border: 2px solid #106748;
-        border-radius: 5px;
-    }
-</style>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                    @error('email')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
-<div class = "container">
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone" class="form-control" value="{{ old('phone') }}" required>
+                    @error('phone')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
-    <h1>Registration</h1>
-    
-    <form method = "POST" action = "{{ route('register.submit')}}">
-        @csrf
-        <table>
-            <tr>
-                <td>Username</td>
-                <td>:</td>
-                <td><input type = "text" name = "username" required></td>
-            </tr>
-            <tr>
-                <td>Email</td>
-                <td>:</td>
-                <td><input type = "text" name = "email" required></td>
-            </tr>
-            <tr>
-                <td>Phone Number</td>
-                <td>:</td>
-                <td><input type = "text" name = "phone" required></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td>:</td>
-                <td><input type = "password" name = "password" required></td>
-            </tr>
-            <tr>
-                <td>Confirm Password</td>
-                <td>:</td>
-                <td><input type = "password" name = "password_confirmation" required></td>
-            </tr>
-            <tr>
-                <td colspan = "3" id = "btn_submit" style = "text-align : center">
-                    <button type = "submit">Register</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-    </br>
-    <p id = "login_url">
-        Already have account? <a href="{{ route('login') }}">Click Here</a>
-    </p>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                    @error('password')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirmation" class="form-control" required>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Register</button>
+                </div>
+            </form>
+
+            <p class="text-center mt-3">
+                Already have an account? <a href="{{ route('login') }}">Click Here</a>
+            </p>
+        </div>
+    </div>
 
 </div>
+
 @endsection
