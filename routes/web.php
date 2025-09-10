@@ -12,7 +12,11 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeController;
 
+
+// HOME ROUTE
+Route::get('/', [HomeController::class, 'index'])->name('home');
  
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles

@@ -2,7 +2,7 @@
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
             <img src="{{ asset('images/logo.png') }}" alt="Logo" width="40" height="40" class="me-2">
-            Vehicle Rental System
+            Fantasy Rentals
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
@@ -23,9 +23,6 @@
                         <a class="nav-link" href="{{ route('vehicles.index') }}">Vehicles</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/about') }}">About Us</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('login') }}">Login</a>
                     </li>
                 @endguest
@@ -34,7 +31,7 @@
                 @auth
                     @if(Auth::user()->role === 'customer')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url('/') }}">Home</a>
+                            <a class="nav-link" href="{{ route('home') }}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('vehicles.index') }}">Vehicles</a>
@@ -63,9 +60,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('ratings_admin.index') }}">Ratings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('ratings_admin.index') }}">FAQs</a>
                         </li>
                     @endif
 
