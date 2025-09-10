@@ -3,14 +3,17 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Auth;
 
 class Admin
 {
     public function handle($request, Closure $next)
     {
-        $user = session('user'); // from your factory login
+        $user = Auth::user(); 
+
         if (!$user || $user->role !== 'admin') {
-            return redirect()->route('customer.dashboard')->withErrors(['error' => 'You are not admin.']);
+            // redirect unauthorized users somewhere safe
+            return redirect('/')->withErrors(['error' => 'You are not admin.']);
         }
 
         return $next($request);
