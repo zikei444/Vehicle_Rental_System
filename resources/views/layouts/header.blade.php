@@ -43,7 +43,7 @@
                             <a class="nav-link" href="{{ route('reservation.my') }}">My Reservations</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('customer.dashboard') }}">Profile</a>
+                            <a class="nav-link" href="{{ route('profile.edit') }}">Profile</a>
                         </li>
                     @endif
 

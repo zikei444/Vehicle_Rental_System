@@ -54,6 +54,7 @@ Route::get('/reservations/{id}', [ReservationApiController::class, 'show']);  //
 Route::post('/reservations', [ReservationApiController::class, 'store']);   // tambah
 Route::put('/reservations/{id}', [ReservationApiController::class, 'update']);   // update
 Route::delete('/reservations/{id}', [ReservationApiController::class, 'destroy']);  // buang satu
+Route::get('/customers/{customerId}/reservations', [ReservationApiController::class, 'byCustomer']);  // based on cust id
 // Maintenance API
 Route::prefix('maintenances')->group(function () {
     Route::get('/',        [MaintenanceApiController::class, 'index']);   // List all maintenances

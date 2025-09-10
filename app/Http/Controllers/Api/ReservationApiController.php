@@ -67,4 +67,10 @@ class ReservationApiController extends Controller
         $reservation->delete();
         return response()->json(['message' => 'Reservation deleted successfully']);
     }
+
+    public function byCustomer($customerId)
+    {
+        $reservations = Reservation::where('customer_id', $customerId)->get();
+        return response()->json(['data' => $reservations]);
+    }
 }

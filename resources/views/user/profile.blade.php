@@ -28,15 +28,17 @@
 
     @php
         $userObj = session('user');
-        if(isset($userData)) {
+        if (isset($userData)) {
             $userObj = (object) $userData;
         }
     @endphp
 
     {{-- Profile Box --}}
-    <div class="card mb-4 shadow-sm">
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 text-center">
+            <h2 class="fw-bold mb-0">Profile</h2>
+        </div>
         <div class="card-body">
-            <h2 class="card-title text-center mb-4">Profile</h2>
 
             {{-- Update Profile Form --}}
             <form action="{{ route('profile.update') }}" method="POST">
@@ -48,7 +50,7 @@
                     <div class="col-sm-9">
                         <input type="text" name="username"
                                class="form-control"
-                               value="{{ old('username', $userObj->name ?? '') }}"
+                               value="{{ old('username', Auth::user()->name ?? '') }}"
                                {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
                     </div>
                 </div>
@@ -62,6 +64,8 @@
                                {{ request()->get('edit') !== 'true' ? 'disabled' : '' }}>
                     </div>
                 </div>
+
+
 
                 <div class="text-center">
                     @if(request()->get('edit') !== 'true')
@@ -77,7 +81,7 @@
 
             {{-- Delete Account Form --}}
             <form action="{{ route('profile.destroy') }}" method="POST" class="text-center mt-4"
-                  onsubmit="return confirm('Are you sure you want to delete your account? After deletion, all your data cannot be restored!');">
+                onsubmit="return confirm('Are you sure you want to delete your account? After deletion, all your data cannot be restored!');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">Delete Account</button>
@@ -85,10 +89,24 @@
         </div>
     </div>
 
+    {{-- Reservation History --}}
+    <div class="card shadow-sm rounded-4 mb-4 text-center">
+        <div class="card-header bg-white border-0">
+            <h3 class="fw-bold mb-0">My Reservation History</h3>
+        </div>
+        <a href="{{ route('reservations.history') }}" class="card-body d-flex flex-column align-items-center text-decoration-none text-dark p-4">
+            <img src="{{ asset('images/dashboard/reservation_icon.png') }}" alt="Reservation History"
+                class="mb-3 img-fluid bg-light p-2 border rounded" style="width:100px; height:100px;">
+            <p class="text-muted small mb-0">View all your past rentals in one place</p>
+        </a>
+    </div>
+
     {{-- Reservation Summary --}}
-    <div class="card shadow-sm">
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 text-center">
+            <h3 class="fw-bold mb-0">Reservation Summary</h3>
+        </div>
         <div class="card-body">
-            <h3 class="card-title text-center mb-3">Reservation Summary</h3>
             <table class="table table-bordered text-center mb-0">
                 <thead class="table-light">
                     <tr>
