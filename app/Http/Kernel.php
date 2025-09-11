@@ -28,10 +28,7 @@ class Kernel extends HttpKernel
      *
      * @var array<string, array<int, class-string|string>>
      */
-    protected $routeMiddleware = [
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        // other middleware...
-    ];
+    
     protected $middlewareGroups = [
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
@@ -68,5 +65,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\Admin::class,
+        //Denial of Service (DoS) ： secure coding practices
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+
     ];
 }
