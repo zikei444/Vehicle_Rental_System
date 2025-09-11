@@ -51,6 +51,7 @@ class VehicleController extends Controller
     {
         $query = Vehicle::query();
 
+        // 🔍 Search
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -59,25 +60,28 @@ class VehicleController extends Controller
             });
         }
 
+        // 🚘 Filter by type
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
+        // 📊 Include rating count + average (only approved)
+        $query->withCount([
+            'ratings as ratings_count' => function ($q) {
+                $q->approved();
+            }
+        ])->withAvg([
+            'ratings as average_rating' => function ($q) {
+                $q->approved();
+            }
+        ], 'rating');
+
+        // ↕️ Sorting
         if ($request->filled('sort_by') && $request->filled('order')) {
             $query->orderBy($request->sort_by, $request->order);
         }
 
         $vehicles = $query->get();
-
-        $vehicles = $vehicles->map(function ($v) {
-            $ratingSummary = $this->ratingService
-                ->getVehicleRatingSummary($v->id)
-                ->getData(true)['data'];
-
-            $v->average_rating = $ratingSummary['average'];
-            $v->ratings_count  = $ratingSummary['count'];
-            return $v;
-        });
 
         return view('vehicles.index', compact('vehicles'));
     }

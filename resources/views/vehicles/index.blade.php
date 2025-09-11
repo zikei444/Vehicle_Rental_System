@@ -46,10 +46,10 @@
                         <p class="card-text mb-1"><strong>Year:</strong> {{ $v['year_of_manufacture'] ?? 'N/A' }}</p>
                         <p class="card-text mb-1"><strong>Price:</strong> RM {{ number_format($v['rental_price'], 2) }}</p>
                         
-                        @if(!empty($v['average_rating']))
+                        @if($v->average_rating)
                             <p class="card-text mb-1">
-                                <strong>Rating:</strong> ⭐ {{ $v['average_rating'] }} / 5 
-                                ({{ $v['ratings_count'] }} reviews)
+                                <strong>Rating:</strong> ⭐ {{ number_format($v->average_rating, 1) }} / 5 
+                                ({{ $v->ratings_count }} reviews)
                             </p>
                         @else
                             <p class="card-text mb-1"><strong>Rating:</strong> No ratings yet</p>
