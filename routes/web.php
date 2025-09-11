@@ -104,7 +104,6 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 // // =================== CUSTOMER FEEDBACK ROUTES ===================
 // notification observer
 //view all 
-//Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 Route::get('/notifications/fetch', [NotificationController::class, 'fetch'])->name('notifications.fetch');
 //mark as read
 Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
@@ -112,7 +111,6 @@ Route::post('/notifications/mark-as-read', [NotificationController::class, 'mark
 Route::prefix('vehicles/{vehicle}')->group(function () {
     // 显示评分列表
     Route::get('/ratings', [VehicleReviewController::class, 'showRatings']);
-
     // 显示平均评分
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
@@ -125,7 +123,6 @@ Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'view
 Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
 //看rating
-
 Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])
     ->name('reservation.ratings.show');
 
@@ -134,8 +131,8 @@ Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::cl
     ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
-
-Route::prefix('admin')->group(function () {
+//Apply Throttle to Admin Routes！！！！
+Route::prefix('admin')->middleware(['auth', 'admin', 'throttle:10,1'])->group(function () {
     // Admin Dashboard (显示所有车辆平均评分 + 图表)
     Route::get('/ratings/dashboard', [AdminRatingController::class, 'dashboard'])->name('ratings_admin.dashboard');
     Route::get('/ratings/dashboard/details/{vehicle}', [AdminRatingController::class, 'vehicleRatingsDetails'])->name('ratings_admin.details');
@@ -143,7 +140,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/ratings/manage', [AdminRatingController::class, 'index'])->name('ratings_admin.index'); // Manage Ratings
     Route::post('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
     Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
-    // ⚡ 管理员回复
+    // 管理员回复
     Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
     Route::delete('/ratings/{id}', [AdminRatingController::class, 'destroy'])->name('ratings.destroy');
 
