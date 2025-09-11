@@ -17,6 +17,7 @@ class RatingObserver
     // }
 
     // When a new rating is created → notify admins
+// When a new rating is created → notify admins
     public function created(Rating $rating)
     {
         $admins = User::where('role', 'admin')->get();
@@ -32,6 +33,7 @@ class RatingObserver
             }
         }
     }
+
 
     // When rating is updated → notify customer if admin replied
     public function updated(Rating $rating)
@@ -61,6 +63,26 @@ class RatingObserver
                 $user->notify(new RatingReplied($rating, $rating->adminreply));
             }
         }
+    }// ✅ 每次评分更新后，更新车辆平均分和评论数
+    $this->updateVehicleStats($rating);
     }
-}
+    // 当评分创建/修改/删除时，更新车辆平均分和评论数
+    private function updateVehicleStats(Rating $rating)
+    {
+        $vehicle = $rating->vehicle;
+
+        if ($vehicle) {
+            $approvedRatings = $vehicle->ratings()->approved();
+
+            $vehicle->average_rating = $approvedRatings->avg('rating') ?? 0;
+//            $vehicle->total_reviews  = $approvedRatings->count();
+
+            $vehicle->save();
+        }
+    }
+    public function deleted(Rating $rating)
+    {
+        // Update vehicle stats after a rating is deleted
+        $this->updateVehicleStats($rating);
+    }
 }

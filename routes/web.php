@@ -133,6 +133,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
     // ⚡ 管理员回复
     Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
+    Route::delete('/ratings/{id}', [AdminRatingController::class, 'destroy'])->name('ratings.destroy');
 
 });
 

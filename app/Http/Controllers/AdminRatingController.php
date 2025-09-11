@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Notifications\RatingReplied;
 use App\Models\User;
 use App\Observers\UserObserver;
-use App\Observers\RatingSubject;
+use App\Observers\RatingObserver;
 
 class AdminRatingController extends Controller
 {
@@ -19,26 +19,10 @@ class AdminRatingController extends Controller
     }
     public function dashboard()
     {
-        // 获取所有车辆及其评分平均值
-        $vehicles = Vehicle::with('ratings')->get()->map(function ($vehicle) {
-            $vehicle->average_rating = $vehicle->ratings()
-                ->approved()
-                ->avg('rating') ?? 0;
-            return $vehicle;
-        });
+        // 直接取 Observer 已经维护好的字段
+    $vehicles = Vehicle::all(); 
 
-
-        // // 如果要按月份统计（可选）
-        // $monthlyRatings = Rating::select(
-        //         DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
-        //         'vehicle_id',
-        //         DB::raw('AVG(rating) as avg_rating')
-        //     )
-        //     ->groupBy('month','vehicle_id')
-        //     ->with('vehicle')
-        //     ->get();
-
-        return view('ratings_admin.dashboard', compact('vehicles'));
+    return view('ratings_admin.dashboard', compact('vehicles'));
     }
     // 每辆车的详细评分
     public function vehicleRatingsDetails(Vehicle $vehicle)
@@ -74,6 +58,16 @@ class AdminRatingController extends Controller
         return back()->with('success', 'Reply sent and notification created!');
     }
 
+    public function destroy($id)
+    {
+        $rating = Rating::find($id);
+        if (!$rating) {
+            return response()->json(['message' => 'Rating not found'], 404);
+        }
+
+        $rating->delete();
+        return response()->json(['message' => 'Rating deleted successfully']);
+    }
 
 
     // 拒绝评论

@@ -45,7 +45,11 @@
                     @elseif($rating->status === 'rejected')
                         <span>Rejected</span>
                 @endif
+                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="{{ $rating->id }}">Delete</button>
             </td>
+
+                
+            
         </tr>
         @endforeach
     </tbody>
@@ -95,6 +99,24 @@ $(function(){
             input.prop('disabled', true);
             $(`#rating-${id} .reply-btn`).prop('disabled', true);
             showAlert('Reply sent!');
+        });
+    });
+    // Delete
+    $('.delete-btn').click(function(){
+        if(!confirm('Are you sure you want to delete this rating?')) return;
+
+        const id = $(this).data('id');
+        $.ajax({
+            url: `/admin/ratings/${id}`,
+            type: 'DELETE',
+            data: {_token: '{{ csrf_token() }}'},
+            success: function(){
+                $(`#rating-${id}`).remove();
+                showAlert('Rating deleted!', 'danger');
+            },
+            error: function(){
+                showAlert('Failed to delete rating', 'danger');
+            }
         });
     });
 
