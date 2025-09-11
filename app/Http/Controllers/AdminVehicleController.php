@@ -4,56 +4,58 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
-use App\Services\Facade\VehicleManagementFacade;
-
+use App\Services\Facade\VehicleManagementFacade; // Implement with Facade pattern 
 
 class AdminVehicleController extends Controller
 {
-    // ====== LISTING ======
+    // List all vehicles
     public function index()
     {
         $vehicles = Vehicle::with(['car','truck','van'])->get();
         return view('vehicles.adminIndex', compact('vehicles'));
     }
 
-    // ====== SHOW CREATE FORM ======
+    // Show form to create  vehicle
     public function create()
     {
         return view('vehicles.create');
     }
 
-    // ====== STORE VEHICLE ======
+    // Store a new vehicle
     public function store(Request $request)
     {
-        VehicleManagementFacade::createVehicle($request); // Facade call
+        // Facade call
+        VehicleManagementFacade::createVehicle($request); 
         return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle added successfully.');
     }
 
-    // ====== SHOW SINGLE VEHICLE ======
+    // Show details of a single vehicle
     public function show($id)
     {
         $vehicle = Vehicle::with(['car','truck','van'])->findOrFail($id);
         return view('vehicles.show', compact('vehicle'));
     }
 
-    // ====== SHOW EDIT FORM ======
+    // Show form to edit a vehicle
     public function edit($id)
     {
         $vehicle = Vehicle::with(['car','truck','van'])->findOrFail($id);
         return view('vehicles.edit', compact('vehicle'));
     }
 
-    // ====== UPDATE VEHICLE ======
+    // Update an existing vehicle
     public function update(Request $request, $id)
     {
-        VehicleManagementFacade::updateVehicle($request, $id); // Facade call
+        // Facade call
+        VehicleManagementFacade::updateVehicle($request, $id); 
         return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle updated successfully.');
     }
 
-    // ====== DELETE VEHICLE ======
+    // Delete a vehicle
     public function destroy($id)
     {
-        VehicleManagementFacade::deleteVehicle($id); // Facade call
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle deleted successfully.');
+        // Facade call
+        VehicleManagementFacade::deleteVehicle($id);
+        return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle deleted successfully.');
     }
 }

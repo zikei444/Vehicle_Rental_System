@@ -28,22 +28,27 @@ class RatingService
             ->exists();
     }
 
-    // Only for approved
+    // Rating summary only for approved ratings for a specific vehicle 
     public function getVehicleRatingSummary(int $vehicleId, string $status = 'approved')
-{
-    $query = Rating::where('vehicle_id', $vehicleId)
-                   ->where('status', $status);
+    {
+        // A query to fetch ratings 
+        $query = Rating::where('vehicle_id', $vehicleId)
+                    ->where('status', $status);
 
-    $average = $query->avg('rating');
-    $count   = $query->count();
+        // Average rating from query
+        $average = $query->avg('rating');
 
-    return response()->json([
-        'data' => [
-            'average' => $average !== null ? (float) $average : 0,
-            'count'   => $count
-        ]
-    ]);
-}
+        // Count exist ratings 
+        $count   = $query->count();
+
+        // Return the summary as JSON response 
+        return response()->json([
+            'data' => [
+                'average' => $average !== null ? (float) $average : 0,
+                'count'   => $count
+            ]
+        ]);
+    }
 
     // 获取某车辆的平均评分
     public function getAverageRating(int $vehicleId): ?float
