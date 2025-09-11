@@ -1,22 +1,22 @@
 <?php
 
 namespace App\Services;
-use Illuminate\Http\JsonResponse; 
+use Illuminate\Http\JsonResponse;
 
 use App\Models\Rating;
 
 class RatingService
 {
     // 添加评分
-    public function addRating(int $customerId, int $vehicleId,int $reservationId, int $rating, ?string $feedback = null): Rating
+    public function addRating(int $customerId, int $vehicleId, int $reservationId, int $rating, ?string $feedback = null): Rating
     {
         return Rating::create([
             'customer_id' => $customerId,
-            'vehicle_id'  => $vehicleId,
-            'reservation_id' => $reservationId, 
-            'rating'      => $rating,
-            'feedback'    => $feedback,
-            'status'      => 'pending', // 默认待审核
+            'vehicle_id' => $vehicleId,
+            'reservation_id' => $reservationId,
+            'rating' => $rating,
+            'feedback' => $feedback,
+            'status' => 'pending', // 默认待审核
         ]);
     }
 
@@ -24,47 +24,53 @@ class RatingService
     public function hasRated(int $customerId, int $reservationId): bool
     {
         return Rating::where('customer_id', $customerId)
-                     ->where('reservation_id', $reservationId)
-                     ->exists();
+            ->where('reservation_id', $reservationId)
+            ->exists();
     }
-    
-    public function getVehicleRatingSummary(int $vehicleId): JsonResponse
-    {
-        $ratings = Rating::where('vehicle_id', $vehicleId);
 
-        $count = $ratings->count();
+    // Only for approved
+    public function getVehicleRatingSummary(int $vehicleId, string $status = 'approved')
+{
+    $query = Rating::where('vehicle_id', $vehicleId)
+                   ->where('status', $status);
 
-        $data = [
-            'vehicle_id' => $vehicleId,
-            'average'    => $count > 0 ? round($ratings->avg('rating'), 1) : null,
-            'count'      => $count,
-        ];
+    $average = $query->avg('rating');
+    $count   = $query->count();
 
-        return response()->json(['data' => $data]);
-    }
-    
+    return response()->json([
+        'data' => [
+            'average' => $average !== null ? (float) $average : 0,
+            'count'   => $count
+        ]
+    ]);
+}
+
     // 获取某车辆的平均评分
     public function getAverageRating(int $vehicleId): ?float
     {
         return Rating::where('vehicle_id', $vehicleId)
-                     ->approved()
-                     ->avg('rating');
+            ->approved()
+            ->avg('rating');
     }
 
     // 获取用户对某车的评分（只返回 approved）
     public function getUserRatingForVehicle(int $customerId, int $vehicleId): ?Rating
     {
         return Rating::where('customer_id', $customerId)
-                     ->where('vehicle_id', $vehicleId)
-                     ->approved()
-                     ->first();
+            ->where('vehicle_id', $vehicleId)
+            ->approved()
+            ->first();
     }
 
     // 获取某车辆的所有评分（approved）
     public function getVehicleRatings(int $vehicleId)
     {
         return Rating::where('vehicle_id', $vehicleId)
-                     ->approved()
-                     ->get();
+        
+            ->with(['customer', 'vehicle'])
+            ->get();
     }
+
+
+
 }

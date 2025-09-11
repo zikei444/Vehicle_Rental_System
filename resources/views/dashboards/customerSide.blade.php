@@ -32,31 +32,6 @@
                 </div>
             </a>
         </div>
-
-        {{-- Ratings & Feedback --}}
-        <div class="col">
-            <a href="{{ route('profile.edit') }}" class="text-decoration-none">
-                <div class="card h-100 text-center border-warning shadow-sm">
-                    <img src="{{ asset('images/dashboard/rating_icon.png') }}" class="card-img-top mx-auto mt-3" style="width:120px; height:120px;" alt="Ratings & Feedback">
-                    <div class="card-body">
-                        <h5 class="card-title text-warning">Give Us Ratings & Feedback</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        {{-- Maintenance --}}
-        <div class="col">
-            <a href="{{ route('profile.edit') }}" class="text-decoration-none">
-                <div class="card h-100 text-center border-danger shadow-sm">
-                    <img src="{{ asset('images/dashboard/maintenance_icon.png') }}" class="card-img-top mx-auto mt-3" style="width:120px; height:120px;" alt="Maintenance">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger">Maintenance</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-
     </div>
 </div>
 

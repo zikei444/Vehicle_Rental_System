@@ -39,7 +39,7 @@ class LoginController extends Controller
                                  ->with('success', 'Welcome back, Admin!');
             }
 
-            return redirect()->route('customer.dashboard')
+            return redirect()->route('profile.edit')
                              ->with('success', 'Welcome back!');
         }
 

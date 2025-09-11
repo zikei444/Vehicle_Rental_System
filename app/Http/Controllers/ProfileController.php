@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\ReservationService;
+use Illuminate\Support\Facades\Http;
 use App\Services\Factories\UserFactory;
 
 class ProfileController extends Controller
@@ -16,30 +17,47 @@ class ProfileController extends Controller
     }
 
     // Show the profile edit form 
-    public function edit()
+    public function edit(Request $request)
     {
         $user = auth()->user()->load('customer');
+
+        $customerId = $user->customer->id ?? null;
 
         if (!$user) {
             return redirect()->route('login')
                 ->withErrors(['auth' => 'You must log in to view your profile.']);
         }
 
-        // Call API from reservation service
-        $reservationsJson = $this->reservationService->allByCustomer($user->id);
+        $useApi = $request->query('use_api', false);
 
-        $reservations = collect($reservationsJson->getData(true)['data']);
+        if ($useApi) {
+            // 🔹 API call
+            $response = Http::get(url("/api/customers/{$customerId}/reservations"));
+
+            if ($response->failed()) {
+                return redirect()->back()->withErrors(['reservation' => 'Failed to fetch reservations from API.']);
+            }
+
+            $reservations = collect($response->json('data') ?? []);
+        } else {
+            // 🔹 Internal service
+            $serviceResponse = $this->reservationService->allByCustomer($customerId);
+
+            $reservations = $serviceResponse instanceof \Illuminate\Http\JsonResponse
+                ? collect($serviceResponse->getData(true)['data'] ?? [])
+                : collect($serviceResponse['data'] ?? []);
+        }
 
         // Count by status
         $reservationSummary = [
-            'ongoing'   => $reservations->where('status', 'ongoing')->count(),
+            'ongoing' => $reservations->where('status', 'ongoing')->count(),
             'cancelled' => $reservations->where('status', 'cancelled')->count(),
             'completed' => $reservations->where('status', 'completed')->count(),
         ];
 
         return view('user.profile', [
             'userData' => [
-                'name'  => $user->name,
+                'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->customer->phoneNo ?? '',
             ],
@@ -52,13 +70,13 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'username' => 'required|string|max:30',
-            'phone'    => 'required|string|max:11|min:10',
+            'phone' => 'required|string|max:11|min:10',
         ], [
             'username.required' => 'Username is required.',
-            'username.max'      => 'Username cannot exceed 30 characters.',
-            'phone.required'    => 'Phone number is required.',
-            'phone.max'         => 'Phone number must not be more than 11 digits.',
-            'phone.min'         => 'Phone number must be at least 10 digits'
+            'username.max' => 'Username cannot exceed 30 characters.',
+            'phone.required' => 'Phone number is required.',
+            'phone.max' => 'Phone number must not be more than 11 digits.',
+            'phone.min' => 'Phone number must be at least 10 digits'
         ]);
 
         $user = auth()->user()->load('customer');

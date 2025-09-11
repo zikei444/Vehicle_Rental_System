@@ -47,7 +47,7 @@ class AdminVehicleController extends Controller
     public function update(Request $request, $id)
     {
         VehicleManagementFacade::updateVehicle($request, $id); // Facade call
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle updated successfully.');
+        return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle updated successfully.');
     }
 
     // ====== DELETE VEHICLE ======

@@ -12,8 +12,10 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\NotificationController;
 
+
+// HOME ROUTE
+Route::get('/', [HomeController::class, 'index'])->name('home');
  
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
@@ -39,11 +41,7 @@ Route::prefix('admin')->group(function () {
     Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 });
 
-Route::prefix('ratings')->group(function () {
-    Route::get('/summary/{vehicleId}', [RatingApiController::class, 'summary']);
-    Route::get('/{vehicleId}', [RatingApiController::class, 'index']);
-    Route::post('/', [RatingApiController::class, 'store']);
-});
+
 
 
 // =================== USERS RESERVATION ROUTES ===================

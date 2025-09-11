@@ -14,16 +14,21 @@ use App\Services\Reservations\CostCalculator\VanCostStrategy;
 
 class ReservationController extends Controller
 {
+    // Vehicle Service
     private VehicleService $vehicleService;
+
+    // Rating Service
     private RatingService $ratingService;
 
+    // User Service
     private UserService $userService;
 
+    // API front URL
     private string $vehicleApi = '/api/vehicles';
     private string $ratingApi = '/api/ratings';
+    private string $userApi = '/api/user';
 
-    private string $userApi = '/api/ratings';
-
+    // Construct for Services
     public function __construct(VehicleService $vehicleService, RatingService $ratingService, UserService $userService)
     {
         $this->vehicleService = $vehicleService;
@@ -31,12 +36,11 @@ class ReservationController extends Controller
         $this->userService = $userService;
     }
 
-    /**
-     * Helper: fetch vehicle JSON either via API or service
-     */
+    // Helper: fetch vehicle JSON (if use api then http else go through service -- internal)
     private function getVehicleJson(int $vehicleId, bool $useApi): ?array
     {
         if ($useApi) {
+            // External API HTTP 
             $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
             if ($response->failed())
                 return null;
@@ -52,26 +56,26 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Show reservation process page
-     */
+    // Show process page
     public function process(Request $request)
     {
         $vehicleId = (int) $request->query('vehicle_id');
+
+        // Check if external service required
         $useApi = (bool) $request->query('use_api', false);
 
+        // Can helper to get response
         $vehicle = $this->getVehicleJson($vehicleId, $useApi);
 
         if (!$vehicle) {
             return back()->with('error', 'Vehicle not found');
         }
 
+        // Process page
         return view('reservations.reservationProcess', compact('vehicle'));
     }
 
-    /**
-     * Calculate reservation cost via Ajax
-     */
+    // Calculate cost via AJAX (Js + HTTP)
     public function calculateAjax(Request $request)
     {
         $vehicleId = (int) $request->vehicle_id;
@@ -86,10 +90,19 @@ class ReservationController extends Controller
         $pickup = new \DateTime($request->pickup_date);
         $return = (clone $pickup)->modify("+{$days} days");
 
-        $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($vehicle['type']) . "CostStrategy";
+        $allowedTypes = ['car', 'van', 'truck'];
+        $type = strtolower($vehicle['type']);
+
+        if (!in_array($type, $allowedTypes)) {
+            return response()->json(['error' => 'Invalid vehicle type'], 400);
+        }
+
+        // Strategy use based on vehicle type and call respective strategy class
+        $strategyClass = "App\\Services\\Reservations\\CostCalculator\\" . ucfirst($type) . "CostStrategy";
         $strategy = new $strategyClass();
         $costDetails = $strategy->calculate($vehicle, $days);
 
+        // Return to F-E
         return response()->json([
             'vehicle_id' => $vehicleId,
             'totalCost' => $costDetails['total'],
@@ -116,7 +129,7 @@ class ReservationController extends Controller
         $customerId = null;
 
         if ($useApi) {
-            $response = Http::timeout(5)->get(url('/api/user/customer-id'), [
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
                 'user_id' => auth()->id()
             ]);
 
@@ -128,7 +141,7 @@ class ReservationController extends Controller
         } else {
             $response = $this->userService->getCustomerIdByUserId(auth()->id());
 
-            // decode json
+            // Decode json
             $data = $response->getData(true); // to array
             $customerId = $data['customer_id'] ?? null;
 
@@ -147,7 +160,7 @@ class ReservationController extends Controller
             ->exists();
 
         if ($hasOngoing) {
-            // Instead of back(), pass a flag to the view to show a dialog
+            // Tell them already got ongoing
             return view('reservations.reservationProcess', [
                 'vehicle' => $this->getVehicleJson((int) $request->vehicle_id, (bool) $request->query('use_api', false)),
                 'error_popup' => 'You already have an ongoing reservation. Please complete it before booking another vehicle.',
@@ -167,26 +180,38 @@ class ReservationController extends Controller
         ]);
     }
 
-    /**
-     * Payment processing + reservation creation
-     */
+    // Payment Processing and Create Reservation
     public function paymentProcess(Request $request)
     {
-        // 1️⃣ Validate input
-        $validated = $request->validate([
-            'vehicle_id' => 'required|integer',
-            'pickup_date' => 'required|date|after_or_equal:today',
-            'return_date' => 'required|date',
+        // Common validation rules
+        $rules = [
+            'vehicle_id' => 'required|integer|exists:vehicles,id',
+            'pickup_date' => 'required|date',
+            'return_date' => 'required|date|after_or_equal:pickup_date',
             'days' => 'required|integer|min:1',
             'total_cost' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,card,bank_transfer',
-        ]);
+        ];
+
+        // Conditional validation for card payments
+        if ($request->payment_method === 'card') {
+            $rules = array_merge($rules, [
+                'card_name' => 'required|string|max:255',
+                'card_number' => 'required|digits_between:13,19',
+                'cvv' => 'required|digits:3',
+                'expiry_month' => 'required|integer|between:1,12',
+                'expiry_year' => 'required|integer|min:' . date('Y'),
+            ]);
+        }
+
+        // Validate input
+        $validated = $request->validate($rules);
 
         $useApi = (bool) $request->query('use_api', false);
         $customerId = null;
 
         if ($useApi) {
-            $response = Http::timeout(5)->get(url('/api/user/customer-id'), [
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
                 'user_id' => auth()->id()
             ]);
 
@@ -211,17 +236,14 @@ class ReservationController extends Controller
             return response()->json(['error' => 'Customer not found'], 404);
         }
 
-        // 2️⃣ Create reservation
+        // Create reservation
         $reservation = Reservation::create(array_merge($validated, ['customer_id' => $customerId]));
-
-        // 3️⃣ Determine if using API
         $useApi = (bool) $request->query('use_api', false);
-
-        // 4️⃣ Fetch vehicle consistently
+        // Helper Method
         $vehicleData = $this->getVehicleJson($validated['vehicle_id'], $useApi);
         $vehicle = is_array($vehicleData) ? (object) $vehicleData : $vehicleData;
 
-        // 5️⃣ Safety fallback if vehicle data is missing
+        // Safety fallback if vehicle data is no no
         if (!$vehicle) {
             $vehicle = (object) [
                 'id' => $validated['vehicle_id'],
@@ -234,17 +256,18 @@ class ReservationController extends Controller
             ];
         }
 
-        // 6️⃣ Update vehicle status
+        // Update vehicle status- to rented
         if ($useApi) {
+            // External API 
             Http::post(url($this->vehicleApi . '/update-status'), [
                 'vehicle_id' => $validated['vehicle_id'],
                 'status' => 'rented',
             ]);
         } else {
+            // Internal Service
             $this->vehicleService->updateStatus($validated['vehicle_id'], 'rented');
         }
 
-        // 7️⃣ Return Blade view
         return view('reservations.reservationSuccess', [
             'reservation_id' => $reservation->id,
             'vehicle' => $vehicle,
@@ -256,16 +279,14 @@ class ReservationController extends Controller
         ]);
     }
 
-    /**
-     * Show the current ongoing reservation
-     */
+    // Show current on going resevation
     public function myReservations(Request $request)
     {
         $useApi = (bool) $request->query('use_api', false);
         $customerId = null;
 
         if ($useApi) {
-            $response = Http::timeout(5)->get(url('/api/user/customer-id'), [
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
                 'user_id' => auth()->id()
             ]);
 
@@ -302,7 +323,7 @@ class ReservationController extends Controller
         if ($reservation) {
             // Ensure vehicle_id exists
             if ($reservation->vehicle_id) {
-                // Always fetch internal if from DB
+
                 $vehicleData = $this->getVehicleJson($reservation->vehicle_id, $useApi);
 
                 // Convert JsonResponse to array if needed
@@ -310,10 +331,10 @@ class ReservationController extends Controller
                     $vehicleData = $vehicleData->getData(true)['data'] ?? null;
                 }
 
-                // Convert array to object for Blade compatibility
+                // Convert array to object -- to display in blade view
                 $reservation->vehicle = is_array($vehicleData) ? (object) $vehicleData : $vehicleData;
 
-                // Safety check if vehicle data is missing
+                // Safety fallback
                 if (!$reservation->vehicle) {
                     $reservation->vehicle = (object) [
                         'brand' => 'Unknown',
@@ -340,14 +361,47 @@ class ReservationController extends Controller
         return view('reservations.myReservation', compact('reservation', 'noOngoing'));
     }
 
-    /**
-     * Let mark reservation as completed
-     */
+    // Let mark reservation as completed 
     public function complete(Request $request, $id)
     {
+        
         $useApi = (bool) $request->query('use_api', false);
+        $customerId = null;
+
+        if ($useApi) {
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
+                'user_id' => auth()->id()
+            ]);
+
+            if ($response->failed()) {
+                return response()->json(['error' => 'Failed to fetch customer id via API'], 500);
+            }
+
+            $customerId = $response->json('customer_id');
+        } else {
+            $response = $this->userService->getCustomerIdByUserId(auth()->id());
+
+            // decode json
+            $data = $response->getData(true); // to array
+            $customerId = $data['customer_id'] ?? null;
+
+            if (!$customerId) {
+                return response()->json(['error' => 'Customer not found'], 404);
+            }
+        }
+
+        if (!$customerId) {
+            return response()->json(['error' => 'Customer not found'], 404);
+        }
 
         $reservation = Reservation::findOrFail($id);
+
+        // Check ownership: prevent IDOR
+        if ($reservation->customer_id !== $customerId) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        
         $reservation->status = 'completed';
         $reservation->save();
 
@@ -364,14 +418,45 @@ class ReservationController extends Controller
         return redirect()->route('reservations.history')->with('success', 'Reservation marked as completed.');
     }
 
-    /**
-     * Let customer cancel reservation
-     */
+    // Let Customer cancel reservation
     public function cancel(Request $request, $id)
     {
         $useApi = (bool) $request->query('use_api', false);
+        $customerId = null;
+
+        if ($useApi) {
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
+                'user_id' => auth()->id()
+            ]);
+
+            if ($response->failed()) {
+                return response()->json(['error' => 'Failed to fetch customer id via API'], 500);
+            }
+
+            $customerId = $response->json('customer_id');
+        } else {
+            $response = $this->userService->getCustomerIdByUserId(auth()->id());
+
+            // decode json
+            $data = $response->getData(true); // to array
+            $customerId = $data['customer_id'] ?? null;
+
+            if (!$customerId) {
+                return response()->json(['error' => 'Customer not found'], 404);
+            }
+        }
+
+        if (!$customerId) {
+            return response()->json(['error' => 'Customer not found'], 404);
+        }
 
         $reservation = Reservation::findOrFail($id);
+
+        // Check ownership: prevent IDOR
+        if ($reservation->customer_id !== $customerId) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $reservation->status = 'cancelled';
         $reservation->save();
 
@@ -388,16 +473,14 @@ class ReservationController extends Controller
         return redirect()->route('reservations.history')->with('success', 'Reservation cancelled.');
     }
 
-    /**
-     * Show reservation history for a customer
-     */
+    // History
     public function reservationHistory(Request $request)
     {
         $useApi = (bool) $request->query('use_api', false);
         $customerId = null;
 
         if ($useApi) {
-            $response = Http::timeout(5)->get(url('/api/user/customer-id'), [
+            $response = Http::timeout(5)->get(url($this->userApi . '/customer-id'), [
                 'user_id' => auth()->id()
             ]);
 

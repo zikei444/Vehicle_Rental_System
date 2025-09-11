@@ -49,49 +49,60 @@
             <h4 class="text-primary"><i class="bi bi-wallet2"></i> Select Payment Method</h4>
 
             <div class="list-group mb-3">
+                @php $oldMethod = old('payment_method'); @endphp
                 <label class="list-group-item">
-                    <input class="form-check-input me-2" type="radio" name="payment_method" id="cash" value="cash" required>
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="cash" value="cash"
+                        {{ $oldMethod === 'cash' ? 'checked' : '' }} required>
                     <i class="bi bi-cash"></i> Cash on Delivery
                 </label>
                 <label class="list-group-item">
-                    <input class="form-check-input me-2" type="radio" name="payment_method" id="card" value="card">
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="card" value="card"
+                        {{ $oldMethod === 'card' ? 'checked' : '' }}>
                     <i class="bi bi-credit-card-2-front"></i> Credit/Debit Card
                 </label>
                 <label class="list-group-item">
-                    <input class="form-check-input me-2" type="radio" name="payment_method" id="bank" value="bank_transfer">
+                    <input class="form-check-input me-2" type="radio" name="payment_method" id="bank" value="bank_transfer"
+                        {{ $oldMethod === 'bank_transfer' ? 'checked' : '' }}>
                     <i class="bi bi-bank"></i> Bank Transfer
                 </label>
             </div>
 
             {{-- Card Fields --}}
-            <div id="card-fields" class="mt-3 p-3 border rounded d-none bg-light shadow-sm">
+            <div id="card-fields" class="mt-3 p-3 border rounded bg-light shadow-sm
+                 {{ $oldMethod === 'card' ? '' : 'd-none' }}">
                 <h5 class="text-dark"><i class="bi bi-credit-card"></i> Card Details</h5>
                 <div class="mb-2">
                     <label>Cardholder Name</label>
-                    <input type="text" name="card_name" class="form-control" placeholder="John Doe">
+                    <input type="text" name="card_name" value="{{ old('card_name') }}" class="form-control"
+                           placeholder="John Doe" {{ $oldMethod === 'card' ? 'required' : '' }}>
                 </div>
                 <div class="mb-2">
                     <label>Card Number</label>
-                    <input type="text" name="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+                    <input type="text" name="card_number" value="{{ old('card_number') }}" class="form-control"
+                           placeholder="1234 5678 9012 3456" {{ $oldMethod === 'card' ? 'required' : '' }}>
                 </div>
                 <div class="mb-2">
                     <label>CVV</label>
-                    <input type="password" name="cvv" class="form-control" maxlength="3" placeholder="123">
+                    <input type="password" name="cvv" value="{{ old('cvv') }}" class="form-control" maxlength="3"
+                           placeholder="123" {{ $oldMethod === 'card' ? 'required' : '' }}>
                 </div>
                 <div class="row">
                     <div class="col">
                         <label>Expiry Month</label>
-                        <input type="number" name="expiry_month" class="form-control" min="1" max="12" placeholder="MM">
+                        <input type="number" name="expiry_month" value="{{ old('expiry_month') }}" class="form-control"
+                               min="1" max="12" placeholder="MM" {{ $oldMethod === 'card' ? 'required' : '' }}>
                     </div>
                     <div class="col">
                         <label>Expiry Year</label>
-                        <input type="number" name="expiry_year" class="form-control" min="{{ date('Y') }}" placeholder="YYYY">
+                        <input type="number" name="expiry_year" value="{{ old('expiry_year') }}" class="form-control"
+                               min="{{ date('Y') }}" placeholder="YYYY" {{ $oldMethod === 'card' ? 'required' : '' }}>
                     </div>
                 </div>
             </div>
 
             {{-- Bank Transfer --}}
-            <div id="bank-fields" class="mt-3 p-3 border rounded d-none bg-light shadow-sm text-center">
+            <div id="bank-fields" class="mt-3 p-3 border rounded bg-light shadow-sm text-center
+                 {{ $oldMethod === 'bank_transfer' ? '' : 'd-none' }}">
                 <h5><i class="bi bi-qr-code-scan"></i> Scan QR Code to Pay</h5>
                 <img src="{{ asset('images/bankTransfer.jpg') }}" alt="Bank QR" class="img-fluid mb-2" style="max-width:200px;">
                 <p class="text-muted">Please scan this QR code with your bank app to complete payment.</p>
@@ -117,7 +128,13 @@ document.addEventListener("DOMContentLoaded", function () {
         cardFields.classList.add("d-none");
         bankFields.classList.add("d-none");
 
-        if (cardRadio.checked) cardFields.classList.remove("d-none");
+        // remove required dynamically
+        cardFields.querySelectorAll("input").forEach(input => input.required = false);
+
+        if (cardRadio.checked) {
+            cardFields.classList.remove("d-none");
+            cardFields.querySelectorAll("input").forEach(input => input.required = true);
+        }
         if (bankRadio.checked) bankFields.classList.remove("d-none");
     }
 

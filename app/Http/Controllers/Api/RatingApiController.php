@@ -2,7 +2,7 @@
 
 // app/Http/Controllers/Api/RatingApiController.php
 namespace App\Http\Controllers\Api;
-use App\Models\Rating; // ✅ 加上这一行
+use App\Models\Rating; 
 use App\Http\Controllers\Controller;
 use App\Services\RatingService;
 use App\Models\Vehicle;
@@ -16,7 +16,7 @@ class RatingApiController extends Controller {
     }
 
     public function summary($vehicleId) {
-        return $this->ratingService->getVehicleRatingSummary($vehicleId);
+        return $this->ratingService->getVehicleRatingSummary($vehicleId, 'approved');
     }
 
     // 获取审核通过的评论
