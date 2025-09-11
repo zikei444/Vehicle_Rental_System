@@ -33,7 +33,7 @@ class UserFactory
             $user->customer->delete(); // delete customer profile
         }
 
-        // Finally, delete user account
+        // Delete user account
         $user->delete();
     }
 }
