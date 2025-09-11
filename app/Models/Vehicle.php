@@ -9,9 +9,9 @@ use App\Models\Truck;
 use App\Models\Van;
 
 use App\Models\Maintenance;
-use App\States\Vehicle\AvailableState;
-use App\States\Vehicle\UnderMaintenanceState;
-use App\States\Vehicle\VehicleState;
+use App\Services\Vehicle\AvailableState;
+use App\Services\Vehicle\VehicleState;
+use App\Services\Vehicle\UnderMaintenanceState;
 
 class Vehicle extends Model
 {
@@ -49,17 +49,17 @@ class Vehicle extends Model
 
     public function car()
     {
-        return $this->hasOne(\App\Models\Car::class);
+        return $this->hasOne(Car::class);
     }
 
     public function truck()
     {
-        return $this->hasOne(\App\Models\Truck::class);
+        return $this->hasOne(Truck::class);
     }
 
     public function van()
     {
-        return $this->hasOne(\App\Models\Van::class);
+        return $this->hasOne(Van::class);
     }
 
     // Scope to filter available vehicles
