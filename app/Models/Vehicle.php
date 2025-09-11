@@ -9,9 +9,9 @@ use App\Models\Truck;
 use App\Models\Van;
 
 use App\Models\Maintenance;
-use App\Services\Vehicle\AvailableState;
-use App\Services\Vehicle\VehicleState;
-use App\Services\Vehicle\UnderMaintenanceState;
+use App\Services\States\Vehicle\AvailableState;
+use App\Services\States\Vehicle\VehicleState;
+use App\Services\States\Vehicle\UnderMaintenanceState;
 
 class Vehicle extends Model
 {
