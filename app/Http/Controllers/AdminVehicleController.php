@@ -9,9 +9,32 @@ use App\Services\Facade\VehicleManagementFacade; // Implement with Facade patter
 class AdminVehicleController extends Controller
 {
     // List all vehicles
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::with(['car','truck','van'])->get();
+        $query = Vehicle::query();
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('brand', 'like', "%{$search}%")
+                ->orWhere('model', 'like', "%{$search}%")
+                ->orWhere('registration_number', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        // Filter by availability status
+        if ($request->filled('availability_status')) {
+            $query->where('availability_status', $request->input('availability_status'));
+        }
+
+        $vehicles = $query->with(['car','truck','van'])->get();
+
         return view('vehicles.adminIndex', compact('vehicles'));
     }
 
