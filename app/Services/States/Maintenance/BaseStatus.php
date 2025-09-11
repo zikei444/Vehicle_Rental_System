@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Services\Maintenance;
+namespace App\Services\States\Maintenance;
 
 use App\Models\Maintenance;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 /**
  * BaseStatus provides shared logic for all maintenance states.
@@ -23,15 +24,26 @@ abstract class BaseStatus implements MaintenanceStatus {
     }
 
     /**
-     * Update the Maintenance model’s status and set side-effects (e.g., completed_at).
+     * Persist a status change and update vehicle availability in one transaction.
      */
-    protected function setAndSave(Maintenance $m, string $status): Maintenance {
-        $m->status = $status;
-        if ($status === 'Completed' && is_null($m->completed_at)) {
-            $m->completed_at = now();
-        }
-        $m->save();
-        return $m;
+    protected function setAndSave(Maintenance $m, string $to): Maintenance {
+        return DB::transaction(function () use ($m, $to) {
+            $m->status = $to;
+            $m->completed_at = ($to === 'Completed') ? now() : null;
+            $m->save();
+
+            // lock the vehicle row while we change it
+            $vehicle = $m->vehicle()->lockForUpdate()->first();
+
+            if ($to === 'Scheduled') {
+                $vehicle->availability_status = 'under_maintenance';
+            } else { // Completed or Cancelled
+                $vehicle->availability_status = 'available';
+            }
+            $vehicle->save();
+
+            return $m;
+        });
     }
 
     /**

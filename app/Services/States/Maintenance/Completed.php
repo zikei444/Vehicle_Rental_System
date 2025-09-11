@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Maintenance;
+namespace App\Services\States\Maintenance;
 
 use App\Models\Maintenance;
 
