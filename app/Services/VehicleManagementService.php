@@ -26,11 +26,11 @@ class VehicleManagementService
             // Validate basic input
             $validated = $request->validate([
                 'type' => 'required|in:car,truck,van',
-                'brand' => 'required|string|max:100',
-                'model' => 'required|string|max:100',
+                'brand' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
+                'model' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'year_of_manufacture' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
-                'registration_number' => 'required|string|max:50|unique:vehicles,registration_number',
-                'rental_price' => 'required|numeric|min:0',
+                'registration_number' => 'required|string|max:50|regex:/^[A-Z0-9\-]+$/|unique:vehicles,registration_number',
+                'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
                 'image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
                 'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -78,11 +78,11 @@ class VehicleManagementService
             // Validate casic input
             $validated = $request->validate([
                 'type' => 'required|in:car,truck,van',
-                'brand' => 'required|string|max:100',
-                'model' => 'required|string|max:100',
+                'brand' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
+                'model' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'year_of_manufacture' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
                 'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,' . $id,
-                'rental_price' => 'required|numeric|min:0',
+                'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
                 'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -142,9 +142,9 @@ class VehicleManagementService
             $request->validate([
                 'fuel_type' => 'required|in:petrol,diesel,electric',
                 'transmission' => 'required|in:manual,automatic',
-                'seats' => 'required|integer|min:1',
+                'seats' => 'required|integer|min:1|max:9',
                 'air_conditioning' => 'nullable|in:yes,no',
-                'fuel_efficiency' => 'nullable|numeric|min:0',
+                'fuel_efficiency' => 'nullable|numeric|min:0|max:50',
             ]);
 
             // Save or update related car record
@@ -158,7 +158,7 @@ class VehicleManagementService
         if ($vehicle->type === 'truck') {
             $request->validate([
                 'truck_type' => 'required|string|max:50',
-                'load_capacity' => 'required|numeric|min:0',
+                'load_capacity' => 'required|numeric|min:0.5|max:50',
                 'fuel_type' => 'required|in:petrol,diesel',
             ]);
 
@@ -172,7 +172,7 @@ class VehicleManagementService
         // Van
         if ($vehicle->type === 'van') {
             $request->validate([
-                'passenger_capacity' => 'required|integer|min:1',
+                'passenger_capacity' => 'required|integer|min:1|max:20',
                 'fuel_type' => 'required|in:petrol,diesel',
                 'air_conditioning' => 'nullable|in:yes,no',
             ]);
