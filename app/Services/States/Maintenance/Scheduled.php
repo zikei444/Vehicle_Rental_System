@@ -6,16 +6,11 @@ use App\Models\Maintenance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * "Scheduled" state:
- * - Can move to Completed or Cancelled.
- * - Also used for initial scheduling (creation) via schedule().
- */
 class Scheduled extends BaseStatus
 {
     public function name(): string { return 'Scheduled'; }
 
-    /** Allowed transitions from Scheduled. */
+    // Allowed change status from Scheduled
     public function transitionTo(Maintenance $m, string $newStatus): Maintenance
     {
         return match ($newStatus) {
@@ -25,12 +20,6 @@ class Scheduled extends BaseStatus
         };
     }
 
-    /**
-     * Initial scheduling flow with duplicate guard:
-     * 1) Lock the vehicle row
-     * 2) Ensure no other "Scheduled" exists for this vehicle
-     * 3) Save "Scheduled" and flip vehicle to under_maintenance
-     */
     public function schedule(Maintenance $m): Maintenance
     {
         return DB::transaction(function () use ($m) {
@@ -50,7 +39,6 @@ class Scheduled extends BaseStatus
                 throw ValidationException::withMessages(['vehicle_id' => 'This vehicle already has a scheduled maintenance.']);
             }
 
-            // Delegate persistence + vehicle sync to the base helper
             return $this->setAndSave($m, 'Scheduled');
         });
     }

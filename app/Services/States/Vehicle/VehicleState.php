@@ -13,7 +13,6 @@ abstract class VehicleState {
 
     abstract public function getName(): string;
 
-    // default transitions (override if needed)
-    public function markAsAvailable() {}
-    public function markAsUnderMaintenance() {}
+    public function markAsAvailable(): void {}
+    public function markAsUnderMaintenance(): void {}
 }

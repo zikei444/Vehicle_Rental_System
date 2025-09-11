@@ -37,7 +37,6 @@
                 </div>
             </div>
 
-            <!-- Maintenance Form Fields -->
             <div>
                 <label for="maintenance_type" class="form-label">Type</label>
                 <input id="maintenance_type" name="maintenance_type"
@@ -62,7 +61,6 @@
                 </select>
 
                 @if($terminal)
-                    <!-- Disabled inputs don’t submit; hidden keeps server-side consistent -->
                     <input type="hidden" name="status" value="{{ $maintenance->status }}">
                     <small class="text-muted">
                         This maintenance is {{ strtolower($maintenance->status) }} and its status cannot be changed.
