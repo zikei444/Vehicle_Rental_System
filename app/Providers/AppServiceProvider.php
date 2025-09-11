@@ -18,8 +18,10 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         // Bind VehicleManagementService for the Facade
-        $this->app->singleton('vehicle.management', function ($app) {
-            return new VehicleManagementService($app->make(VehicleService::class));
+        // vehicle.management - used by the Facade to resolve the service
+        // VehicleManagementService - injected into VehicleManagementService for handling vehicle operations
+        $this->app->singleton('vehicle.management', function ($app) { 
+            return new VehicleManagementService($app->make(VehicleService::class)); 
         });
     }
 

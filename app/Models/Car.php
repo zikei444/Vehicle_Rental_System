@@ -17,7 +17,6 @@ class Car extends Model
         'fuel_efficiency',
     ];
 
-    // Relation back to Vehicle
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class);

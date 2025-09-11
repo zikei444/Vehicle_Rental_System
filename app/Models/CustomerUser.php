@@ -9,7 +9,7 @@ class CustomerUser extends Authenticatable
 {
     use HasFactory;
 
-    protected $table = 'users'; // <--- important
+    protected $table = 'users';
 
     protected $fillable = [
         'name',

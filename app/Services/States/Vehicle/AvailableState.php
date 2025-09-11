@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Vehicle;
+namespace App\Services\States\Vehicle;
 
 use App\Models\Vehicle;
 

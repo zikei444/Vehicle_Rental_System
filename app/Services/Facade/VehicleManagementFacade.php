@@ -8,6 +8,6 @@ class VehicleManagementFacade extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'vehicle.management';
+        return 'vehicle.management'; // Binding in AppServiceProvider
     }
 }

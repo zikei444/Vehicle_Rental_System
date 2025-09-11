@@ -16,32 +16,44 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Models\Rating;
 
-// HOME ROUTE
+// Home route
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // =================== USER VEHICLE ROUTES ===================
-// Show all vehicles
+// Show all vehicles 
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 
-// Show details of a single vehicle
+// Show details of a single vehicle 
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.show');
 
 // Select a vehicle and go to reservation process
-Route::get('vehicles/select/{id}', [VehicleController::class, 'select'])->name('vehicles.select');
+Route::get('/vehicles/select/{id}', [VehicleController::class, 'select'])->name('vehicles.select');
 
-// Store a vehicle 
+// Store a new vehicle 
 Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
 
+
 // =================== ADMIN VEHICLE ROUTES ===================
-Route::prefix('admin')->group(function () {
-    Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('admin.vehicles.index');
-    Route::get('/vehicles/create', [AdminVehicleController::class, 'create'])->name('admin.vehicles.create');
-    Route::post('/vehicles', [AdminVehicleController::class, 'store'])->name('admin.vehicles.store');
-    Route::get('/vehicles/{id}', [AdminVehicleController::class, 'show'])->name('admin.vehicles.show');
-    Route::get('/vehicles/{id}/edit', [AdminVehicleController::class, 'edit'])->name('admin.vehicles.edit');
-    Route::put('/vehicles/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
-    Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
-});
+// Show all vehicles 
+Route::get('/admin/vehicles', [AdminVehicleController::class, 'index'])->name('admin.vehicles.index');
+
+// Show form to create a new vehicle 
+Route::get('/admin/vehicles/create', [AdminVehicleController::class, 'create'])->name('admin.vehicles.create');
+
+// Save new vehicle into database 
+Route::post('/admin/vehicles', [AdminVehicleController::class, 'store'])->name('admin.vehicles.store');
+
+// Show details of a single vehicle 
+Route::get('/admin/vehicles/{id}', [AdminVehicleController::class, 'show'])->name('admin.vehicles.show');
+
+// Show edit form for an existing vehicle 
+Route::get('/admin/vehicles/{id}/edit', [AdminVehicleController::class, 'edit'])->name('admin.vehicles.edit');
+
+// Update an existing vehicle 
+Route::put('/admin/vehicles/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
+
+// Delete a vehicle 
+Route::delete('/admin/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
 
 
 
@@ -265,7 +277,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/customers', [CustomerController::class, 'index'])
         ->name('admin.customerManagement');
 
-    // Display customer account list (optional, same as above)
+    // Display customer account list
     Route::get('/admin/profile', [CustomerController::class, 'index'])
         ->name('admin.customerManagement');
 

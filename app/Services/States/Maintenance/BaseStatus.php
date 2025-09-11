@@ -1,45 +1,57 @@
 <?php
 
-namespace App\Services\Maintenance;
+namespace App\Services\States\Maintenance;
 
 use App\Models\Maintenance;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 /**
- * BaseStatus provides shared logic for all maintenance states.
- * - Holds the common helper methods for saving transitions.
- * - Blocks invalid transitions by default (child classes override).
+ * Base class for all Maintenance states.
+ * Shared helpers live here; concrete states override transition rules.
  */
-
-abstract class BaseStatus implements MaintenanceStatus {
-    // Every concrete state must define its own name (e.g., "Scheduled")
+abstract class BaseStatus implements MaintenanceStatus
+{
+    /** Each state returns its own name (e.g. "Scheduled"). */
     abstract public function name(): string;
 
-    /**
-     * Throw a standard validation error when a transition is not allowed.
-     */
-    protected function fail(string $message): never {
+    /** Standard 422 error for invalid transitions. */
+    protected function fail(string $message): never
+    {
         throw ValidationException::withMessages(['status' => $message]);
     }
 
     /**
-     * Update the Maintenance model’s status and set side-effects (e.g., completed_at).
+     * Apply a status change AND sync vehicle availability in one DB transaction.
+     * Locks the related vehicle first to avoid race conditions.
      */
-    protected function setAndSave(Maintenance $m, string $status): Maintenance {
-        $m->status = $status;
-        if ($status === 'Completed' && is_null($m->completed_at)) {
-            $m->completed_at = now();
-        }
-        $m->save();
-        return $m;
+    protected function setAndSave(Maintenance $m, string $to): Maintenance
+    {
+        return DB::transaction(function () use ($m, $to) {
+            // Serialize concurrent transitions on the same vehicle
+            $vehicle = $m->vehicle()->lockForUpdate()->first();
+
+            // Update maintenance state + completion timestamp
+            $m->status       = $to;
+            $m->completed_at = ($to === 'Completed') ? now() : null;
+            $m->save();
+
+            // Keep vehicle availability in sync with maintenance state
+            $vehicle->availability_status = ($to === 'Scheduled')
+                ? 'under_maintenance'
+                : 'available';
+            $vehicle->save();
+
+            return $m;
+        });
     }
 
     /**
-     * By default, no transitions are allowed unless overridden.
-     * Concrete state classes (Scheduled, Completed, Cancelled)
-     * override this to define valid transitions.
+     * Default rule: no transitions unless a child class allows it.
+     * (Scheduled/Completed/Cancelled override this.)
      */
-    public function transitionTo(Maintenance $m, string $newStatus): Maintenance {
+    public function transitionTo(Maintenance $m, string $newStatus): Maintenance
+    {
         $this->fail("Transition from {$this->name()} to {$newStatus} is not allowed.");
     }
 }

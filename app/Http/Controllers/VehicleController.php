@@ -9,37 +9,47 @@ use App\Services\RatingService;
 
 class VehicleController extends Controller
 {
+    // API linking
     private string $ratingApi  = '/api/ratings';
     private string $vehicleApi = '/api/vehicles';
 
     private RatingService $ratingService;
 
+    // To used ratingService function
     public function __construct(RatingService $ratingService)
     {
         $this->ratingService = $ratingService;
     }
 
+    // Get one vehicle 
     private function getVehicleJson(int $vehicleId, bool $useApi): ?array
     {
         if ($useApi) {
+            // Use Api
             $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
             if ($response->failed()) return null;
+
             return $response->json()['data'] ?? null;
         }
 
+        // Or local database
         $vehicle = Vehicle::with(['car','truck','van'])->find($vehicleId);
         return $vehicle ? $vehicle->toArray() : null;
     }
 
+    // Get rating details 
     private function getRatingSummary(int $vehicleId, bool $useApi): array
     {
         if ($useApi) {
+            // Use Api
             $response = Http::get(url($this->ratingApi . "/summary/{$vehicleId}"))->json();
             return $response['data'] ?? ['average' => null, 'count' => 0];
         }
 
+        // Or from local RatingService
         $ratings = $this->ratingService->getVehicleRatingSummary($vehicleId, 'approved');
 
+        // If the result is JSON, take the data inside
         if ($ratings instanceof \Illuminate\Http\JsonResponse) {
             return $ratings->getData(true)['data'] ?? ['average' => null, 'count' => 0];
         }
@@ -47,10 +57,12 @@ class VehicleController extends Controller
         return ['average' => null, 'count' => 0];
     }
 
+    // Show all vehicles 
     public function index(Request $request)
     {
         $query = Vehicle::query();
 
+        // Search vehicles (brand or model)
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -59,57 +71,70 @@ class VehicleController extends Controller
             });
         }
 
+        // Filter vehicles by type (car, truck, van)
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
+        // Rating count and average (only approved ratings)
+        $query->withCount([
+            'ratings as ratings_count' => function ($q) {
+                $q->approved();
+            }
+        ])->withAvg([
+            'ratings as average_rating' => function ($q) {
+                $q->approved();
+            }
+        ], 'rating');
+
+        // Sort vehicles 
         if ($request->filled('sort_by') && $request->filled('order')) {
             $query->orderBy($request->sort_by, $request->order);
         }
 
+        // Get all vehicles
         $vehicles = $query->get();
 
-        $vehicles = $vehicles->map(function ($v) {
-            $ratingSummary = $this->ratingService
-                ->getVehicleRatingSummary($v->id)
-                ->getData(true)['data'];
-
-            $v->average_rating = $ratingSummary['average'];
-            $v->ratings_count  = $ratingSummary['count'];
-            return $v;
-        });
-
+        // Show in index page
         return view('vehicles.index', compact('vehicles'));
     }
 
+    // Show one vehicle with its ratings
     public function show(int $vehicleId, Request $request)
     {
         $useApi = (bool) $request->query('use_api', false);
 
+        // Get the vehicle (from API or DB)
         $vehicleData = $this->getVehicleJson($vehicleId, $useApi);
         if (!$vehicleData) {
             return redirect()->route('vehicles.index')->with('error', 'Vehicle not found');
         }
 
+        // Convert array to object 
         $vehicle = json_decode(json_encode($vehicleData));
+
+        // Add rating summary to vehicle
         $vehicle->ratingSummary = $this->getRatingSummary($vehicle->id, $useApi);
 
         return view('vehicles.show', [
-            'vehicle' => $vehicle,
-            'useApi' => $useApi,
-            'back_route' => route('vehicles.index'),
+            'vehicle'   => $vehicle,
+            'useApi'    => $useApi,
+            'back_route'=> route('vehicles.index'),
         ]);
     }
 
+    // Choose a vehicle and go to reservation page
     public function select($id)
     {
         $vehicle = Vehicle::find($id);
 
+        // If vehicle not found or not available
         if (!$vehicle || $vehicle->availability_status !== 'available') {
             return redirect()->route('vehicles.index')
                 ->with('error', 'This vehicle is not available');
         }
 
+        // Go to reservation process
         return redirect()->route('reservation.process', ['vehicle_id' => $id]);
     }
 }

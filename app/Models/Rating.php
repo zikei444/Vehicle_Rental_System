@@ -39,9 +39,10 @@ class Rating extends Model
     public function customer() {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
-
-    public function vehicle() {
-        return $this->belongsTo(Vehicle::class);
-    }
     
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+    }
+
 }

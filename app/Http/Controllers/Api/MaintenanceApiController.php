@@ -6,123 +6,87 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Maintenance;
 
+/**
+ * Maintenance REST API
+ * - index(): filters + search + sort + pagination → { data, meta }
+ * - byVehicle(): convenience listing for a single vehicle
+ */
 class MaintenanceApiController extends Controller
 {
-    /**
-     * GET /api/maintenances
-     */
+    // filter, search, sort, pagination
     public function index(Request $request)
     {
-        return response()->json(Maintenance::orderByDesc('service_date')->get());
-    }
+        $q = Maintenance::query()->with('vehicle');
 
-    /**
-     * GET /api/vehicles/{vehicle}/maintenances
-     * Convenience: all maintenances for a vehicle
-     */
-    public function byVehicle(int $vehicle)
-    {
-        $all = Maintenance::where('vehicle_id', $vehicle)
-            ->orderByDesc('service_date')
-            ->get();
-
-        return response()->json($all);
-    }
-
-    /**
-     * GET /api/maintenances/{id}
-     */
-    public function show(int $id)
-    {
-        $m = Maintenance::find($id);
-        if (!$m) {
-            return response()->json(['error' => 'Maintenance not found'], 404);
+        // ----- Filters -----
+        if ($request->filled('vehicle_id')) {
+            $q->where('vehicle_id', (int) $request->query('vehicle_id'));
         }
-        return response()->json($m);
-    }
+        if ($request->filled('status') && in_array($request->status, ['Scheduled','Completed','Cancelled'], true)) {
+            $q->where('status', $request->status);
+        }
 
-    /**
-     * POST /api/maintenances
-     * Create. Uses your real column names.
-     * Status default = "Scheduled"
-     */
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'maintenance_type' => 'required|string|max:50',
-            'service_date'     => 'required|date',
-            'cost'             => 'required|numeric|min:1',
-            'notes'            => 'nullable|string|max:500',
-            'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
-            'completed_at'     => 'sometimes|nullable|date',
+        // ----- Search (maintenance + vehicle fields) -----
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $q->where(function ($w) use ($s) {
+                $w->where('maintenance_type', 'like', "%{$s}%")
+                  ->orWhere('notes', 'like', "%{$s}%")
+                  ->orWhere('cost', 'like', "%{$s}%")
+                  ->orWhereHas('vehicle', function ($v) use ($s) {
+                      $v->where('brand', 'like', "%{$s}%")
+                        ->orWhere('model', 'like', "%{$s}%")
+                        ->orWhere('registration_number', 'like', "%{$s}%");
+                  });
+            });
+        }
+
+        // ----- Sort (allow-list to avoid unsafe columns) -----
+        $sort = $request->query('sort', 'service_date');
+        $dir  = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['service_date','cost','status','created_at'];
+        if (!in_array($sort, $allowedSorts, true)) $sort = 'service_date';
+        $q->orderBy($sort, $dir);
+
+        // ----- Pagination -----
+        $per  = (int) $request->query('per_page', 10);
+        $per  = ($per > 0 && $per <= 100) ? $per : 10;
+        $page = max((int) $request->query('page', 1), 1);
+        $p    = $q->paginate($per, ['*'], 'page', $page);
+
+        // Consistent payload for UIs/clients
+        return response()->json([
+            'data' => $p->items(),
+            'meta' => [
+                'total'        => $p->total(),
+                'per_page'     => $p->perPage(),
+                'current_page' => $p->currentPage(),
+                'last_page'    => $p->lastPage(),
+                'sort'         => $sort,
+                'direction'    => $dir,
+                'filters'      => [
+                    'vehicle_id' => $request->query('vehicle_id'),
+                    'status'     => $request->query('status'),
+                    'search'     => $request->query('search'),
+                ],
+            ],
         ]);
-
-        // force default if not provided
-        if (!isset($data['status'])) {
-            $data['status'] = 'Scheduled';
-        }
-
-        $m = Maintenance::create($data);
-
-        // if status came in as Completed/Cancelled at creation, let State set side-effects
-        // (completed_at, vehicle state, etc.)
-        if (in_array($m->status, ['Completed','Cancelled'])) {
-            // normalize via state so completed_at etc. is set consistently
-            $m->transitionTo($m->status);
-        }
-
-        return response()->json($m, 201);
     }
 
-    /**
-     * PUT /api/maintenances/{id}
-     * Update normal fields; if "status" present, switch via State pattern.
-     */
+    /** GET /api/vehicles/{vehicleId}/maintenances – convenience wrapper around index(). */
+    public function byVehicle(Request $request, int $vehicleId)
+    {
+        $request->merge(['vehicle_id' => $vehicleId]);
+        return $this->index($request);
+    }
+
+    /** Delegate updates to the service to enforce state transitions & errors. */
     public function update(Request $request, int $id)
     {
-        $m = Maintenance::find($id);
-        if (!$m) {
-            return response()->json(['error' => 'Maintenance not found'], 404);
-        }
-
-        $validated = $request->validate([
-            'vehicle_id'       => 'sometimes|integer|exists:vehicles,id',
-            'maintenance_type' => 'sometimes|string|max:50',
-            'service_date'     => 'sometimes|date',
-            'cost'             => 'sometimes|numeric|min:1',
-            'notes'            => 'sometimes|nullable|string|max:500',
-            'status'           => 'sometimes|string|in:Scheduled,Completed,Cancelled',
-            'completed_at'     => 'sometimes|nullable|date',
-        ]);
-
-        // 1) pull out status (if any) to handle via State
-        $newStatus = $validated['status'] ?? null;
-        unset($validated['status']);
-
-        // 2) update other fields first
-        if (!empty($validated)) {
-            $m->update($validated);
-        }
-
-        // 3) if status provided AND different, do a safe transition
-        if ($newStatus && $newStatus !== $m->status) {
-            $m = $m->transitionTo($newStatus); // State pattern call
-        }
-
-        return response()->json($m);
-    }
-
-    /**
-     * DELETE /api/maintenances/{id}
-     */
-    public function destroy(int $id)
-    {
-        $m = Maintenance::find($id);
-        if (!$m) {
-            return response()->json(['error' => 'Maintenance not found'], 404);
-        }
-
-        $m->delete();
-        return response()->json(['message' => 'Maintenance deleted successfully']);
+        // (Add your request validation here if needed)
+        return app(\App\Services\MaintenanceService::class)->update(
+            $id,
+            $request->only('maintenance_type', 'service_date', 'status', 'cost', 'notes')
+        );
     }
 }

@@ -4,6 +4,7 @@
 <div class="container">
     <h1>Edit Vehicle</h1>
 
+    <!-- Display error -->
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -14,174 +15,168 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.vehicles.update', $vehicle['id']) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.vehicles.update', $vehicle->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
-        {{-- General Vehicle Info --}}
+        <!-- General information -->
         <div class="mb-3">
             <label>Type</label>
             <select name="type" id="vehicleType" class="form-control" required>
-                <option value="car" {{ $vehicle['type']=='car' ? 'selected' : '' }}>Car</option>
-                <option value="truck" {{ $vehicle['type']=='truck' ? 'selected' : '' }}>Truck</option>
-                <option value="van" {{ $vehicle['type']=='van' ? 'selected' : '' }}>Van</option>
+                <option value="car" {{ old('type', $vehicle->type)=='car' ? 'selected' : '' }}>Car</option>
+                <option value="truck" {{ old('type', $vehicle->type)=='truck' ? 'selected' : '' }}>Truck</option>
+                <option value="van" {{ old('type', $vehicle->type)=='van' ? 'selected' : '' }}>Van</option>
             </select>
         </div>
 
         <div class="mb-3">
             <label>Brand</label>
-            <input type="text" name="brand" class="form-control" value="{{ $vehicle['brand'] }}" required>
+            <input type="text" name="brand" class="form-control" value="{{ old('brand', $vehicle->brand) }}" required>
+            @error('brand')<div class="text-danger">{{ $message }}</div>@enderror
         </div>
 
         <div class="mb-3">
             <label>Model</label>
-            <input type="text" name="model" class="form-control" value="{{ $vehicle['model'] }}" required>
+            <input type="text" name="model" class="form-control" value="{{ old('model', $vehicle->model) }}" required>
+            @error('model')<div class="text-danger">{{ $message }}</div>@enderror
         </div>
 
         <div class="mb-3">
             <label>Year Manufacturer</label>
-            <input type="number" name="year_of_manufacture" class="form-control" 
-                value="{{ $vehicle['year_of_manufacture'] }}" required>
+            <input type="number" name="year_of_manufacture" class="form-control" value="{{ old('year_of_manufacture', $vehicle->year_of_manufacture) }}" required>
+            @error('year_of_manufacture')<div class="text-danger">{{ $message }}</div>@enderror
         </div>
 
         <div class="mb-3">
             <label>Registration Number</label>
-            <input type="text" name="registration_number" class="form-control" value="{{ $vehicle['registration_number'] }}" required>
+            <input type="text" name="registration_number" class="form-control" value="{{ old('registration_number', $vehicle->registration_number) }}" required>
+            @error('registration_number')<div class="text-danger">{{ $message }}</div>@enderror
         </div>
 
         <div class="mb-3">
             <label>Rental Price (RM)</label>
-            <input type="number" step="0.01" name="rental_price" class="form-control" value="{{ $vehicle['rental_price'] }}" required>
+            <input type="number" step="0.01" name="rental_price" class="form-control" value="{{ old('rental_price', $vehicle->rental_price) }}" required>
+            @error('rental_price')<div class="text-danger">{{ $message }}</div>@enderror
         </div>
 
         <div class="mb-3">
             <label>Status</label>
             <select name="availability_status" class="form-control" required>
-                <option value="available" {{ $vehicle['availability_status']=='available' ? 'selected' : '' }}>Available</option>
-                <option value="rented" {{ $vehicle['availability_status']=='rented' ? 'selected' : '' }}>Rented</option>
-                <option value="reserved" {{ $vehicle['availability_status']=='reserved' ? 'selected' : '' }}>Reserved</option>
-                <option value="under_maintenance" {{ $vehicle['availability_status']=='under_maintenance' ? 'selected' : '' }}>Under Maintenance</option>
+                @php $status = old('availability_status', $vehicle->availability_status); @endphp
+                <option value="available" {{ $status=='available' ? 'selected' : '' }}>Available</option>
+                <option value="rented" {{ $status=='rented' ? 'selected' : '' }}>Rented</option>
+                <option value="reserved" {{ $status=='reserved' ? 'selected' : '' }}>Reserved</option>
+                <option value="under_maintenance" {{ $status=='under_maintenance' ? 'selected' : '' }}>Under Maintenance</option>
             </select>
         </div>
 
+        <!-- Vehicle image -->
         <div class="mb-3">
-            <label for="image" class="form-label">Vehicle Image</label>
-            <input type="file" name="image" class="form-control" id="image">
-            <small class="text-muted">Upload a new image to replace the current one.</small>
+            <label>Vehicle Image</label>
+            <input type="file" name="image" class="form-control">
+            <small class="text-muted">Upload new image to replace current one.</small>
         </div>
 
-
+        <!-- Vehicle documents -->
         <div class="row mb-3">
+            @foreach(['insurance_doc','registration_doc','roadtax_doc'] as $doc)
             <div class="col-md-4">
-                <label for="insurance_doc" class="form-label">Insurance Document</label>
-                <input type="file" name="insurance_doc" class="form-control" id="insurance_doc">
-                @if(!empty($vehicle->insurance_doc))
-                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
-                @else
-                    <small class="text-muted">Upload a new document (optional).</small>
-                @endif
+                <label>{{ ucfirst(str_replace('_',' ',$doc)) }}</label>
+                <input type="file" name="{{ $doc }}" class="form-control">
+                <small class="text-muted">Upload new document to replace current one (optional).</small>
             </div>
-            <div class="col-md-4">
-                <label for="registration_doc" class="form-label">Registration Document</label>
-                <input type="file" name="registration_doc" class="form-control" id="registration_doc">
-                @if(!empty($vehicle->registration_doc))
-                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
-                @else
-                    <small class="text-muted">Upload a new document (optional).</small>
-                @endif
-            </div>
-            <div class="col-md-4">
-                <label for="roadtax_doc" class="form-label">Insurance Document</label>
-                <input type="file" name="roadtax_doc" class="form-control" id="roadtax_doc">
-                @if(!empty($vehicle->roadtax_doc))
-                    <small class="text-muted">Upload a new document to replace the current one (optional).</small>
-                @else
-                    <small class="text-muted">Upload a new document (optional).</small>
-                @endif
-            </div>
+            @endforeach
         </div>
 
-        {{-- Type-Specific Fields --}}
-        <div id="carFields" class="type-specific {{ $vehicle['type'] == 'car' ? '' : 'd-none' }}">
+        <!-- Type-specific information -->
+        <div id="carFields" class="type-specific {{ old('type', $vehicle->type)=='car' ? '' : 'd-none' }}">
             <h4>Car Details</h4>
             <div class="mb-3">
                 <label>Fuel Type</label>
                 <select name="fuel_type" class="form-control">
-                    <option value="petrol" {{ $vehicle->car?->fuel_type == 'petrol' ? 'selected' : '' }}>Petrol</option>
-                    <option value="diesel" {{ $vehicle->car?->fuel_type == 'diesel' ? 'selected' : '' }}>Diesel</option>
-                    <option value="electric" {{ $vehicle->car?->fuel_type == 'electric' ? 'selected' : '' }}>Electric</option>
+                    @php $fuel = old('fuel_type', $vehicle->car?->fuel_type); @endphp
+                    <option value="petrol" {{ $fuel=='petrol' ? 'selected' : '' }}>Petrol</option>
+                    <option value="diesel" {{ $fuel=='diesel' ? 'selected' : '' }}>Diesel</option>
+                    <option value="electric" {{ $fuel=='electric' ? 'selected' : '' }}>Electric</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label>Transmission</label>
                 <select name="transmission" class="form-control">
-                    <option value="manual" {{ $vehicle->car?->transmission == 'manual' ? 'selected' : '' }}>Manual</option>
-                    <option value="automatic" {{ $vehicle->car?->transmission == 'automatic' ? 'selected' : '' }}>Automatic</option>
+                    @php $trans = old('transmission', $vehicle->car?->transmission); @endphp
+                    <option value="manual" {{ $trans=='manual' ? 'selected' : '' }}>Manual</option>
+                    <option value="automatic" {{ $trans=='automatic' ? 'selected' : '' }}>Automatic</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label>Air-Conditioning</label>
                 <select name="air_conditioning" class="form-control">
-                    <option value="yes" {{ $vehicle->car?->air_conditioning == 'yes' ? 'selected' : '' }}>Yes</option>
-                    <option value="no" {{ $vehicle->car?->air_conditioning == 'no' ? 'selected' : '' }}>No</option>
+                    @php $ac = old('air_conditioning', $vehicle->car?->air_conditioning); @endphp
+                    <option value="yes" {{ $ac=='yes' ? 'selected' : '' }}>Yes</option>
+                    <option value="no" {{ $ac=='no' ? 'selected' : '' }}>No</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label>Seats</label>
-                <input type="number" name="seats" class="form-control" value="{{ $vehicle->car?->seats }}">
+                <input type="number" name="seats" class="form-control" value="{{ old('seats', $vehicle->car?->seats) }}">
             </div>
             <div class="mb-3">
                 <label>Fuel Efficiency (km/l)</label>
-                <input type="number" step="0.01" name="fuel_efficiency" class="form-control" value="{{ $vehicle->car?->fuel_efficiency }}">
+                <input type="number" step="0.01" name="fuel_efficiency" class="form-control" value="{{ old('fuel_efficiency', $vehicle->car?->fuel_efficiency) }}">
             </div>
         </div>
 
-        <div id="truckFields" class="type-specific {{ $vehicle['type'] == 'truck' ? '' : 'd-none' }}">
+        <div id="truckFields" class="type-specific {{ old('type', $vehicle->type)=='truck' ? '' : 'd-none' }}">
             <h4>Truck Details</h4>
             <div class="mb-3">
                 <label>Load Capacity (tons)</label>
-                <input type="number" step="0.01" name="load_capacity" class="form-control" value="{{ $vehicle->truck?->load_capacity }}">
+                <input type="number" step="0.01" name="load_capacity" class="form-control" value="{{ old('load_capacity', $vehicle->truck?->load_capacity) }}">
             </div>
             <div class="mb-3">
                 <label>Fuel Type</label>
                 <select name="fuel_type" class="form-control">
-                    <option value="petrol" {{ $vehicle->truck?->fuel_type == 'petrol' ? 'selected' : '' }}>Petrol</option>
-                    <option value="diesel" {{ $vehicle->truck?->fuel_type == 'diesel' ? 'selected' : '' }}>Diesel</option>
+                    @php $fuel = old('fuel_type', $vehicle->truck?->fuel_type); @endphp
+                    <option value="petrol" {{ $fuel=='petrol' ? 'selected' : '' }}>Petrol</option>
+                    <option value="diesel" {{ $fuel=='diesel' ? 'selected' : '' }}>Diesel</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label>Truck Type</label>
                 <select name="truck_type" class="form-control">
-                    <option value="pickup" {{ $vehicle->truck?->truck_type == 'pickup' ? 'selected' : '' }}>Pickup</option>
-                    <option value="lorry" {{ $vehicle->truck?->truck_type == 'lorry' ? 'selected' : '' }}>Lorry</option>
-                    <option value="container" {{ $vehicle->truck?->truck_type == 'container' ? 'selected' : '' }}>Container</option>
-                    <option value="flatbed" {{ $vehicle->truck?->truck_type == 'flatbed' ? 'selected' : '' }}>Flatbed</option>
+                    @php $ttype = old('truck_type', $vehicle->truck?->truck_type); @endphp
+                    <option value="pickup" {{ $ttype=='pickup' ? 'selected' : '' }}>Pickup</option>
+                    <option value="lorry" {{ $ttype=='lorry' ? 'selected' : '' }}>Lorry</option>
+                    <option value="container" {{ $ttype=='container' ? 'selected' : '' }}>Container</option>
+                    <option value="flatbed" {{ $ttype=='flatbed' ? 'selected' : '' }}>Flatbed</option>
                 </select>
             </div>
         </div>
 
-        <div id="vanFields" class="type-specific {{ $vehicle['type'] == 'van' ? '' : 'd-none' }}">
+        <div id="vanFields" class="type-specific {{ old('type', $vehicle->type)=='van' ? '' : 'd-none' }}">
             <h4>Van Details</h4>
             <div class="mb-3">
                 <label>Passenger Capacity</label>
-                <input type="number" name="passenger_capacity" class="form-control" value="{{ $vehicle->van?->passenger_capacity }}">
+                <input type="number" name="passenger_capacity" class="form-control" value="{{ old('passenger_capacity', $vehicle->van?->passenger_capacity) }}">
             </div>
             <div class="mb-3">
                 <label>Fuel Type</label>
                 <select name="fuel_type" class="form-control">
-                    <option value="petrol" {{ $vehicle->van?->fuel_type == 'petrol' ? 'selected' : '' }}>Petrol</option>
-                    <option value="diesel" {{ $vehicle->van?->fuel_type == 'diesel' ? 'selected' : '' }}>Diesel</option>
+                    @php $fuel = old('fuel_type', $vehicle->van?->fuel_type); @endphp
+                    <option value="petrol" {{ $fuel=='petrol' ? 'selected' : '' }}>Petrol</option>
+                    <option value="diesel" {{ $fuel=='diesel' ? 'selected' : '' }}>Diesel</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label>Air-Conditioning</label>
                 <select name="air_conditioning" class="form-control">
-                    <option value="yes" {{ $vehicle->van?->air_conditioning == 'yes' ? 'selected' : '' }}>Yes</option>
-                    <option value="no" {{ $vehicle->van?->air_conditioning == 'no' ? 'selected' : '' }}>No</option>
+                    @php $ac = old('air_conditioning', $vehicle->van?->air_conditioning); @endphp
+                    <option value="yes" {{ $ac=='yes' ? 'selected' : '' }}>Yes</option>
+                    <option value="no" {{ $ac=='no' ? 'selected' : '' }}>No</option>
                 </select>
             </div>
         </div>
 
+        <!-- Button -->
         <button type="submit" class="btn btn-primary">Update Vehicle</button>
         <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
@@ -193,12 +188,12 @@
 
     function toggleFields() {
         typeSpecifics.forEach(div => div.classList.add('d-none'));
-        if (vehicleType.value === 'car') document.getElementById('carFields').classList.remove('d-none');
-        if (vehicleType.value === 'truck') document.getElementById('truckFields').classList.remove('d-none');
-        if (vehicleType.value === 'van') document.getElementById('vanFields').classList.remove('d-none');
+        if(vehicleType.value==='car') document.getElementById('carFields').classList.remove('d-none');
+        if(vehicleType.value==='truck') document.getElementById('truckFields').classList.remove('d-none');
+        if(vehicleType.value==='van') document.getElementById('vanFields').classList.remove('d-none');
     }
 
     vehicleType.addEventListener('change', toggleFields);
-    toggleFields(); 
+    toggleFields();
 </script>
 @endsection

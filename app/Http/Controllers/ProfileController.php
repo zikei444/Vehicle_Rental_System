@@ -31,7 +31,7 @@ class ProfileController extends Controller
         $useApi = $request->query('use_api', false);
 
         if ($useApi) {
-            // 🔹 API call
+            // API call
             $response = Http::get(url("/api/customers/{$customerId}/reservations"));
 
             if ($response->failed()) {
@@ -40,7 +40,7 @@ class ProfileController extends Controller
 
             $reservations = collect($response->json('data') ?? []);
         } else {
-            // 🔹 Internal service
+            // Internal service
             $serviceResponse = $this->reservationService->allByCustomer($customerId);
 
             $reservations = $serviceResponse instanceof \Illuminate\Http\JsonResponse

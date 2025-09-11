@@ -12,7 +12,6 @@ class Admin
         $user = Auth::user(); 
 
         if (!$user || $user->role !== 'admin') {
-            // redirect unauthorized users somewhere safe
             return redirect('/')->withErrors(['error' => 'You are not admin.']);
         }
 
