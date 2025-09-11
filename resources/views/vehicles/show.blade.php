@@ -110,7 +110,11 @@
         </div>
     </div>
 
-    <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Back to List</a>
+    @if(Route::is('admin.vehicles.show'))
+        <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Back to List</a>
+    @else
+        <a href="{{ route('vehicles.index') }}" class="btn btn-secondary">Back to List</a>
+    @endif
 
 </div>
 @endsection
