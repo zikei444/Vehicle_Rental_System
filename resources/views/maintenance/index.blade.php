@@ -7,9 +7,7 @@
     
     <h1 class="mb-4">All Maintenance Records</h1>
 
-    <p>
-        <a href="{{ route('maintenance.create') }}" class="btn btn-success w-100 py-3 fs-5">+ Schedule Maintenance</a>
-    </p>
+    <a href="{{ route('maintenance.create') }}" class="btn btn-success w-100 py-3 fs-5">+ Schedule Maintenance</a>
 
     <form method="GET" action="{{ route('maintenance.index') }}" class="row gx-2 gy-2 mb-3 align-items-end">
         <div class="col-md-4">
@@ -80,8 +78,8 @@
                     $serviceDate = \Carbon\Carbon::parse($r->service_date);
                     $isOverdue = $r->status === 'Scheduled' && $serviceDate->isBefore(now()->startOfDay());
                 @endphp
-                <tr class="{{ $isOverdue ? 'table-warning' : '' }}">
 
+                <tr class="{{ $isOverdue ? 'table-warning' : '' }}">
                     <td>{{ $r->id }}</td>
 
                     <td class="small">
@@ -139,6 +137,4 @@
         </tbody>
     </table>
 </div>
-
-{{ $records->links() }}
 @endsection

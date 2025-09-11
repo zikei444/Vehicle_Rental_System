@@ -18,12 +18,12 @@ class Maintenance extends Model {
         return $this->belongsTo(\App\Models\Vehicle::class, 'vehicle_id');
     }
 
+    // Cast dates to proper types
     protected $casts = [
         'service_date' => 'date',
         'completed_at' => 'datetime',
     ];
 
-    // Map status string to state class
     public function state(): MaintenanceStatus {
         return match ($this->status) {
             'Scheduled' => new Scheduled(),
@@ -33,9 +33,7 @@ class Maintenance extends Model {
         };
     }
 
-    /**
-     * Safe transition using the State pattern.
-     */
+    // Change status
     public function transitionTo(string $newStatus): self {
         return $this->state()->transitionTo($this, $newStatus);
     }
