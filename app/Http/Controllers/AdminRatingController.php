@@ -5,6 +5,9 @@ use App\Models\Vehicle;
 use App\Models\Rating;
 use Illuminate\Http\Request;
 use App\Notifications\RatingReplied;
+use App\Models\User;
+use App\Observers\UserObserver;
+use App\Observers\RatingSubject;
 
 class AdminRatingController extends Controller
 {
@@ -23,7 +26,7 @@ class AdminRatingController extends Controller
                 ->avg('rating') ?? 0;
             return $vehicle;
         });
-            
+
 
         // // 如果要按月份统计（可选）
         // $monthlyRatings = Rating::select(
@@ -56,33 +59,21 @@ class AdminRatingController extends Controller
         $rating->status = $request->status;
         $rating->save();
 
-    return response()->json(['success'=>true]);
+        return response()->json(['success' => true]);
     }
     //回复
-public function reply(Request $request, Rating $rating)
-{
-    // 表单验证
-    $request->validate([
-        'reply' => 'required|string|max:500',
-    ]);
+    public function reply(Request $request, Rating $rating)
+    {
+        $request->validate([
+            'reply' => 'required|string|max:500',
+        ]);
 
-    //更新 reply
-    $rating->adminreply = $request->reply;
-    $rating->save();
+        $rating->adminreply = $request->reply;
+        $rating->save(); // Observer will notify customer automatically
 
-    // === Observer Pattern ===
-    $subject = new RatingSubject();
+        return back()->with('success', 'Reply sent and notification created!');
+    }
 
-    $user = User::find($rating->customer->user_id); // 取得真正的 User
-    $observer = new UserObserver($user, $rating);
-
-    $subject->attach($observer);
-
-    $subject->notify($request->reply); // 通知用户
-    // === End ===
-
-    return back()->with('success', 'Reply sent and notification created!');
-}
 
 
     // 拒绝评论

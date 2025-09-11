@@ -47,7 +47,7 @@
 
         {{-- Rating & Feedback Management --}}
         <div class="col">
-            <a href="{{ route('ratings_admin.index') }}" class="text-decoration-none">
+            <a href="{{ route('ratings_admin.dashboard') }}" class="text-decoration-none">
                 <div class="card h-100 text-center border-warning shadow-sm">
                     <img src="{{ asset('images/dashboard/rating_icon.png') }}" class="card-img-top mx-auto mt-3" style="width:120px; height:120px;" alt="Rating & Feedback Management">
                     <div class="card-body">

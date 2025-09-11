@@ -11,7 +11,7 @@ class NotificationController extends Controller
     {
         $customer = auth()->user()->customer;
 
-        $notifications = $customer->unreadNotifications->map(function($n) {
+        $notifications = $customer->unreadNotifications->map(function ($n) {
             return [
                 'id' => $n->id,
                 'message' => $n->data['message'] ?? '',
@@ -20,27 +20,41 @@ class NotificationController extends Controller
             ];
         });
 
+        // Mark as read immediately so they show only once
+        $customer->unreadNotifications->markAsRead();
+
         return response()->json([
-            'count' => $customer->unreadNotifications->count(),
+            'count' => $notifications->count(),
             'notifications' => $notifications
         ]);
     }
 
-    // Mark all unread notifications as read
-    public function markAsRead(Request $request)
+    public function fetchAdmin()
     {
-        $notifications = auth()->user()->customer->notifications;
-        auth()->user()->customer->unreadNotifications->markAsRead();
+        $admin = auth()->user();
 
-        return view('notifications.index', compact('notifications'));
+        $notifications = $admin->unreadNotifications->map(function ($n) {
+            return [
+                'id' => $n->id,
+                'message' => $n->data['message'] ?? '',
+                'time' => $n->created_at->diffForHumans()
+            ];
+        });
+
+        $admin->unreadNotifications->markAsRead();
+
+        return response()->json([
+            'count' => $notifications->count(),
+            'notifications' => $notifications
+        ]);
     }
 
-    // // Optional: View all notifications
-    // public function index()
-    // {
-    //     $customer = auth()->user()->customer;
-    //     $notifications = $customer->notifications()->latest()->get();
-
-    //     return view('notifications.index', compact('notifications'));
-    // }
+    public function markAsRead($id)
+{
+    $notification = auth()->user()->notifications()->find($id);
+    if ($notification) {
+        $notification->markAsRead();
+    }
+    return response()->json(['success' => true]);
+}
 }

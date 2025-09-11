@@ -59,7 +59,7 @@
                             <a class="nav-link" href="{{ route('maintenance.index') }}">Maintenance</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('ratings_admin.index') }}">Ratings</a>
+                            <a class="nav-link" href="{{ route('ratings_admin.dashboard') }}">Ratings</a>
                         </li>
                     @endif
 

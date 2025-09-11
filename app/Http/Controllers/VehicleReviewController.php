@@ -213,27 +213,42 @@ class VehicleReviewController extends Controller
     //         return response()->json(['error' => $e->getMessage()], 500);
     //     }
     // }
-public function store(Request $request)
-{
-    $request->validate([
-        'vehicle_id' => 'required|exists:vehicles,id',
-        'reservation_id' => 'required|exists:reservations,id',
-        'rating' => 'required|integer|min:1|max:5',
-        'feedback' => 'nullable|string|max:500',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'reservation_id' => 'required|exists:reservations,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'feedback' => 'nullable|string|max:500',
+        ]);
 
-    $rating = Rating::create([
-        'customer_id' => auth()->user()->customer->id,
-        'vehicle_id' => $request->vehicle_id,
-        'reservation_id' => $request->reservation_id,
-        'rating' => $request->rating,
-        'feedback' => $request->feedback,
-    ]);
+        $customerId = auth()->user()->customer->id;
 
-    // Observer 自动触发，不需要手动通知
+        if (
+            Rating::where('customer_id', $customerId)
+                ->where('reservation_id', $request->reservation_id)
+                ->exists()
+        ) {
+            return response()->json(['error' => 'Already rated'], 403);
+        }
 
-    return response()->json(['success' => true]);
-}
+        $rating = Rating::create([
+            'customer_id' => $customerId,
+            'vehicle_id' => $request->vehicle_id,
+            'reservation_id' => $request->reservation_id,
+            'rating' => $request->rating,
+            'feedback' => $request->feedback,
+            'status' => 'pending',
+        ]);
+
+        // Observer triggers notification to admin
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Review submitted successfully!',
+            'data' => $rating
+        ]);
+    }
 
     /**
      * Show average rating

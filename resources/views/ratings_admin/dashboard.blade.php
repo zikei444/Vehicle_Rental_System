@@ -41,10 +41,10 @@
     <p>New ratings will appear as toast notifications at the bottom right.</p>
 </div>
 
-<!-- Toast container -->
+<!-- Toast container
 <div aria-live="polite" aria-atomic="true" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
     <div id="toast-container"></div>
-</div>
+</div> -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -102,7 +102,7 @@ new Chart(ctx, config);
 </script>
 
 
-<script>
+<!-- <script>
 // 显示 toast
 function showToast(message, url = '#') {
     const toastContainer = document.getElementById('toast-container');
@@ -137,5 +137,5 @@ setInterval(() => {
             data.forEach(n => showToast(n.message, n.url));
         });
 }, 5000);
-</script>
+</script> -->
 @endsection

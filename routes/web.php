@@ -12,11 +12,13 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
+use App\Models\Rating;
 
 // HOME ROUTE
 Route::get('/', [HomeController::class, 'index'])->name('home');
- 
+
 // =================== USER VEHICLE ROUTES ===================
 // Show all vehicles
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -32,10 +34,10 @@ Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.st
 
 // =================== ADMIN VEHICLE ROUTES ===================
 Route::prefix('admin')->group(function () {
-    Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('admin.vehicles.index'); 
+    Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('admin.vehicles.index');
     Route::get('/vehicles/create', [AdminVehicleController::class, 'create'])->name('admin.vehicles.create');
     Route::post('/vehicles', [AdminVehicleController::class, 'store'])->name('admin.vehicles.store');
-    Route::get('/vehicles/{id}', [AdminVehicleController::class, 'show'])->name('admin.vehicles.show'); 
+    Route::get('/vehicles/{id}', [AdminVehicleController::class, 'show'])->name('admin.vehicles.show');
     Route::get('/vehicles/{id}/edit', [AdminVehicleController::class, 'edit'])->name('admin.vehicles.edit');
     Route::put('/vehicles/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
     Route::delete('/vehicles/{id}', [AdminVehicleController::class, 'destroy'])->name('admin.vehicles.destroy');
@@ -47,7 +49,7 @@ Route::prefix('admin')->group(function () {
 // =================== USERS RESERVATION ROUTES ===================
 // Redirect to the reservation process page
 Route::get('reservation/process', [ReservationController::class, 'process'])
-     ->name('reservation.process');
+    ->name('reservation.process');
 
 // Calculate and display cost 
 Route::post('/reservation/calculate-ajax', [ReservationController::class, 'calculateAjax'])
@@ -153,12 +155,25 @@ Route::get('/notifications/count', function () {
 })->middleware('auth');
 
 // 标记某个通知为已读
-Route::post('/notifications/{id}/read', function ($id, Request $request) {
-    $user = Auth::user();
-    $notification = $user->unreadNotifications()->findOrFail($id);
-    $notification->markAsRead();
-    return response()->json(['success' => true]);
-})->middleware('auth');
+Route::get('/notifications/unread', function () {
+    $user = auth()->user();
+
+    // Only customers
+    if (!$user->customer) return response()->json([]);
+
+    $notifications = $user->unreadNotifications->map(function ($n) {
+        return [
+            'id' => $n->id,
+            'message' => $n->data['message'] ?? 'New notification',
+            'url' => $n->data['url'] ?? '#'
+        ];
+    });
+
+    // Optional: mark as read automatically
+    $user->unreadNotifications->markAsRead();
+
+    return response()->json($notifications);
+})->middleware('auth')->name('notifications.unread');
 
 Route::get('/notifications/count', function () {
     $user = Auth::user();
@@ -166,16 +181,23 @@ Route::get('/notifications/count', function () {
         'count' => $user->unreadNotifications->count(),
     ]);
 })->middleware('auth');
-//返回未读通知
+
+// 返回未读通知并标记为已读
 Route::get('/admin/notifications/unread', function () {
-    $notifications = auth()->user()->unreadNotifications()->get();
-    return response()->json($notifications->map(function($n) {
+    $user = auth()->user();
+
+    $notifications = $user->unreadNotifications()->get()->map(function ($n) {
         return [
             'id' => $n->id,
             'message' => $n->data['message'],
             'url' => $n->data['url'] ?? '#'
         ];
-    }));
+    });
+
+    // 标记所有未读通知为已读
+    $user->unreadNotifications->markAsRead();
+
+    return response()->json($notifications);
 })->middleware('auth')->name('admin.notifications.unread');
 
 // // =================== ADMIN MANAGE MAINTENANCE ===================

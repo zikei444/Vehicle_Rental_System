@@ -1,51 +1,66 @@
 <?php
+
 namespace App\Observers;
+
 use App\Models\User;
 use App\Models\Rating;
 use App\Models\RatingLog;
 use App\Notifications\RatingReplied;
-use Illuminate\Support\Facades\Log;
 use App\Notifications\NewRatingCreated;
-
 
 class RatingObserver
 {
-    // 当新的 Rating 被创建
+
+    public function boot()
+    {
+        Rating::observe(RatingObserver::class);
+    }
+
+    // When a new rating is created → notify admins
     public function created(Rating $rating)
     {
-        // 通知所有管理员
         $admins = User::where('role', 'admin')->get();
 
         foreach ($admins as $admin) {
-            $admin->notify(new NewRatingCreated($rating));
-        }
+            $exists = $admin->notifications()
+                ->where('type', 'App\Notifications\NewRatingCreated')
+                ->whereJsonContains('data->rating_id', $rating->id)
+                ->exists();
 
-        // // 反应3：更新车辆平均分
-        // $vehicle = $rating->vehicle;
-        // if ($vehicle) {
-        //     $vehicle->avg_rating = $vehicle->ratings()->avg('rating');
-        //     $vehicle->save();
-        // }
-    }
-    /**
-     * Handle the Rating "updated" event.
-     */
- // 当 Rating 被更新时触发
-    public function updated(Rating $rating)
-    {
-        // 如果有 admin reply
-        if ($rating->wasChanged('adminreply') && $rating->adminreply) {
-            // 1️⃣ 存入日志
-            RatingLog::create([
-                'rating_id' => $rating->id,
-                'customer_id' => $rating->customer_id,
-                'reply' => $rating->adminreply,
-            ]);
-
-            // 2️⃣ 发通知
-            if ($rating->customer && $rating->customer->user) {
-                $rating->customer->user->notify(new RatingReplied($rating));
+            if (!$exists) {
+                $admin->notify(new NewRatingCreated($rating));
             }
         }
     }
+
+    // When rating is updated → notify customer if admin replied
+    public function updated(Rating $rating)
+{
+    // Only trigger if admin replied and reply is not empty
+    if ($rating->wasChanged('adminreply') && $rating->adminreply) {
+
+        // Save to rating log
+        RatingLog::create([
+            'rating_id' => $rating->id,
+            'customer_id' => $rating->customer_id,
+            'reply' => $rating->adminreply,
+        ]);
+
+        // Notify customer safely
+        $customer = $rating->customer;
+
+        if ($customer) {
+            $user = $customer->user;
+
+            // Only send notification if user exists and hasn't received one for this reply yet
+            if ($user && !$user->notifications()
+                ->where('type', RatingReplied::class)
+                ->whereJsonContains('data->rating_id', $rating->id)
+                ->exists()
+            ) {
+                $user->notify(new RatingReplied($rating, $rating->adminreply));
+            }
+        }
+    }
+}
 }
