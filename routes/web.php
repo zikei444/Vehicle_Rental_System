@@ -59,45 +59,51 @@ Route::delete('/admin/vehicles/{id}', [AdminVehicleController::class, 'destroy']
 
 
 // =================== USERS RESERVATION ROUTES ===================
-// Redirect to the reservation process page
-Route::get('reservation/process', [ReservationController::class, 'process'])
-    ->name('reservation.process');
+Route::middleware(['frameguard'])->group(function () {
+    // Redirect to the reservation process page
+    Route::get('reservation/process', [ReservationController::class, 'process'])
+        ->name('reservation.process');
 
-// Calculate and display cost 
-Route::post('/reservation/calculate-ajax', [ReservationController::class, 'calculateAjax'])
-    ->name('reservation.calculate.ajax');
+    // Calculate and display cost 
+    Route::post('/reservation/calculate-ajax', [ReservationController::class, 'calculateAjax'])
+        ->name('reservation.calculate.ajax');
 
-// To confirm and proceed to booking 
-Route::match(['get', 'post'], '/reservation/confirm', [ReservationController::class, 'confirm'])
-    ->name('reservation.confirm');
+    // To confirm and proceed to booking 
+    Route::match(['get', 'post'], '/reservation/confirm', [ReservationController::class, 'confirm'])
+        ->name('reservation.confirm');
 
-// Success Payment 
-Route::post('/reservation/payment-process', [ReservationController::class, 'paymentProcess'])
-    ->name('reservation.payment.process');
+    // Success Payment 
+    Route::post('/reservation/payment-process', [ReservationController::class, 'paymentProcess'])
+        ->name('reservation.payment.process');
 
-// To view current reservation (for customers)
-Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
-    ->name('reservation.my');
+    // To view current reservation (for customers)
+    Route::get('/my-reservations', [ReservationController::class, 'myReservations'])
+        ->name('reservation.my');
 
-// To view reservation his (for customers)
-Route::get('/my-reservations/history', [ReservationController::class, 'reservationHistory'])
-    ->name('reservations.history');
+    // To view reservation history (for customers)
+    Route::get('/my-reservations/history', [ReservationController::class, 'reservationHistory'])
+        ->name('reservations.history');
 
-// To mark as complete 
-Route::post('/reservations/{id}/complete', [ReservationController::class, 'complete'])->name('reservations.complete');
+    // To mark as complete 
+    Route::post('/reservations/{id}/complete', [ReservationController::class, 'complete'])
+        ->name('reservations.complete');
 
-// To mark as cancel 
-Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+    // To mark as cancel 
+    Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])
+        ->name('reservations.cancel');
+});
 
 // =================== ADMIN RESERVATION ROUTES ===================
-Route::get('/admin/reservations', [AdminReservationController::class, 'reservations'])
-    ->name('admin.reservations.index');
+Route::middleware(['frameguard'])->group(function () {
+    Route::get('/admin/reservations', [AdminReservationController::class, 'reservations'])
+        ->name('admin.reservations.index');
 
-Route::patch('/admin/reservations/{id}/update-status', [AdminReservationController::class, 'updateStatus'])
-    ->name('admin.reservations.updateStatus');
+    Route::patch('/admin/reservations/{id}/update-status', [AdminReservationController::class, 'updateStatus'])
+        ->name('admin.reservations.updateStatus');
 
-Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'destroy'])
-    ->name('admin.reservations.destroy');
+    Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'destroy'])
+        ->name('admin.reservations.destroy');
+});
 
 
 
@@ -126,7 +132,7 @@ Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('rating
 Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])
     ->name('reservation.ratings.show');
 
-// To create ratings... ADDED BY ZK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// To create ratings
 Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])
     ->name('rating.create');
 
