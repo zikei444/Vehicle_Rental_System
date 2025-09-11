@@ -38,9 +38,10 @@ class VehicleController extends Controller
             return $response['data'] ?? ['average' => null, 'count' => 0];
         }
 
-        $jsonResponse = $this->ratingService->getVehicleRatingSummary($vehicleId);
-        if ($jsonResponse instanceof \Illuminate\Http\JsonResponse) {
-            return $jsonResponse->getData(true)['data'] ?? ['average' => null, 'count' => 0];
+        $ratings = $this->ratingService->getVehicleRatingSummary($vehicleId, 'approved');
+
+        if ($ratings instanceof \Illuminate\Http\JsonResponse) {
+            return $ratings->getData(true)['data'] ?? ['average' => null, 'count' => 0];
         }
 
         return ['average' => null, 'count' => 0];
