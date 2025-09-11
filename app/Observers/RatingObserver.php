@@ -11,10 +11,10 @@ use App\Notifications\NewRatingCreated;
 class RatingObserver
 {
 
-    public function boot()
-    {
-        Rating::observe(RatingObserver::class);
-    }
+    // public function boot()
+    // {
+    //     Rating::observe(RatingObserver::class);
+    // }
 
     // When a new rating is created → notify admins
     public function created(Rating $rating)
