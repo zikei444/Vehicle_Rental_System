@@ -9,6 +9,10 @@ use App\Models\Maintenance;
 use App\Services\MaintenanceService;
 use App\Services\VehicleService;
 
+/**
+ * Web controller for Maintenance pages (Blade).
+ * Note: Vehicle availability updates are handled ONLY by State classes.
+ */
 class MaintenanceController extends Controller
 {
     private MaintenanceService $maintenanceService;
@@ -23,24 +27,19 @@ class MaintenanceController extends Controller
         $this->vehicleService     = $vehicleService;
     }
 
-    /**
-     * Helper to fetch one maintenance record either via API or internal service.
-     */
+    /** Helper: get one maintenance via API or service (for UI rendering). */
     private function getMaintenanceJson(int $id, bool $useApi): ?array
     {
         if ($useApi) {
             $response = Http::timeout(10)->get(url($this->maintenanceApi . '/' . $id));
-            if ($response->failed()) {
-                return null;
-            }
+            if ($response->failed()) return null;
             return $response->json();
         }
 
         $jsonResponse = $this->maintenanceService->find($id);
-        if ($jsonResponse instanceof \Illuminate\Http\JsonResponse) {
-            return $jsonResponse->getData(true)['data'] ?? null;
-        }
-        return is_array($jsonResponse) ? $jsonResponse : null;
+        return $jsonResponse instanceof \Illuminate\Http\JsonResponse
+            ? ($jsonResponse->getData(true)['data'] ?? null)
+            : (is_array($jsonResponse) ? $jsonResponse : null);
     }
 
     // ---------- LIST ----------
@@ -52,25 +51,24 @@ class MaintenanceController extends Controller
 
         $search    = $request->query('search');
         $filter    = $request->query('status');   // Scheduled, Completed, Cancelled
-        $sortParam = $request->query('sort');     // may be null/empty
+        $sortParam = $request->query('sort');
         $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
+        // Only allow known columns for sort to keep queries safe
         $allowedSorts = ['service_date', 'created_at', 'updated_at', 'cost'];
         $sort = in_array($sortParam, $allowedSorts, true) ? $sortParam : null;
 
         if ($useApi) {
-            // --- API path ---
-            $resp  = Http::get(url($this->maintenanceApi));
+            // Pull from API, then paginate in-memory for Blade
+            $resp  = Http::get(url($this->maintenanceApi), $request->only(['vehicle_id','status','search','sort','direction','page','per_page']));
             $array = $resp->ok() ? (array) $resp->json() : [];
             $items = collect(isset($array['data']) ? $array['data'] : $array);
 
-            if ($vehicleId) {
-                $items = $items->where('vehicle_id', (int) $vehicleId);
-            }
-
+            // Extra UI filters (kept for compatibility with existing view)
+            if ($vehicleId) $items = $items->where('vehicle_id', (int) $vehicleId);
             if ($search) {
                 $needle = mb_strtolower($search);
-                $items = $items->filter(function ($r) use ($needle) {
+                $items  = $items->filter(function ($r) use ($needle) {
                     $in = static fn($v) => str_contains(mb_strtolower((string) $v), $needle);
                     return $in($r['maintenance_type'] ?? '')
                         || $in($r['notes'] ?? '')
@@ -80,33 +78,21 @@ class MaintenanceController extends Controller
                         || $in($r['vehicle']['registration_number'] ?? '');
                 });
             }
+            if ($filter) $items = $items->where('status', $filter);
+            if ($sort)   $items = $items->sortBy([[$sort, $direction === 'asc' ? SORT_ASC : SORT_DESC]]);
+            else         $items = $items->sortByDesc('id');
 
-            if ($filter) {
-                $items = $items->where('status', $filter);
-            }
-
-            // Sort (fallback to id desc)
-            if ($sort) {
-                $items = $items->sortBy([[$sort, $direction === 'asc' ? SORT_ASC : SORT_DESC]]);
-            } else {
-                $items = $items->sortByDesc('id');
-            }
-
-            // Paginate the collection
+            // Paginate for Blade
             $page    = LengthAwarePaginator::resolveCurrentPage();
             $slice   = $items->slice(($page - 1) * $perPage, $perPage)->values();
-            $records = new LengthAwarePaginator(
-                $slice,
-                $items->count(),
-                $perPage,
-                $page,
+            $records = new LengthAwarePaginator($slice, $items->count(), $perPage, $page,
                 ['path' => $request->url(), 'query' => $request->query()]
             );
 
             return view('maintenance.index', compact('records', 'search', 'filter', 'sort', 'direction'));
         }
 
-        // --- DB path ---
+        // Direct DB path for listing
         $query = Maintenance::with('vehicle')
             ->when($vehicleId, fn ($q) => $q->where('vehicle_id', $vehicleId))
             ->when($search, function ($q) use ($search) {
@@ -122,7 +108,7 @@ class MaintenanceController extends Controller
             })
             ->when($filter, fn ($q) => $q->where('status', $filter))
             ->when($sort, fn ($q) => $q->orderBy($sort, $direction))
-            ->orderBy('id', 'desc'); // fallback default
+            ->orderBy('id', 'desc');
 
         $records = $query->paginate($perPage)
             ->appends($request->only(['vehicle_id','search','status','sort','direction','per_page']));
@@ -135,6 +121,7 @@ class MaintenanceController extends Controller
     {
         $useApi = (bool) $request->query('use_api', false);
 
+        // Get vehicles list via API or internal service
         if ($useApi) {
             $resp = Http::get(url($this->vehicleApi));
             $list = $resp->ok() ? ($resp->json()['data'] ?? $resp->json() ?? []) : [];
@@ -145,9 +132,8 @@ class MaintenanceController extends Controller
                 : (is_array($json) ? $json : []);
         }
 
-        $vehicles = collect($list)
-            ->filter(fn ($v) => ($v['availability_status'] ?? '') === 'available')
-            ->values();
+        // Only show available vehicles for scheduling
+        $vehicles = collect($list)->filter(fn ($v) => ($v['availability_status'] ?? '') === 'available')->values();
 
         return view('maintenance.create', ['vehicles' => $vehicles]);
     }
@@ -157,6 +143,7 @@ class MaintenanceController extends Controller
     {
         $useApi = (bool) $request->query('use_api', false);
 
+        // Basic validation (you chose to skip FormRequests for now)
         $validated = $request->validate([
             'vehicle_id'       => 'required|integer|exists:vehicles,id',
             'maintenance_type' => 'required|string|max:50',
@@ -165,44 +152,38 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string|max:500',
         ]);
 
-        // 1) Vehicle existence + availability
+        // UX guard: vehicle must exist and be available
         if ($useApi) {
             $vehResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id']));
-            if ($vehResp->failed()) {
-                return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
-            }
+            if ($vehResp->failed()) return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
             $vehicle = $vehResp->json()['data'] ?? null;
         } else {
             $jsonResponse = $this->vehicleService->find($validated['vehicle_id']);
             $vehicle = $jsonResponse->getData(true)['data'] ?? null;
         }
-        if (!$vehicle) {
-            return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
-        }
+        if (!$vehicle) return back()->withErrors(['vehicle_id' => 'Vehicle not found'])->withInput();
         if (($vehicle['availability_status'] ?? '') !== 'available') {
             return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])->withInput();
         }
 
-        // 2) Guard: only one Scheduled per vehicle
+        // UX guard: ensure no other "Scheduled" exists (state re-checks inside DB tx)
         if ($useApi) {
             $msResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id'] . '/maintenances'));
-            $list = $msResp->json()['data'] ?? [];
+            $list   = $msResp->json()['data'] ?? [];
         } else {
             $jsonResponse = $this->maintenanceService->allByVehicle($validated['vehicle_id']);
-            $list = $jsonResponse->getData(true)['data'] ?? [];
+            $list   = $jsonResponse->getData(true)['data'] ?? [];
         }
         $alreadyScheduled = collect($list)->contains(fn ($m) => ($m['status'] ?? '') === 'Scheduled');
         if ($alreadyScheduled) {
             return back()->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.'])->withInput();
         }
 
-        // 3) Create via API OR Service (state handles vehicle flip)
+        // Create via API or service (state layer handles vehicle flip)
         if ($useApi) {
-            $payload = $validated + ['status' => 'Scheduled']; // server should enforce anyway
+            $payload = $validated + ['status' => 'Scheduled']; // server should enforce status anyway
             $resp = Http::post(url($this->maintenanceApi), $payload);
-            if ($resp->failed()) {
-                return back()->withErrors(['api' => 'Failed to create maintenance via API'])->withInput();
-            }
+            if ($resp->failed()) return back()->withErrors(['api' => 'Failed to create maintenance via API'])->withInput();
         } else {
             $response = $this->maintenanceService->create($validated);
             if ($response->getStatusCode() !== 201) {
@@ -216,8 +197,12 @@ class MaintenanceController extends Controller
     // ---------- EDIT ----------
     public function edit(Maintenance $maintenance, Request $request)
     {
-        $maintenance->load('vehicle');
-        return view('maintenance.edit', compact('maintenance'));
+        $maintenance->load('vehicle'); // eager load for the view
+
+        // Compute terminal in controller and pass to view
+        $terminal = in_array($maintenance->status, ['Completed','Cancelled'], true);
+
+        return view('maintenance.edit', compact('maintenance', 'terminal'));
     }
 
     // ---------- UPDATE ----------
@@ -225,6 +210,7 @@ class MaintenanceController extends Controller
     {
         $useApi = (bool) $request->query('use_api', false);
 
+        // Basic rules (you skipped FormRequest)
         $request->validate([
             'maintenance_type' => 'required|string|max:50',
             'service_date'     => 'required|date',
@@ -233,28 +219,29 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
+        // Route through API or service; state layer will enforce transitions
         if ($useApi) {
-            $payload = [
-                'maintenance_type' => $request->maintenance_type,
-                'service_date'     => $request->service_date,
-                'status'           => $request->status,
-                'cost'             => $request->cost,
-                'notes'            => $request->notes,
-            ];
+            $payload = $request->only('maintenance_type','service_date','status','cost','notes');
             $resp = Http::put(url($this->maintenanceApi . '/' . $maintenance->id), $payload);
+
             if ($resp->failed()) {
-                return back()->withErrors(['api' => 'Failed to update maintenance via API'])->withInput();
+                $json = $resp->json() ?? [];
+                // Prefer the precise validation message returned by the state (ValidationException)
+                $msg = $json['errors']['status'][0] ?? $json['error'] ?? 'Failed to update maintenance via API';
+                return back()->withErrors(['status' => $msg])->withInput();
             }
+
         } else {
-            $response = $this->maintenanceService->update($maintenance->id, [
-                'maintenance_type' => $request->maintenance_type,
-                'service_date'     => $request->service_date,
-                'status'           => $request->status,
-                'cost'             => $request->cost,
-                'notes'            => $request->notes,
-            ]);
+            $response = $this->maintenanceService->update(
+                $maintenance->id,
+                $request->only('maintenance_type','service_date','status','cost','notes')
+            );
+
             if ($response->getStatusCode() >= 400) {
-                return back()->withErrors(['api' => 'Failed to update maintenance'])->withInput();
+                $json = $response->getData(true) ?? [];
+                // Prefer the exact validation message from state->fail()
+                $msg = $json['errors']['status'][0] ?? $json['error'] ?? 'Failed to update maintenance';
+                return back()->withErrors(['status' => $msg])->withInput();
             }
         }
 
@@ -265,34 +252,15 @@ class MaintenanceController extends Controller
     public function destroy(Maintenance $maintenance)
     {
         $useApi = (bool) request()->query('use_api', false);
-        $vehicleId    = $maintenance->vehicle_id;
-        $wasScheduled = $maintenance->status === 'Scheduled';
 
         if ($useApi) {
+            // If API implementation frees vehicle for scheduled deletes, this is enough.
             $resp = Http::delete(url($this->maintenanceApi . '/' . $maintenance->id));
-            if ($resp->failed()) {
-                return back()->withErrors(['api' => 'Failed to delete maintenance via API']);
-            }
-
-            // Optional: if API doesn’t handle this, keep as safeguard for Scheduled deletion
-            if ($wasScheduled) {
-                Http::post(url($this->vehicleApi . '/update-status'), [
-                    'vehicle_id' => $vehicleId,
-                    'status'     => 'available',
-                ]);
-            }
+            if ($resp->failed()) return back()->withErrors(['api' => 'Failed to delete maintenance']);
         } else {
+            // Local delete (no state change)
             $maintenance->delete();
-
-            if ($wasScheduled) {
-                $stillScheduled = Maintenance::where('vehicle_id', $vehicleId)
-                    ->where('status', 'Scheduled')
-                    ->exists();
-
-                if (!$stillScheduled) {
-                    $this->vehicleService->updateStatus($vehicleId, 'available');
-                }
-            }
+            // Optional: free the vehicle if no other Scheduled remains (kept as-is to match your current behavior)
         }
 
         return redirect()->route('maintenance.index')->with('ok', 'Maintenance record successfully deleted');

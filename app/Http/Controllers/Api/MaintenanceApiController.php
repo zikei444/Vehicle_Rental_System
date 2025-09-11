@@ -6,35 +6,31 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Maintenance;
 
+/**
+ * Maintenance REST API
+ * - index(): filters + search + sort + pagination → { data, meta }
+ * - byVehicle(): convenience listing for a single vehicle
+ */
 class MaintenanceApiController extends Controller
 {
-    /**
-     * GET /api/maintenances
-     * Supports filters, search, sorting, and pagination.
-     * Returns a consistent { data, meta } payload.
-     */
+    // filter, search, sort, pagination
     public function index(Request $request)
     {
-        $query = Maintenance::query()->with(['vehicle']);
+        $q = Maintenance::query()->with('vehicle');
 
-        // ---- Filters ----
+        // ----- Filters -----
         if ($request->filled('vehicle_id')) {
-            $query->where('vehicle_id', (int) $request->query('vehicle_id'));
+            $q->where('vehicle_id', (int) $request->query('vehicle_id'));
+        }
+        if ($request->filled('status') && in_array($request->status, ['Scheduled','Completed','Cancelled'], true)) {
+            $q->where('status', $request->status);
         }
 
-        if ($request->filled('status')) {
-            // Accept only known statuses
-            $status = $request->query('status');
-            if (in_array($status, ['Scheduled', 'Completed', 'Cancelled'], true)) {
-                $query->where('status', $status);
-            }
-        }
-
-        // ---- Search (maintenance_type, notes, and vehicle fields) ----
+        // ----- Search (maintenance + vehicle fields) -----
         if ($request->filled('search')) {
-            $s = $request->query('search');
-            $query->where(function ($q) use ($s) {
-                $q->where('maintenance_type', 'like', "%{$s}%")
+            $s = $request->search;
+            $q->where(function ($w) use ($s) {
+                $w->where('maintenance_type', 'like', "%{$s}%")
                   ->orWhere('notes', 'like', "%{$s}%")
                   ->orWhere('cost', 'like', "%{$s}%")
                   ->orWhereHas('vehicle', function ($v) use ($s) {
@@ -45,33 +41,30 @@ class MaintenanceApiController extends Controller
             });
         }
 
-        // ---- Sorting ----
-        $sort      = $request->query('sort', 'service_date');                // default
-        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $allowedSorts = ['service_date', 'cost', 'status', 'created_at'];
-        if (!in_array($sort, $allowedSorts, true)) {
-            $sort = 'service_date';
-        }
-        $query->orderBy($sort, $direction);
+        // ----- Sort (allow-list to avoid unsafe columns) -----
+        $sort = $request->query('sort', 'service_date');
+        $dir  = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['service_date','cost','status','created_at'];
+        if (!in_array($sort, $allowedSorts, true)) $sort = 'service_date';
+        $q->orderBy($sort, $dir);
 
-        // ---- Pagination ----
-        $perPage = (int) $request->query('per_page', 10);
-        $perPage = ($perPage > 0 && $perPage <= 100) ? $perPage : 10;
-        $page    = max((int) $request->query('page', 1), 1);
+        // ----- Pagination -----
+        $per  = (int) $request->query('per_page', 10);
+        $per  = ($per > 0 && $per <= 100) ? $per : 10;
+        $page = max((int) $request->query('page', 1), 1);
+        $p    = $q->paginate($per, ['*'], 'page', $page);
 
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-
-        // ---- Consistent shape ----
+        // Consistent payload for UIs/clients
         return response()->json([
-            'data' => $paginator->items(),
+            'data' => $p->items(),
             'meta' => [
-                'total'         => $paginator->total(),
-                'per_page'      => $paginator->perPage(),
-                'current_page'  => $paginator->currentPage(),
-                'last_page'     => $paginator->lastPage(),
-                'sort'          => $sort,
-                'direction'     => $direction,
-                'filters'       => [
+                'total'        => $p->total(),
+                'per_page'     => $p->perPage(),
+                'current_page' => $p->currentPage(),
+                'last_page'    => $p->lastPage(),
+                'sort'         => $sort,
+                'direction'    => $dir,
+                'filters'      => [
                     'vehicle_id' => $request->query('vehicle_id'),
                     'status'     => $request->query('status'),
                     'search'     => $request->query('search'),
@@ -80,14 +73,20 @@ class MaintenanceApiController extends Controller
         ]);
     }
 
-    /**
-     * Optional: GET /api/vehicles/{vehicleId}/maintenances
-     * Convenience listing that reuses index() logic.
-     */
+    /** GET /api/vehicles/{vehicleId}/maintenances – convenience wrapper around index(). */
     public function byVehicle(Request $request, int $vehicleId)
     {
-        // Reuse index() by injecting vehicle_id into the query bag
         $request->merge(['vehicle_id' => $vehicleId]);
         return $this->index($request);
+    }
+
+    /** Delegate updates to the service to enforce state transitions & errors. */
+    public function update(Request $request, int $id)
+    {
+        // (Add your request validation here if needed)
+        return app(\App\Services\MaintenanceService::class)->update(
+            $id,
+            $request->only('maintenance_type', 'service_date', 'status', 'cost', 'notes')
+        );
     }
 }
