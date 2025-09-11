@@ -4,7 +4,7 @@
 <div class="container">
     <h1>Add New Vehicle</h1>
 
-    {{-- Display All Validation Errors --}}
+    <!-- Display error -->
     @if($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">
@@ -18,7 +18,7 @@
     <form action="{{ route('admin.vehicles.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        {{-- General Vehicle Info --}}
+        <!-- General information -->
         <div class="mb-3">
             <label>Type</label>
             <select name="type" id="vehicleType" class="form-control" required>
@@ -85,7 +85,7 @@
             @enderror
         </div>
 
-        {{-- Vehicle Image --}}
+        <!-- Vehicle image -->
         <div class="mb-3">
             <label for="image" class="form-label">Vehicle Image</label>
             <input type="file" name="image" class="form-control" id="image" required>
@@ -94,7 +94,7 @@
             @enderror
         </div>
 
-        {{-- Documents --}}
+        <!-- Vehicle documents -->
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="insurance_doc" class="form-label">Insurance Document</label>
@@ -119,7 +119,7 @@
             </div>
         </div>
 
-        {{-- Type-Specific Fields --}}
+        <!-- Type-specific information -->
         <div id="carFields" class="type-specific d-none">
             <h4>Car Details</h4>
             <div class="mb-3">
@@ -233,6 +233,7 @@
             </div>
         </div>
 
+        <!-- Button -->
         <button type="submit" class="btn btn-primary">Add Vehicle</button>
         <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Cancel</a>
 

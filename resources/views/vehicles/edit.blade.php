@@ -4,7 +4,7 @@
 <div class="container">
     <h1>Edit Vehicle</h1>
 
-    {{-- Display validation errors --}}
+    <!-- Display error -->
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -19,7 +19,7 @@
         @csrf
         @method('PUT')
 
-        {{-- General Vehicle Info --}}
+        <!-- General information -->
         <div class="mb-3">
             <label>Type</label>
             <select name="type" id="vehicleType" class="form-control" required>
@@ -70,14 +70,14 @@
             </select>
         </div>
 
-        {{-- Vehicle Image --}}
+        <!-- Vehicle image -->
         <div class="mb-3">
             <label>Vehicle Image</label>
             <input type="file" name="image" class="form-control">
             <small class="text-muted">Upload new image to replace current one.</small>
         </div>
 
-        {{-- Documents --}}
+        <!-- Vehicle documents -->
         <div class="row mb-3">
             @foreach(['insurance_doc','registration_doc','roadtax_doc'] as $doc)
             <div class="col-md-4">
@@ -88,7 +88,7 @@
             @endforeach
         </div>
 
-        {{-- Type-specific fields --}}
+        <!-- Type-specific information -->
         <div id="carFields" class="type-specific {{ old('type', $vehicle->type)=='car' ? '' : 'd-none' }}">
             <h4>Car Details</h4>
             <div class="mb-3">
@@ -176,7 +176,7 @@
             </div>
         </div>
 
-        {{-- Buttons --}}
+        <!-- Button -->
         <button type="submit" class="btn btn-primary">Update Vehicle</button>
         <a href="{{ route('admin.vehicles.index') }}" class="btn btn-secondary">Cancel</a>
     </form>

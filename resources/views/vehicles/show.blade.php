@@ -4,6 +4,7 @@
 <div class="container">
     <h1>{{ ucfirst($vehicle->type) }} Details</h1>
 
+    <!-- Vahicle image -->
     <div class="mb-4 text-center">
         @if($vehicle->image)
             <img src="{{ asset('images/vehicles/' . $vehicle->image) }}" 
@@ -18,6 +19,7 @@
         @endif
     </div>
 
+    <!-- Rating -->
     <div class="card mb-3">
         <div class="card-header">Ratings</div>
         <div class="card-body">
@@ -30,6 +32,7 @@
         </div>
     </div>
 
+    <!-- Vehicle information -->
     <div class="card mb-3">
         <div class="card-header">General Information</div>
         <div class="card-body">
@@ -42,6 +45,7 @@
         </div>
     </div>
 
+    <!-- Type-specific information -->
     <div class="card mb-3">
         <div class="card-header">Type-Specific Details</div>
         <div class="card-body">
@@ -65,6 +69,7 @@
         </div>
     </div>
 
+    <!-- Vehicle documents -->
     <div class="card mb-3">
         <div class="card-header">
             Vehicle Documents
