@@ -61,7 +61,7 @@ Route::get('/customers/{customerId}/reservations', [ReservationApiController::cl
 
 // Maintenance API
 Route::prefix('maintenances')->group(function () {
-    Route::get('/',        [MaintenanceApiController::class, 'index']);   // list (with filters/pagination)
+    Route::get('/',        [MaintenanceApiController::class, 'index']);   // list
     Route::post('/',       [MaintenanceApiController::class, 'store']);   // create
     Route::get('/{id}',    [MaintenanceApiController::class, 'show']);    // details
     Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // update / transition
