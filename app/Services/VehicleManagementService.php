@@ -84,6 +84,7 @@ class VehicleManagementService
                 'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,' . $id,
                 'rental_price' => 'required|numeric|min:0',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
+                'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
