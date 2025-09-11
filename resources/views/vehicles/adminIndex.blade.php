@@ -73,11 +73,11 @@
                         @if($v['image'])
                             <img src="{{ asset('images/vehicles/' . $v['image']) }}" 
                                 alt="{{ $v['brand'] }} {{ $v['model'] }}" 
-                                style="height: 50px; width: auto; border-radius: 5px;">
+                                style="height: 50px; width: 70px; border-radius: 5px;">
                         @else
                             <img src="https://via.placeholder.com/50x30?text=No+Image" 
                                 alt="No Image" 
-                                style="height: 50px; width: auto; border-radius: 5px;">
+                                style="height: 50px; width: 70px; border-radius: 5px;">
                         @endif
                     </td>
                     <td>{{ ucfirst($v['type']) }}</td>
