@@ -92,67 +92,73 @@ $("#rateForm").on("submit", function(e) {
     const score = $("#score").val();
     const content = $("#content").val();
 
-$.ajax({
-    url: "{{ route('ratings.store') }}",
-    method: "POST",
-    headers: {
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-    },
-    data: {
-        vehicle_id: vehicleId,
-        reservation_id: reservationId,
-        rating: score,
-        feedback: content
-    },
-    success: function(response) {
-            $("#success-message").removeClass('d-none').text('Review submitted successfully!');
-            $("#error-message").addClass('d-none');
-            closeModal();
+// $.ajax({
+//     url: "{{ route('ratings.store') }}",
+//     method: "POST",
+//     headers: {
+//         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+//     },
+//     data: {
+//         vehicle_id: vehicleId,
+//         reservation_id: reservationId,
+//         rating: score,
+//         feedback: content
+//     },
+//     success: function(response) {
+//             $("#success-message").removeClass('d-none').text('Review submitted successfully!');
+//             $("#error-message").addClass('d-none');
+//             closeModal();
 
-            // 更新按钮为 Rated
-            $(`#reservation-${reservationId} button`).replaceWith(
-        `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>
-        <a href="/ratings/view/${reservationId}" class="btn btn-info text-white">View Rating</a>`
-            );
-    },
-    error: function(xhr) {
-        console.log(xhr.responseText);
-        alert("Error: " + (xhr.responseJSON?.error || 'Failed'));
+//             // 更新按钮为 Rated
+//             $(`#reservation-${reservationId} button`).replaceWith(
+//         `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>
+//         <a href="/ratings/view/${reservationId}" class="btn btn-info text-white">View Rating</a>`
+//             );
+//     },
+//     error: function(xhr) {
+//         console.log(xhr.responseText);
+//         alert("Error: " + (xhr.responseJSON?.error || 'Failed'));
+//     }
+// });
+
+  $.ajax({
+        url: "{{ route('ratings.store') }}",
+        method: "POST",
+        data: {
+            _token: '{{ csrf_token() }}',
+            vehicle_id: vehicleId,
+            reservation_id: reservationId,
+            rating: score,
+            feedback: content
+        },
+        success: function(response) {
+            if(response.success){
+                $("#success-message").removeClass('d-none').text(response.message);
+                $("#error-message").addClass('d-none');
+                closeModal();
+
+                // 更新按钮为 Rated
+                $(`#reservation-${reservationId} button`).replaceWith(
+                    `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>
+                    <a href="/ratings/view/${reservationId}" class="btn btn-info text-white">View Rating</a>`
+                );
+            } else {
+                $("#error-message").removeClass('d-none').text('Failed to submit rating.');
+            }
+        },
+
+    
+       error: function(xhr) {
+    let msg = 'Failed';
+    if(xhr.responseJSON?.error){
+        msg = xhr.responseJSON.error;
+    } else if(xhr.responseJSON?.errors){
+        msg = Object.values(xhr.responseJSON.errors).flat().join(', ');
     }
+    $("#error-message").removeClass('d-none').text(msg);
+    $("#success-message").addClass('d-none');
+        }
+    });
 });
-
-    // $.ajax({
-    //     url: "{{ route('ratings.store') }}",
-    //     method: "POST",
-    //     headers: {
-    //         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-    //     },
-    //     contentType: "application/json",
-    //     data: JSON.stringify({
-    //         customer_id: {{ auth()->id() ?? 1 }}, // 登录用户
-    //         vehicle_id: vehicleId,
-    //         reservation_id: reservationId,
-    //         rating: score,
-    //         feedback: content
-    //     }),
-    //     success: function(response) {
-    //         $("#success-message").removeClass('d-none').text('Review submitted successfully!');
-    //         $("#error-message").addClass('d-none');
-    //         closeModal();
-
-    //         // 更新按钮为 Rated
-    //         $(`#reservation-${reservationId} button`).replaceWith(
-    //             `<button class="btn btn-success" disabled>Rated (${score}⭐)</button>`
-    //         );
-    //     },
-
-    //     error: function(xhr) {
-    //         const msg = xhr.responseJSON?.error || (xhr.responseJSON?.errors ? Object.values(xhr.responseJSON.errors).flat().join(', ') : 'Failed');
-    //         $("#error-message").removeClass('d-none').text(msg);
-    //         $("#success-message").addClass('d-none');
-    //     }
-    // });
-});
-
 </script>
 @endsection

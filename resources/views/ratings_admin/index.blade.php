@@ -1,8 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<h2>All Ratings</h2>
-
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>All Ratings</h2>
+                <a href="{{ route('ratings_admin.dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+    </div>
 <div id="alert-container"></div>
 
 <table class="table table-striped">
@@ -20,7 +22,7 @@
     <tbody>
         @foreach($ratings as $rating)
         <tr id="rating-{{ $rating->id }}">
-            <td>{{ $rating->customer->username }}</td>
+            <td>{{ $rating->customer->user->name ?? 'Unknown User' }}</td>
             <td>{{ $rating->vehicle->brand }} {{ $rating->vehicle->model }}</td>
             <td>{{ $rating->rating }} ⭐</td>
             <td>{{ $rating->feedback }}</td>
@@ -38,6 +40,10 @@
                 @if($rating->status === 'pending')
                     <button class="btn btn-success btn-sm approve-btn" data-id="{{ $rating->id }}">Approve</button>
                     <button class="btn btn-danger btn-sm reject-btn" data-id="{{ $rating->id }}">Reject</button>
+                    @elseif($rating->status === 'approved')
+                        <span>Approved</span>
+                    @elseif($rating->status === 'rejected')
+                        <span>Rejected</span>
                 @endif
             </td>
         </tr>
@@ -58,8 +64,9 @@ $(function(){
     $('.approve-btn').click(function(){
         const id = $(this).data('id');
         $.post(`/admin/ratings/${id}/approve`, {_token:'{{ csrf_token() }}', status:'approved'}, function(){
-            $(`#rating-${id} .status`).text('Approved');
-            $(`#rating-${id} .actions`).html('');
+        $(`#rating-${id} .status`).text('Approved');
+        // Instead of clearing actions, show a label
+        $(`#rating-${id} .actions`).html('<span class="badge bg-success">Approved</span>');
             showAlert('Rating approved!');
         });
     });
@@ -68,8 +75,8 @@ $(function(){
     $('.reject-btn').click(function(){
         const id = $(this).data('id');
         $.post(`/admin/ratings/${id}/approve`, {_token:'{{ csrf_token() }}', status:'rejected'}, function(){
-            $(`#rating-${id} .status`).text('Rejected');
-            $(`#rating-${id} .actions`).html('');
+        $(`#rating-${id} .status`).text('Rejected');
+        $(`#rating-${id} .actions`).html('<span class="badge bg-danger">Rejected</span>');
             showAlert('Rating rejected!');
         });
     });

@@ -12,6 +12,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
 
  
 // =================== USER VEHICLE ROUTES ===================
@@ -89,7 +90,12 @@ Route::delete('/admin/reservations/{id}', [AdminReservationController::class, 'd
 
 
 // // =================== CUSTOMER FEEDBACK ROUTES ===================
-
+// notification observer
+//view all 
+//Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::get('/notifications/fetch', [NotificationController::class, 'fetch'])->name('notifications.fetch');
+//mark as read
+Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 // 车辆评分页面
 Route::prefix('vehicles/{vehicle}')->group(function () {
     // 显示评分列表
@@ -118,12 +124,61 @@ Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::cl
 // // =================== ADMIN MANAGE FEEDBACK ===================
 
 Route::prefix('admin')->group(function () {
-    Route::get('/ratings', [AdminRatingController::class, 'index'])->name('ratings_admin.index');
+    // Admin Dashboard (显示所有车辆平均评分 + 图表)
+    Route::get('/ratings/dashboard', [AdminRatingController::class, 'dashboard'])->name('ratings_admin.dashboard');
+    Route::get('/ratings/dashboard/details/{vehicle}', [AdminRatingController::class, 'vehicleRatingsDetails'])->name('ratings_admin.details');
+    // Manage ratings
+    Route::get('/ratings/manage', [AdminRatingController::class, 'index'])->name('ratings_admin.index'); // Manage Ratings
     Route::post('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
     Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
+    // ⚡ 管理员回复
     Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
 
 });
+
+
+
+// 获取某个 rating 最新 reply
+Route::get('/ratings/{id}/reply', function ($id) {
+    $rating = Rating::findOrFail($id);
+    return response()->json([
+        'reply' => $rating->adminreply,
+    ]);
+})->middleware('auth');
+
+// 获取未读通知数
+Route::get('/notifications/count', function () {
+    $user = Auth::user();
+    return response()->json([
+        'count' => $user->unreadNotifications->count(),
+    ]);
+})->middleware('auth');
+
+// 标记某个通知为已读
+Route::post('/notifications/{id}/read', function ($id, Request $request) {
+    $user = Auth::user();
+    $notification = $user->unreadNotifications()->findOrFail($id);
+    $notification->markAsRead();
+    return response()->json(['success' => true]);
+})->middleware('auth');
+
+Route::get('/notifications/count', function () {
+    $user = Auth::user();
+    return response()->json([
+        'count' => $user->unreadNotifications->count(),
+    ]);
+})->middleware('auth');
+//返回未读通知
+Route::get('/admin/notifications/unread', function () {
+    $notifications = auth()->user()->unreadNotifications()->get();
+    return response()->json($notifications->map(function($n) {
+        return [
+            'id' => $n->id,
+            'message' => $n->data['message'],
+            'url' => $n->data['url'] ?? '#'
+        ];
+    }));
+})->middleware('auth')->name('admin.notifications.unread');
 
 // // =================== ADMIN MANAGE MAINTENANCE ===================
 

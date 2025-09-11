@@ -6,6 +6,8 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use App\Models\Rating;
+use App\Observers\RatingObserver;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -14,11 +16,10 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<class-string, array<int, class-string>>
      */
-    protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
+    protected $observers = [
+        \App\Models\Rating::class => \App\Observers\RatingObserver::class,
     ];
+
 
     /**
      * Register any events for your application.
@@ -27,7 +28,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Rating::observe(RatingObserver::class);
     }
 
     /**

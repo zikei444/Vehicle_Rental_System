@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Reservation;
 use App\Models\User;
-
+use Illuminate\Notifications\Notifiable; 
 class Customer extends Model
 {
-
+    use Notifiable;//observer pattern
     protected $table = 'customers';
 
     protected $fillable = [
