@@ -264,7 +264,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/customers', [CustomerController::class, 'index'])
         ->name('admin.customerManagement');
 
-    // Display customer account list (optional, same as above)
+    // Display customer account list
     Route::get('/admin/profile', [CustomerController::class, 'index'])
         ->name('admin.customerManagement');
 
