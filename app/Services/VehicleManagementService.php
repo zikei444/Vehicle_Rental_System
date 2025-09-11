@@ -33,9 +33,9 @@ class VehicleManagementService
                 'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
                 'image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
-                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
+                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
+                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
             ]);
 
             // Create vehicle record
@@ -85,9 +85,9 @@ class VehicleManagementService
                 'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
                 'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
-                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
+                'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
+                'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
             ]);
 
             // Update vehicle info
