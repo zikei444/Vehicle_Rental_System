@@ -62,6 +62,18 @@ class Vehicle extends Model
         return $this->hasOne(Van::class);
     }
 
+    // Calculates the total number of ratings and the average rating
+    public function getRatingSummaryAttribute()
+    {
+        $count = $this->ratings()->count();
+        $average = $this->ratings()->avg('rating');
+
+        return [
+            'count' => $count,
+            'average' => $average ? round($average, 2) : 0
+        ];
+    }
+
     // Scope to filter available vehicles
     public function scopeAvailable($query)
     {

@@ -8,14 +8,24 @@ use App\Models\Vehicle;
 
 class VehicleApiController extends Controller
 {
+    public function __construct()
+    {
+        // Require authentication (Sanctum or Passport depending on your setup)
+        $this->middleware('auth:sanctum');
+    }
+
+    //List all vehicles (paginated)
     public function index()
     {
+        $vehicles = Vehicle::paginate(10); 
+
         return response()->json([
             'status' => 'success',
-            'data' => Vehicle::all()
+            'data' => $vehicles
         ]);
     }
 
+    // Show single vehicle by ID
     public function show($id)
     {
         $vehicle = Vehicle::find($id);
@@ -33,20 +43,23 @@ class VehicleApiController extends Controller
         ]);
     }
 
+    
+    // Update vehicle availability status
     public function updateStatus(Request $request)
     {
         $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
-            'status' => 'required|string'
+            'status' => 'required|in:available,rented,reserved,under_maintenance'
         ]);
 
-        $vehicle = Vehicle::find($request->vehicle_id);
+        $vehicle = Vehicle::findOrFail($request->vehicle_id);
         $vehicle->availability_status = $request->status;
         $vehicle->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Vehicle status updated'
+            'message' => 'Vehicle status updated successfully',
+            'data' => $vehicle
         ]);
     }
 }
