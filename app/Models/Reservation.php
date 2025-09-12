@@ -1,3 +1,8 @@
+<!-- 
+STUDENT NAME: LIEW ZI KEI 
+STUDENT ID: 23WMR14570
+-->
+
 <?php
 namespace App\Models;
 
@@ -33,15 +38,7 @@ class Reservation extends Model
     {
         return $query->where('status', 'completed');
     }
-    public function hasRated(): bool
-    {
-
-     $customerId = $this->customer_id;
-    // 当前 reservation 对应的 vehicle 是否已经被该用户评分
-    return Rating::where('reservation_id', $this->id)
-                 ->where('customer_id', $this->customer_id)// 没登录先用 1
-                 ->exists();
-    }
+    
 }
 
 ?>

@@ -9,12 +9,15 @@ use App\Models\Vehicle;
 use App\Models\Reservation;
 use App\Models\Rating;
 use App\Services\UserService;
+use App\Services\VehicleService;
 
 class VehicleReviewController extends Controller
 {
     protected $ratingService;
     private UserService $userService;
+    private UserService $vehicleService;
     private string $ratingApi = '/api/ratings';
+    private string $vehicleApi = '/api/vehicles';
 
     public function __construct(RatingService $ratingService, UserService $userService)
     {
@@ -182,7 +185,7 @@ class VehicleReviewController extends Controller
     public function showAverage($vehicleId)
     {
         try {
-            $vehicle = \App\Models\Vehicle::findOrFail($vehicleId);
+            $vehicle = Vehicle::findOrFail($vehicleId);
 
             return view('ratings.average', compact('vehicle'));
         } catch (\Exception $e) {

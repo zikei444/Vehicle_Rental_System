@@ -1,3 +1,8 @@
+<!-- 
+STUDENT NAME: LIEW ZI KEI 
+STUDENT ID: 23WMR14570
+-->
+
 <footer class="bg-dark text-white text-center py-3 mt-4">
     <div class="container">
         <p>&copy; {{ date('Y') }} Vehicle Rental System. All rights reserved.</p>
