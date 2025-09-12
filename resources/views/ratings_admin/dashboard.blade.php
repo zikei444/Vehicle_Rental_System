@@ -5,7 +5,7 @@ STUDENT ID: 23WMR14547 -->
 @section('content')
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Admin Dashboard - Vehicle Ratings</h2>
+        <h2>Admin Dashboard - Vehicle Average Ratings</h2>
         <a href="{{ route('ratings_admin.index') }}" class="btn btn-primary btn-sm">Manage Ratings</a>
     </div>
 
