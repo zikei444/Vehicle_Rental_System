@@ -20,6 +20,37 @@ class VehicleManagementService
         $this->vehicleService = $vehicleService;
     }
 
+    // Fetch all vehicles with optional filters
+    public function getAllVehicles(array $filters = [])
+    {
+        $query = Vehicle::query();
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('registration_number', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['availability_status'])) {
+            $query->where('availability_status', $filters['availability_status']);
+        }
+
+        return $query->with(['car', 'truck', 'van'])->get();
+    }
+
+    // Fetch single vehicle with relations
+    public function getVehicleById(int $id): Vehicle
+    {
+        return Vehicle::with(['car','truck','van'])->findOrFail($id);
+    }
+
     // Create vehicle
     public function createVehicle(Request $request): Vehicle
     {
@@ -32,10 +63,10 @@ class VehicleManagementService
                 'brand' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'model' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'year_of_manufacture' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
-                'registration_number' => 'required|string|max:50|regex:/^[A-Z0-9\-]+$/|unique:vehicles,registration_number',
+                'registration_number' => 'required|string|max:50|regex:/^[A-Za-z0-9]+$/|unique:vehicles,registration_number',
                 'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
-                'image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
+                'image' => 'required|file|mimes:jpg,jpeg,png,webp|max:5120',
                 'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
                 'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
                 'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
@@ -84,10 +115,10 @@ class VehicleManagementService
                 'brand' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'model' => 'required|string|max:100|regex:/^[A-Za-z0-9\s\-]+$/',
                 'year_of_manufacture' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
-                'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,' . $id,
+                'registration_number' => 'required|string|max:50|regex:/^[A-Za-z0-9]+$/|unique:vehicles,registration_number,' . $id,
                 'rental_price' => 'required|numeric|min:0|max:10000',
                 'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
-                'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+                'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
                 'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
                 'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
                 'roadtax_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
