@@ -30,6 +30,33 @@ class VehicleService
     }
 
     /**
+     * Create a new vehicle
+     */
+    public function create(array $data): JsonResponse
+    {
+        $vehicle = Vehicle::create($data);
+        return response()->json(['status' => 'success', 'data' => $this->formatVehicle($vehicle)], 201);
+    }
+    
+    /**
+     * Update vehicle details
+     */
+    public function update(Request $request, $id)
+    {
+        // Validate input (unique rule ignores current record)
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'brand' => 'sometimes|string|max:255',
+            'model' => 'sometimes|string|max:255',
+            'type' => 'sometimes|string',
+            'registration_number' => 'sometimes|string|unique:vehicles,registration_number,' . $id,
+            'rental_price' => 'sometimes|numeric|min:0',
+        ]);
+
+        return $this->vehicleService->update($id, $request->all());
+    }
+
+    /**
      * Update vehicle status and return JSON
      */
     public function updateStatus(int $id, string $status, ?string $comment = null): JsonResponse
@@ -60,5 +87,13 @@ class VehicleService
             'created_at' => $v->created_at?->toDateTimeString(),
             'updated_at' => $v->updated_at?->toDateTimeString(),
         ];
+    }
+
+    /**
+     * Delete a vehicle record
+     */
+    public function destroy($id)
+    {
+        return $this->vehicleService->delete($id);
     }
 }
