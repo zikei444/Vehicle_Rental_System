@@ -42,6 +42,7 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取approved评论
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
+//Route::get('/ratings/reservation/{reservationId}/customer/{customerId}', [RatingApiController::class, 'checkRated']);
 
 
 Route::prefix('ratings')->group(function () {

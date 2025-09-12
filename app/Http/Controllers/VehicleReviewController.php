@@ -1,4 +1,6 @@
 <?php
+// STUDENT NAME: Kek Xin Ying
+// STUDENT ID: 23WMR14547
 
 namespace App\Http\Controllers;
 
@@ -18,6 +20,7 @@ class VehicleReviewController extends Controller
     private UserService $vehicleService;
     private string $ratingApi = '/api/ratings';
     private string $vehicleApi = '/api/vehicles';
+    private string $reservationApi = '/api/reservations';
 
     public function __construct(RatingService $ratingService, UserService $userService)
     {
@@ -61,10 +64,10 @@ class VehicleReviewController extends Controller
     {
         $useApi = (bool) $request->query('use_api', false);
 
-                // Fetch vehicle from DB
+                // Fetch vehicle & reservation using api
                 $vehicle = $this->getVehicleJson($vehicleId, $useApi);    
                 
-
+               // $reservation = $this->getReservationJson($reservationId, $useApi);
                 $reservation = Reservation::findOrFail($reservationId);
 
         return view('ratings.create', compact('vehicle', 'reservation', 'useApi'));
@@ -121,7 +124,7 @@ class VehicleReviewController extends Controller
     }
 
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
@@ -158,34 +161,13 @@ class VehicleReviewController extends Controller
         ]);
     }
 
-    /**
-     * Show average rating
-     */
-    // public function showAverage(Request $request, $vehicleId)
-    // {
-    //     try {
-    //         $useApi = $request->query('use_api', false);
 
-    //         if ($useApi) {
-    //             $response = Http::timeout(10)->get(url($this->ratingApi . "/average/{$vehicleId}"));
-    //             $average = $response->successful() ? $response->json() : ['average_rating' => 0];
-    //         } else {
-    //             $vehicle = Vehicle::findOrFail($vehicleId);
-    //             $average = $this->ratingService->getAverageRating($vehicle);
-    //         }
-
-    //         return view('ratings.average', compact('average', 'useApi'));
-    //     } catch (\Exception $e) {
-    //         return view('ratings.average', [
-    //             'average' => ['average_rating' => 0],
-    //             'error' => $e->getMessage()
-    //         ]);
-    //     }
-    // }
     public function showAverage($vehicleId)
     {
         try {
-            $vehicle = Vehicle::findOrFail($vehicleId);
+                        // Use API to fetch vehicle info
+            $vehicle = $this->getVehicleJson($vehicleId, true);
+           // $vehicle = Vehicle::findOrFail($vehicleId);
 
             return view('ratings.average', compact('vehicle'));
         } catch (\Exception $e) {
@@ -195,5 +177,20 @@ class VehicleReviewController extends Controller
             ]);
         }
     }
+    /**
+     * Fetch reservation JSON via API
+     */
+    // private function getReservationJson(int $reservationId, bool $useApi = true): ?array
+    // {
+    //     if ($useApi) {
+    //         $response = Http::timeout(10)->get(url($this->reservationApi . '/' . $reservationId));
+    //         if ($response->failed()) return null;
+    //         return $response->json()['data'] ?? $response->json(); // support both formats
+    //     }
+    //     return null; // no DB fallback for reservation
+    // }
+    /**
+     * Create a helper to hasRatedApi Fetch reservation JSON via API
+     */
 
 }

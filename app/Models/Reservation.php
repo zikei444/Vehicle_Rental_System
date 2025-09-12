@@ -37,7 +37,15 @@ class Reservation extends Model
     {
         return $query->where('status', 'completed');
     }
-    
+    public function hasRated(): bool
+    {
+
+     $customerId = $this->customer_id;
+    // vehicle for a reservation hasrated
+    return Rating::where('reservation_id', $this->id)
+                 ->where('customer_id', $this->customer_id)// 没登录先用 1
+                 ->exists();
+    }
 }
 
 ?>
