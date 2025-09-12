@@ -43,7 +43,7 @@ class Reservation extends Model
      $customerId = $this->customer_id;
     // vehicle for a reservation hasrated
     return Rating::where('reservation_id', $this->id)
-                 ->where('customer_id', $this->customer_id)// 没登录先用 1
+                 ->where('customer_id', $this->customer_id)
                  ->exists();
     }
 }
