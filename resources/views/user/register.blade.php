@@ -1,3 +1,8 @@
+<!-- 
+STUDENT NAME: WONG XINN
+STUDENT ID: 23WMR14632
+-->
+
 @extends('layouts.app')
 
 @section('title', 'Register')

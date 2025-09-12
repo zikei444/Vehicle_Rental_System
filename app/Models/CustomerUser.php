@@ -1,5 +1,8 @@
 <?php
 
+// STUDENT NAME: WONG XINN
+// STUDENT ID: 23WMR14632
+
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
