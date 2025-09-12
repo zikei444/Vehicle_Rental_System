@@ -100,9 +100,7 @@ class UserApiController extends Controller
         ]);
     }
 
-    /**
-     * Delete customer
-     */
+    // Delete customer
     public function destroy($id)
     {
         $user = User::findOrFail($id);
