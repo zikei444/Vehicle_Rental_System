@@ -37,15 +37,34 @@ class VehicleReviewController extends Controller
             return $ratings ? $ratings->toArray() : null;
         }
     }
+        private function getVehicleJson(int $vehicleId, bool $useApi = false): ?array
+    {
+        if ($useApi) {
+            $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
+            if ($response->failed()) return null;
+            return $response->json()['data'] ?? null;
+        } else {
+            $jsonResponse = $this->vehicleService->find($vehicleId);
+            if ($jsonResponse instanceof \Illuminate\Http\JsonResponse) {
+                return $jsonResponse->getData(true)['data'] ?? null;
+            }
+            return is_array($jsonResponse) ? $jsonResponse : null;
+        }
+    }
     /**
      * Show rating form to create
      */
-    public function create($vehicleId, $reservationId)
+    public function create(Request $request, $vehicleId, $reservationId)
     {
-        $vehicle = Vehicle::findOrFail($vehicleId);
-        $reservation = Reservation::findOrFail($reservationId);
+        $useApi = (bool) $request->query('use_api', false);
 
-        return view('ratings.create', compact('vehicle', 'reservation'));
+                // Fetch vehicle from DB
+                $vehicle = $this->getVehicleJson($vehicleId, $useApi);    
+                
+
+                $reservation = Reservation::findOrFail($reservationId);
+
+        return view('ratings.create', compact('vehicle', 'reservation', 'useApi'));
     }
 
     /**
