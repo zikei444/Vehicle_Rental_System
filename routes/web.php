@@ -308,18 +308,3 @@ Route::middleware('auth')->group(function () {
 
 });
 
-// =================== USER API ROUTES ===================
-// List all customers
-Route::get('/customers', [UserApiController::class, 'index']);
-
-// Get single customer by ID
-Route::get('/customers/{id}', [UserApiController::class, 'show']);
-
-// Create a new customer
-Route::post('/customers', [UserApiController::class, 'store']);
-
-// Update customer info
-Route::put('/customers/{id}', [UserApiController::class, 'update']);
-
-// Delete customer
-Route::delete('/customers/{id}', [UserApiController::class, 'destroy']);
