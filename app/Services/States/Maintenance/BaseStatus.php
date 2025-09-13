@@ -29,11 +29,12 @@ abstract class BaseStatus implements MaintenanceStatus
             $m->completed_at = ($to === 'Completed') ? now() : null;
             $m->save();
 
-            // Keep vehicle availability in sync with maintenance status
-            $vehicle->availability_status = ($to === 'Scheduled')
-                ? 'under_maintenance'
-                : 'available';
-            $vehicle->save();
+            if ($to === 'Scheduled') {
+                $vehicle->getState()->markAsUnderMaintenance();
+            } else {
+                $vehicle->getState()->markAsAvailable();
+            }
+
 
             return $m;
         });
