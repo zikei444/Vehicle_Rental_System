@@ -58,7 +58,10 @@ Route::prefix('maintenances')->group(function () {
     Route::get('/{id}',    [MaintenanceApiController::class, 'show']);    // details
     Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // update / transition
     Route::delete('/{id}', [MaintenanceApiController::class, 'destroy']); // delete
+    Route::get('vehicles/{vehicleId}/maintenances', 'byVehicle');
 });
+// Convenience listing by vehicle
+Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
 
 // User API
 // List all customers
@@ -78,7 +81,4 @@ Route::delete('/customers/{id}', [UserApiController::class, 'destroy']);
 
 // Get customer id
 Route::get('/user/customer-id', [UserApiController::class, 'getCustomerId']);
-
-// Convenience listing by vehicle
-Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
 
