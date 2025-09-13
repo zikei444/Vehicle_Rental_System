@@ -10,6 +10,7 @@ use App\Models\Vehicle;
 class AvailableState extends VehicleState {
     public function getName(): string { return Vehicle::AVAILABLE; }
 
+    // Change vehicle status to Under Maintenance
     public function markAsUnderMaintenance(): void {
         $this->vehicle->availability_status = \App\Models\Vehicle::UNDER_MAINTENANCE;
         $this->vehicle->save();

@@ -13,10 +13,12 @@ use App\Services\States\Maintenance\Cancelled;
 
 
 class Maintenance extends Model {
+    // Columns that can be filled 
     protected $fillable = [
         'vehicle_id', 'maintenance_type', 'status', 'service_date', 'completed_at', 'cost', 'notes'
     ];
 
+    // 1 maintenance belongs to a vehicle
     public function vehicle() {
         return $this->belongsTo(\App\Models\Vehicle::class, 'vehicle_id');
     }
@@ -27,6 +29,7 @@ class Maintenance extends Model {
         'completed_at' => 'datetime',
     ];
 
+    // Get the current state object based on status
     public function state(): MaintenanceStatus {
         return match ($this->status) {
             'Scheduled' => new Scheduled(),

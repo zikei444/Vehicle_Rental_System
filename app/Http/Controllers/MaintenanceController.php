@@ -11,10 +11,6 @@ use App\Models\Maintenance;
 use App\Services\MaintenanceService;
 use App\Services\VehicleService;
 
-/**
- * Web controller for Maintenance pages (Blade).
- * Note: Vehicle availability updates are handled ONLY by State classes.
- */
 class MaintenanceController extends Controller
 {
     private MaintenanceService $maintenanceService;
@@ -38,10 +34,11 @@ class MaintenanceController extends Controller
         $sortParam = $request->query('sort');
         $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        // allow-list sort columns
+        // Only allow certain columns for sorting
         $allowedSorts = ['service_date', 'created_at', 'updated_at', 'cost'];
         $sort = in_array($sortParam, $allowedSorts, true) ? $sortParam : null;
 
+        // Query records with filters
         $records = Maintenance::with('vehicle')
             ->when($vehicleId, fn ($q) => $q->where('vehicle_id', (int) $vehicleId))
             ->when($search, function ($q) use ($search) {
@@ -80,7 +77,7 @@ class MaintenanceController extends Controller
                 : (is_array($json) ? $json : []);
         }
 
-        // Only show available vehicles for scheduling
+        // Only show vehicles currently available
         $vehicles = collect($list)->filter(fn ($v) => ($v['availability_status'] ?? '') === 'available')->values();
 
         return view('maintenance.create', ['vehicles' => $vehicles]);
@@ -114,7 +111,7 @@ class MaintenanceController extends Controller
             return back()->withErrors(['vehicle_id' => 'This vehicle is not available to schedule maintenance.'])->withInput();
         }
 
-        // Check no existing Scheduled record for the same vehicle
+        // Check no existing scheduled record for the same vehicle
         if ($useApi) {
             $msResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id'] . '/maintenances'));
             $list   = $msResp->json()['data'] ?? [];
@@ -127,7 +124,7 @@ class MaintenanceController extends Controller
             return back()->withErrors(['vehicle_id' => 'This vehicle already has a scheduled maintenance.'])->withInput();
         }
 
-        // Create via API or service
+        // Create record via API or service
         if ($useApi) {
             $payload = $validated + ['status' => 'Scheduled'];
             $resp = Http::post(url($this->maintenanceApi), $payload);

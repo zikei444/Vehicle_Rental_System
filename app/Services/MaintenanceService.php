@@ -15,7 +15,7 @@ use App\Services\States\Maintenance\MaintenanceStatus;
 
 class MaintenanceService
 {
-    // List all maintenances
+    // Get all maintenances for one vehicle
     public function allByVehicle(int $vehicleId): JsonResponse
     {
         $records = Maintenance::where('vehicle_id', $vehicleId)
@@ -26,7 +26,7 @@ class MaintenanceService
         return response()->json(['data' => $records]);
     }
 
-    // Get one maintenance
+    // Get maintenance by id
     public function find(int $id): JsonResponse
     {
         $m = Maintenance::find($id);
@@ -47,6 +47,7 @@ class MaintenanceService
             'notes'            => $data['notes'] ?? null,
         ]);
 
+        // Use state class to set and update Scheduled
         $m = (new Scheduled())->schedule($m);
 
         return response()->json(['data' => $this->formatMaintenance($m)], 201);
@@ -70,6 +71,7 @@ class MaintenanceService
             $requested = $current; 
         }
 
+        // Update basic fields
         $m->fill([
             'maintenance_type' => $data['maintenance_type'] ?? $m->maintenance_type,
             'service_date'     => $data['service_date']     ?? $m->service_date,
@@ -78,6 +80,7 @@ class MaintenanceService
         ]);
         $m->save();
 
+        // Change status only when allowed
         if ($requested !== $current && !$isTerminal) {
             $state = $this->stateFor($m);
             $m = $state->transitionTo($m, $requested);
@@ -114,7 +117,7 @@ class MaintenanceService
         ];
     }
 
-    // Get current status
+    // Get the state class for the current status
     private function stateFor(Maintenance $m): MaintenanceStatus
     {
         $status = ucfirst(strtolower((string) $m->status));
