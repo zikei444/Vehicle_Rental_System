@@ -76,5 +76,9 @@ Route::put('/customers/{id}', [UserApiController::class, 'update']);
 // Delete customer
 Route::delete('/customers/{id}', [UserApiController::class, 'destroy']);
 
+// Get customer id
+Route::get('/user/customer-id', [UserApiController::class, 'getCustomerId']);
+
 // Convenience listing by vehicle
 Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
+

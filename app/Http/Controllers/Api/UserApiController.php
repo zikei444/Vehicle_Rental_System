@@ -7,9 +7,39 @@ use App\Models\User;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 
 class UserApiController extends Controller
 {
+    /**
+     * get customer id
+     */
+    public function getCustomerId(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id ?? null;
+
+        if (!$userId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $customer = Customer::where('user_id', $userId)->first();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'customer_id' => $customer->id
+        ]);
+    }
+
     // List all customer
     public function index()
     {
@@ -46,8 +76,8 @@ class UserApiController extends Controller
     {
         $validated = $request->validate([
             'username' => 'required|string|max:30',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'phone'    => 'required|string|max:11|min:10',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'required|string|max:11|min:10',
             'password' => 'required|string|min:6',
         ]);
 
@@ -78,7 +108,7 @@ class UserApiController extends Controller
     {
         $validated = $request->validate([
             'username' => 'required|string|max:30',
-            'phone'    => 'required|string|max:11|min:10',
+            'phone' => 'required|string|max:11|min:10',
         ]);
 
         $user = User::findOrFail($id);
