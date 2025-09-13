@@ -6,10 +6,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Services\Maintenance\MaintenanceStatus;
-use App\Services\Maintenance\Scheduled;
-use App\Services\Maintenance\Completed;
-use App\Services\Maintenance\Cancelled;
+use App\Services\States\Maintenance\MaintenanceStatus;
+use App\Services\States\Maintenance\Scheduled;
+use App\Services\States\Maintenance\Completed;
+use App\Services\States\Maintenance\Cancelled;
 
 
 class Maintenance extends Model {
