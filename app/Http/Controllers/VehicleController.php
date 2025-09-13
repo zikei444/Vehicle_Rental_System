@@ -14,6 +14,7 @@ class VehicleController extends Controller
 {
     // API linking
     private string $ratingApi  = '/api/ratings';
+    private string $vehicleApi = '/api/vehicles';
 
     private RatingService $ratingService;
 
@@ -24,8 +25,17 @@ class VehicleController extends Controller
     }
 
     // Get one vehicle 
-    private function getVehicleJson(int $vehicleId): ?array
+    private function getVehicleJson(int $vehicleId, bool $useApi): ?array
     {
+        if ($useApi) {
+            // Use Api
+            $response = Http::timeout(10)->get(url($this->vehicleApi . '/' . $vehicleId));
+            if ($response->failed()) return null;
+
+            return $response->json()['data'] ?? null;
+        }
+
+        // Or local database
         $vehicle = Vehicle::with(['car','truck','van'])->find($vehicleId);
         return $vehicle ? $vehicle->toArray() : null;
     }
@@ -97,8 +107,8 @@ class VehicleController extends Controller
     {
         $useApi = (bool) $request->query('use_api', false);
 
-        // Get the vehicle 
-        $vehicleData = $this->getVehicleJson($vehicleId);
+        // Get the vehicle (from API or DB)
+        $vehicleData = $this->getVehicleJson($vehicleId, $useApi);
         if (!$vehicleData) {
             return redirect()->route('vehicles.index')->with('error', 'Vehicle not found');
         }

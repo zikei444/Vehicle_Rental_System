@@ -58,10 +58,15 @@ STUDENT ID: 23WMR14568
                         <p class="card-text mb-1"><strong>Year:</strong> {{ $v['year_of_manufacture'] ?? 'N/A' }}</p>
                         <p class="card-text mb-1"><strong>Price:</strong> RM {{ number_format($v['rental_price'], 2) }}</p>
                         
-                        @if($v->average_rating)
+                        @php
+                            $avg   = $v->average_rating ?? ($v->ratingSummary['average'] ?? null);
+                            $count = $v->ratings_count  ?? ($v->ratingSummary['count'] ?? 0);
+                        @endphp
+
+                        @if($avg)
                             <p class="card-text mb-1">
-                                <strong>Rating:</strong> ⭐ {{ number_format($v->average_rating, 1) }} / 5 
-                                ({{ $v->ratings_count }} reviews)
+                                <strong>Rating:</strong> ⭐ {{ number_format($avg, 1) }} / 5 
+                                ({{ $count }} reviews)
                             </p>
                         @else
                             <p class="card-text mb-1"><strong>Rating:</strong> No ratings yet</p>

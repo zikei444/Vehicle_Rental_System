@@ -28,11 +28,16 @@ STUDENT ID: 23WMR14568
     <div class="card mb-3">
         <div class="card-header">Ratings</div>
         <div class="card-body">
-            @if($vehicle->ratingSummary && $vehicle->ratingSummary['count'] > 0)
-                <p><strong>Average Rating:</strong> {{ $vehicle->ratingSummary['average'] }} / 5</p>
-                <p><strong>Total Reviews:</strong> {{ $vehicle->ratingSummary['count'] }}</p>
+            @php
+                $avg   = $vehicle->average_rating ?? ($vehicle->ratingSummary['average'] ?? null);
+                $count = $vehicle->ratings_count  ?? ($vehicle->ratingSummary['count'] ?? 0);
+            @endphp
+
+            @if($avg)
+                <p><strong>Rating:</strong> ⭐ {{ number_format($avg, 1) }} / 5 
+                    ({{ $count }} reviews)</p>
             @else
-                <p>No ratings yet</p>
+                <p><strong>Rating:</strong> No ratings yet</p>
             @endif
         </div>
     </div>
