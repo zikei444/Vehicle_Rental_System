@@ -1,0 +1,327 @@
+-- Database Name: vehicle_rental_system
+-- CREATE
+-- USERS
+CREATE TABLE users (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin','customer') NOT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL
+);
+
+-- ADMINS
+CREATE TABLE admins (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT(20) NOT NULL,
+    department VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT admins_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- CUSTOMERS
+CREATE TABLE customers (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT(20) NOT NULL,
+    phoneNo VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT customers_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- VEHICLES
+CREATE TABLE vehicles (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type ENUM('car','truck','van') NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+    brand VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    year_of_manufacture YEAR(4) DEFAULT NULL,
+    registration_number VARCHAR(255) NOT NULL,
+    rental_price DECIMAL(10,2) NOT NULL,
+    availability_status ENUM('available','rented','under_maintenance') NOT NULL DEFAULT 'available',
+    insurance_doc VARCHAR(255) DEFAULT NULL,
+    registration_doc VARCHAR(255) DEFAULT NULL,
+    roadtax_doc VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    average_rating DOUBLE(8,2) NOT NULL DEFAULT 0.00
+);
+
+-- CARS
+CREATE TABLE cars (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    vehicle_id BIGINT(20) NOT NULL,
+    fuel_type ENUM('petrol','diesel','electric') NOT NULL,
+    transmission ENUM('manual','automatic') NOT NULL,
+    seats INT(11) NOT NULL,
+    air_conditioning ENUM('yes','no') DEFAULT NULL,
+    fuel_efficiency DECIMAL(5,2) DEFAULT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT cars_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- TRUCKS
+CREATE TABLE trucks (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    vehicle_id BIGINT(20) NOT NULL,
+    load_capacity DECIMAL(8,2) NOT NULL,
+    truck_type VARCHAR(50) DEFAULT NULL,
+    fuel_type ENUM('petrol','diesel') NOT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT trucks_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- VANS
+CREATE TABLE vans (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    vehicle_id BIGINT(20) NOT NULL,
+    passenger_capacity INT(11) NOT NULL,
+    fuel_type ENUM('petrol','diesel') NOT NULL,
+    air_conditioning ENUM('yes','no') DEFAULT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT vans_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- RESERVATIONS
+CREATE TABLE reservations (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT(20) NOT NULL,
+    vehicle_id BIGINT(20) NOT NULL,
+    pickup_date DATE NOT NULL,
+    return_date DATE NOT NULL,
+    days INT(11) NOT NULL,
+    total_cost DECIMAL(10,2) NOT NULL,
+    payment_method ENUM('cash','card','bank_transfer') NOT NULL,
+    status ENUM('ongoing','completed','cancelled') NOT NULL DEFAULT 'ongoing',
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT reservations_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id),
+    CONSTRAINT reservations_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- RATINGS
+CREATE TABLE ratings (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT(20) NOT NULL,
+    vehicle_id BIGINT(20) NOT NULL,
+    reservation_id BIGINT(20) NOT NULL,
+    admin_id BIGINT(20) DEFAULT NULL,
+    rating TINYINT(4) NOT NULL,
+    feedback TEXT DEFAULT NULL,
+    adminreply TEXT DEFAULT NULL,
+    adminreply_notified TINYINT(1) NOT NULL DEFAULT 0,
+    status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT ratings_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id),
+    CONSTRAINT ratings_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
+    CONSTRAINT ratings_reservation_id_foreign FOREIGN KEY (reservation_id) REFERENCES reservations(id),
+    CONSTRAINT ratings_admin_id_foreign FOREIGN KEY (admin_id) REFERENCES admins(id)
+);
+
+-- RATING LOGS
+CREATE TABLE rating_logs (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    rating_id BIGINT(20) NOT NULL,
+    customer_id BIGINT(20) NOT NULL,
+    reply TEXT DEFAULT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT rating_logs_rating_id_foreign FOREIGN KEY (rating_id) REFERENCES ratings(id),
+    CONSTRAINT rating_logs_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- MAINTENANCES
+CREATE TABLE maintenances (
+    id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    vehicle_id BIGINT(20) NOT NULL,
+    maintenance_type VARCHAR(255) NOT NULL,
+    service_date DATE NOT NULL,
+    cost DECIMAL(10,2) NOT NULL,
+    notes TEXT DEFAULT NULL,
+    status VARCHAR(255) NOT NULL DEFAULT 'Scheduled',
+    completed_at TIMESTAMP NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT maintenance_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+-- NOTIFICATIONS
+CREATE TABLE notifications (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    type VARCHAR(255) NOT NULL,
+    notifiable_type VARCHAR(255) NOT NULL,
+    notifiable_id BIGINT(20) NOT NULL,
+    data TEXT NOT NULL,
+    read_at TIMESTAMP NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    INDEX notifications_notifiable_type_notifiable_id_index (notifiable_type, notifiable_id)
+);
+
+-- INSERT
+-- Insert Users
+INSERT INTO users (name, email, password, role, created_at, updated_at)
+VALUES 
+    -- Original password: admin123
+    ('Admin User', 'admin@gmail.com', '$2y$10$Od7Ckd.XIxi2dutV0h9PXeNfQjb/iq845LF69eHDco0nMyCd6sSRy', 'admin', NOW(), NOW()),
+
+    -- Original password: ali123
+    ('Ali', 'ali@gmail.com', '$2y$10$euT.4FRJjmmFO3q3I03JQ.vyVg8pKOqN7GSBYA3rlXhkvtMxamwgG', 'customer', NOW(), NOW()),
+
+    -- Original password: john123
+    ('John', 'john@gmail.com', '$2y$10$SmBBoE4tsCYrRuK4K0.5RukagXtFMlaiUqJ6PXC3Wb9YgaUiIK9t6', 'customer', NOW(), NOW());
+
+-- Insert Admin
+INSERT INTO admins (user_id, department, created_at, updated_at)
+VALUES (1, 'Management', NOW(), NOW());
+
+-- Insert Customers
+INSERT INTO customers (user_id, phoneNo, created_at, updated_at)
+VALUES
+    (2, '0123456789', NOW(), NOW()),
+    (3, '0198765432', NOW(), NOW());
+
+-- Insert Vehicles
+-- CARS
+INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
+VALUES
+('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/peroduaAxia.png', 'Perodua', 'Axia', 2020, 'CAR1001', 120.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 5),
+('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/toyotaVios.png', 'Toyota', 'Vios', 2021, 'CAR1002', 150.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 4),
+('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/protonPersona.png', 'Proton', 'Persona', 2019, 'CAR1003', 110.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 3);
+
+-- VANS
+INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
+VALUES
+('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/daihatsuGranMax.png', 'Daihatsu', 'Gran Max', 2021, 'VAN2001', 200.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 2),
+('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/toyotaHiAce.png', 'Toyota', 'HiAce', 2020, 'VAN2002', 220.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 5),
+('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/nissanNv200.png', 'Nissan', 'NV200', 2022, 'VAN2003', 210.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 4);
+
+-- TRUCKS
+INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
+VALUES
+('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/isuzuForward.png', 'Isuzu', 'Forward', 2019, 'TRK3001', 350.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 5),
+('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/mitsubishiFuso.png', 'Mitsubishi', 'Fuso', 2020, 'TRK3002', 380.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 3),
+('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/fordRanger.png', 'Ford', 'Ranger', 2021, 'TRK3003', 330.00, 'available',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
+ 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+ NOW(), NOW(), 4);
+
+-- Insert Cars
+INSERT INTO cars (vehicle_id, fuel_type, transmission, seats, air_conditioning, fuel_efficiency, created_at, updated_at)
+VALUES
+(1, 'petrol', 'automatic', 5, 'yes', 18.5, NOW(), NOW()),
+(2, 'petrol', 'automatic', 5, 'yes', 16.0, NOW(), NOW()),
+(3, 'petrol', 'manual', 5, 'yes', 15.0, NOW(), NOW());
+
+-- Insert Vans
+INSERT INTO vans (vehicle_id, passenger_capacity, fuel_type, air_conditioning, created_at, updated_at)
+VALUES
+(4, 12, 'petrol', 'yes', NOW(), NOW()),
+(5, 14, 'diesel', 'yes', NOW(), NOW()),
+(6, 10, 'diesel', 'yes', NOW(), NOW());
+
+-- Insert Trucks
+INSERT INTO trucks (vehicle_id, load_capacity, truck_type, fuel_type, created_at, updated_at)
+VALUES
+(7, 5000.00, 'Medium Duty', 'diesel', NOW(), NOW()),
+(8, 7000.00, 'Heavy Duty', 'diesel', NOW(), NOW()),
+(9, 3000.00, 'Pickup', 'petrol', NOW(), NOW());
+
+-- Insert Reservations
+INSERT INTO reservations (customer_id, vehicle_id, pickup_date, return_date, days, total_cost, payment_method, status, created_at, updated_at)
+VALUES
+(1, 1, '2025-09-15', '2025-09-17', 2, (120.00*2), 'card', 'completed', NOW(), NOW()),
+(1, 2, '2025-09-10', '2025-09-12', 2, (150.00*2), 'cash', 'completed', NOW(), NOW()),
+(2, 3, '2025-09-01', '2025-09-04', 3, (110.00*3), 'bank_transfer', 'completed', NOW(), NOW()),
+(1, 4, '2025-09-05', '2025-09-07', 2, (200.00*2)+50, 'card', 'completed', NOW(), NOW()),
+(1, 5, '2025-09-03', '2025-09-04', 1, (220.00*1)+50, 'cash', 'completed', NOW(), NOW()),
+(2, 6, '2025-09-12', '2025-09-15', 3, (210.00*3)+50, 'card', 'completed', NOW(), NOW()),
+(1, 7, '2025-09-02', '2025-09-05', 3, (350.00*3*1.1), 'bank_transfer', 'completed', NOW(), NOW()),
+(2, 8, '2025-09-07', '2025-09-09', 2, (380.00*2*1.1), 'card', 'completed', NOW(), NOW()),
+(2, 9, '2025-09-13', '2025-09-16', 3, (330.00*3*1.1), 'cash', 'completed', NOW(), NOW());
+
+-- Insert Ratings
+INSERT INTO ratings (customer_id, vehicle_id, reservation_id, rating, feedback, status, created_at, updated_at)
+VALUES
+(1, 1, 1, 5, 'Excellent small car, very economical.', 'approved', NOW(), NOW()),
+(1, 2, 2, 4, 'Nice car but engine a bit noisy.', 'approved', NOW(), NOW()),
+(2, 3, 3, 3, 'Average ride, comfort could be better.', 'approved', NOW(), NOW()),
+(1, 4, 4, 2, 'Too basic, not very comfortable.', 'approved', NOW(), NOW()),
+(1, 5, 5, 5, 'Perfect for transporting goods.', 'approved', NOW(), NOW()),
+(2, 6, 6, 4, 'Good handling, decent van.', 'approved', NOW(), NOW()),
+(1, 7, 7, 5, 'Strong and reliable truck.', 'approved', NOW(), NOW()),
+(2, 8, 8, 3, 'Powerful but fuel-hungry.', 'approved', NOW(), NOW()),
+(2, 9, 9, 4, 'Good pickup and durability.', 'approved', NOW(), NOW());
+
+-- Insert Rating_logs
+INSERT INTO rating_logs (rating_id, customer_id, reply, created_at, updated_at)
+VALUES
+(1, 1, 'Ali submitted feedback for Axia.', NOW(), NOW()),
+(2, 1, 'Ali gave feedback on Vios.', NOW(), NOW()),
+(3, 2, 'John reviewed Proton Persona.', NOW(), NOW()),
+(4, 1, 'Ali complained about Gran Max.', NOW(), NOW()),
+(5, 1, 'Ali praised Toyota HiAce.', NOW(), NOW()),
+(6, 2, 'John rated Nissan NV200.', NOW(), NOW()),
+(7, 1, 'Ali loved Isuzu Forward.', NOW(), NOW()),
+(8, 2, 'John found Mitsubishi Fuso too costly.', NOW(), NOW()),
+(9, 2, 'John reviewed Ford Ranger.', NOW(), NOW());
+
+-- Insert maintenances
+INSERT INTO maintenances (vehicle_id, maintenance_type, service_date, cost, notes, status, created_at, updated_at)
+VALUES
+(1, 'Oil Change', '2025-08-01', 150.00, 'Routine oil change.', 'Completed', NOW(), NOW()),
+(2, 'Brake Check', '2025-07-15', 200.00, 'Brake pads replaced.', 'Completed', NOW(), NOW()),
+(3, 'Engine Tune-up', '2025-06-20', 300.00, 'Engine optimized.', 'Completed', NOW(), NOW()),
+(4, 'Tire Replacement', '2025-08-10', 400.00, 'All tires replaced.', 'Completed', NOW(), NOW()),
+(5, 'Transmission Service', '2025-07-28', 350.00, 'Transmission fluid replaced.', 'Completed', NOW(), NOW()),
+(6, 'Battery Replacement', '2025-09-01', 250.00, 'New battery installed.', 'Completed', NOW(), NOW()),
+(7, 'Suspension Check', '2025-08-12', 500.00, 'Suspension parts replaced.', 'Completed', NOW(), NOW()),
+(8, 'Cooling System', '2025-07-05', 280.00, 'Radiator flushed.', 'Completed', NOW(), NOW()),
+(9, 'General Service', '2025-06-18', 320.00, 'Full inspection and service.', 'Completed', NOW(), NOW());
+
+
+
+
+
+
+
