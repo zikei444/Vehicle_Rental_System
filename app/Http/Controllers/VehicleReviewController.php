@@ -67,8 +67,8 @@ class VehicleReviewController extends Controller
                 // Fetch vehicle & reservation using api
                 $vehicle = $this->getVehicleJson($vehicleId, $useApi);    
                 
-               // $reservation = $this->getReservationJson($reservationId, $useApi);
-                $reservation = Reservation::findOrFail($reservationId);
+               $reservation = $this->getReservationJson($reservationId, $useApi);
+                //$reservation = Reservation::findOrFail($reservationId);
 
         return view('ratings.create', compact('vehicle', 'reservation', 'useApi'));
     }
@@ -180,15 +180,15 @@ class VehicleReviewController extends Controller
     /**
      * Fetch reservation JSON via API
      */
-    // private function getReservationJson(int $reservationId, bool $useApi = true): ?array
-    // {
-    //     if ($useApi) {
-    //         $response = Http::timeout(10)->get(url($this->reservationApi . '/' . $reservationId));
-    //         if ($response->failed()) return null;
-    //         return $response->json()['data'] ?? $response->json(); // support both formats
-    //     }
-    //     return null; // no DB fallback for reservation
-    // }
+    private function getReservationJson(int $reservationId, bool $useApi = true): ?array
+    {
+        if ($useApi) {
+            $response = Http::timeout(10)->get(url($this->reservationApi . '/' . $reservationId));
+            if ($response->failed()) return null;
+            return $response->json()['data'] ?? $response->json(); // support both formats
+        }
+        return null; // no DB fallback for reservation
+    }
     /**
      * Create a helper to hasRatedApi Fetch reservation JSON via API
      */

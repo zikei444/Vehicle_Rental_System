@@ -103,7 +103,7 @@ class AdminRatingController extends Controller
     // show vehicle rating details
     public function vehicleRatingsDetails(Vehicle $vehicle)
     {
-        // 使用传入的 $vehicle 对象，不要再 find
+        // use pass $vehicle 
         $vehicle->load('ratings.customer.user'); //load customer from vehicle
         return view('ratings_admin.vehicle_ratings_details', compact('vehicle'));
     }

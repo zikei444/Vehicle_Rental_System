@@ -113,48 +113,42 @@ Route::middleware(['frameguard'])->group(function () {
 Route::get('/notifications/fetch', [NotificationController::class, 'fetch'])->name('notifications.fetch');
 //mark as read
 Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-// 车辆评分页面
+
 Route::prefix('vehicles/{vehicle}')->group(function () {
-    // 显示评分列表
+    // show all rating
     Route::get('/ratings', [VehicleReviewController::class, 'showRatings']);
-    // 显示平均评分
+    // show average
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
 Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, 'showRatings']);
 
-// 显示单条 reservation 的评分详情
-Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'viewRating'])
-    ->name('ratings.viewRating');
+// show each reservation rating
+Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'viewRating'])    ->name('ratings.viewRating');
 
 Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
-//看rating
-Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])
-    ->name('reservation.ratings.show');
+//show rating
+Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])    ->name('reservation.ratings.show');
 
 // To create ratings
-Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])
-    ->name('rating.create');
+Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])    ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
 //Apply Throttle to Admin Routes！！！！
 Route::prefix('admin')->middleware(['auth', 'admin', 'throttle:10,1'])->group(function () {
-    // Admin Dashboard (显示所有车辆平均评分 + 图表)
+    // Admin Dashboard 
     Route::get('/ratings/dashboard', [AdminRatingController::class, 'dashboard'])->name('ratings_admin.dashboard');
     Route::get('/ratings/dashboard/details/{vehicle}', [AdminRatingController::class, 'vehicleRatingsDetails'])->name('ratings_admin.details');
     // Manage ratings
     Route::get('/ratings/manage', [AdminRatingController::class, 'index'])->name('ratings_admin.index'); // Manage Ratings
     Route::post('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
     Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
-    // 管理员回复
+    // admin reply
     Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
     Route::delete('/ratings/{id}', [AdminRatingController::class, 'destroy'])->name('ratings.destroy');
 
 });
-
-
-
-// 获取某个 rating 最新 reply
+// get new reply 
 Route::get('/ratings/{id}/reply', function ($id) {
     $rating = Rating::findOrFail($id);
     return response()->json([
@@ -162,7 +156,7 @@ Route::get('/ratings/{id}/reply', function ($id) {
     ]);
 })->middleware('auth');
 
-// 获取未读通知数
+// get count unread notification
 Route::get('/notifications/count', function () {
     $user = Auth::user();
     return response()->json([
@@ -170,7 +164,6 @@ Route::get('/notifications/count', function () {
     ]);
 })->middleware('auth');
 
-// 标记某个通知为已读
 Route::get('/notifications/unread', function () {
     $user = auth()->user();
 
@@ -198,7 +191,7 @@ Route::get('/notifications/count', function () {
     ]);
 })->middleware('auth');
 
-// 返回未读通知并标记为已读
+// unread to read
 Route::get('/admin/notifications/unread', function () {
     $user = auth()->user();
 
@@ -210,7 +203,6 @@ Route::get('/admin/notifications/unread', function () {
         ];
     });
 
-    // 标记所有未读通知为已读
     $user->unreadNotifications->markAsRead();
 
     return response()->json($notifications);
