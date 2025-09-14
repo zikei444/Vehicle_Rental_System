@@ -170,7 +170,7 @@ CREATE TABLE notifications (
 INSERT INTO users (name, email, password, role, created_at, updated_at)
 VALUES 
     -- Original password: admin123
-    ('Admin, 'admin@gmail.com', '$2y$10$Od7Ckd.XIxi2dutV0h9PXeNfQjb/iq845LF69eHDco0nMyCd6sSRy', 'admin', NOW(), NOW()),
+    ('Admin', 'admin@gmail.com', '$2y$10$Od7Ckd.XIxi2dutV0h9PXeNfQjb/iq845LF69eHDco0nMyCd6sSRy', 'admin', NOW(), NOW()),
 
     -- Original password: ali123
     ('Ali', 'ali@gmail.com', '$2y$10$euT.4FRJjmmFO3q3I03JQ.vyVg8pKOqN7GSBYA3rlXhkvtMxamwgG', 'customer', NOW(), NOW()),
