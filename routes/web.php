@@ -113,42 +113,48 @@ Route::middleware(['frameguard'])->group(function () {
 Route::get('/notifications/fetch', [NotificationController::class, 'fetch'])->name('notifications.fetch');
 //mark as read
 Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-
+// 车辆评分页面
 Route::prefix('vehicles/{vehicle}')->group(function () {
-    // show all rating
+    // 显示评分列表
     Route::get('/ratings', [VehicleReviewController::class, 'showRatings']);
-    // show average
+    // 显示平均评分
     Route::get('/ratings/average', [VehicleReviewController::class, 'showAverage']);
 });
 Route::get('/vehicles/{vehicle}/rating-list', [VehicleReviewController::class, 'showRatings']);
 
-// show each reservation rating
-Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'viewRating'])    ->name('ratings.viewRating');
+// 显示单条 reservation 的评分详情
+Route::get('/ratings/view/{reservation}', [VehicleReviewController::class, 'viewRating'])
+    ->name('ratings.viewRating');
 
 Route::post('/ratings', [VehicleReviewController::class, 'store'])->name('ratings.store');
 
-//show rating
-Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])    ->name('reservation.ratings.show');
+//看rating
+Route::get('/reservations/{reservation}/ratings', [VehicleReviewController::class, 'showReservationRating'])
+    ->name('reservation.ratings.show');
 
 // To create ratings
-Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])    ->name('rating.create');
+Route::get('/ratings/create/{vehicle}/review-form', [VehicleReviewController::class, 'create'])
+    ->name('rating.create');
 
 // // =================== ADMIN MANAGE FEEDBACK ===================
 //Apply Throttle to Admin Routes！！！！
 Route::prefix('admin')->middleware(['auth', 'admin', 'throttle:10,1'])->group(function () {
-    // Admin Dashboard 
+    // Admin Dashboard (显示所有车辆平均评分 + 图表)
     Route::get('/ratings/dashboard', [AdminRatingController::class, 'dashboard'])->name('ratings_admin.dashboard');
     Route::get('/ratings/dashboard/details/{vehicle}', [AdminRatingController::class, 'vehicleRatingsDetails'])->name('ratings_admin.details');
     // Manage ratings
     Route::get('/ratings/manage', [AdminRatingController::class, 'index'])->name('ratings_admin.index'); // Manage Ratings
     Route::post('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings_admin.approve');
     Route::post('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings_admin.reject');
-    // admin reply
+    // 管理员回复
     Route::post('/ratings/{rating}/reply', [AdminRatingController::class, 'reply'])->name('ratings_admin.reply');
     Route::delete('/ratings/{id}', [AdminRatingController::class, 'destroy'])->name('ratings.destroy');
 
 });
-// get new reply 
+
+
+
+// 获取某个 rating 最新 reply
 Route::get('/ratings/{id}/reply', function ($id) {
     $rating = Rating::findOrFail($id);
     return response()->json([
@@ -156,7 +162,7 @@ Route::get('/ratings/{id}/reply', function ($id) {
     ]);
 })->middleware('auth');
 
-// get count unread notification
+// 获取未读通知数
 Route::get('/notifications/count', function () {
     $user = Auth::user();
     return response()->json([
@@ -164,6 +170,7 @@ Route::get('/notifications/count', function () {
     ]);
 })->middleware('auth');
 
+// 标记某个通知为已读
 Route::get('/notifications/unread', function () {
     $user = auth()->user();
 
@@ -191,7 +198,7 @@ Route::get('/notifications/count', function () {
     ]);
 })->middleware('auth');
 
-// unread to read
+// 返回未读通知并标记为已读
 Route::get('/admin/notifications/unread', function () {
     $user = auth()->user();
 
@@ -203,39 +210,39 @@ Route::get('/admin/notifications/unread', function () {
         ];
     });
 
+    // 标记所有未读通知为已读
     $user->unreadNotifications->markAsRead();
 
     return response()->json($notifications);
 })->middleware('auth')->name('admin.notifications.unread');
 
 // // =================== ADMIN MANAGE MAINTENANCE ===================
+Route::prefix('admin')
+    ->middleware(['auth', 'admin', 'frameguard'])
+    ->name('maintenance.')
+    ->group(function () {
+        // Show all maintenance records
+        Route::get('/maintenance', [MaintenanceController::class, 'index'])
+            ->name('index');
 
-Route::prefix('admin')->group(function () {
-    // Show all maintenance records
-    Route::get('/maintenance', [MaintenanceController::class, 'index'])
-        ->name('maintenance.index');
+        // Create a new schedule maintenance record
+        Route::get('/maintenance/create', [MaintenanceController::class, 'create'])
+            ->name('create');
+         // Save a new maintenance record and set vehicle to "Under Maintenance"
+        Route::post('/maintenance', [MaintenanceController::class, 'store'])
+            ->name('store');
 
-    // Create a new schedule maintenance record
-    Route::get('/maintenance/create', [MaintenanceController::class, 'create'])
-        ->name('maintenance.create');
+        // Edit an existing maintenance record
+        Route::get('/maintenance/{maintenance}/edit', [MaintenanceController::class, 'edit'])
+            ->name('edit'); 
+        // Update record; if status is Completed/Cancelled, switch vehicle back to "Available"
+        Route::put('/maintenance/{maintenance}', [MaintenanceController::class, 'update'])
+            ->name('update');
 
-    // Save a new maintenance record and set vehicle to "Under Maintenance"
-    Route::post('/maintenance', [MaintenanceController::class, 'store'])
-        ->name('maintenance.store');
-
-    // Edit an existing maintenance record
-    // {maintenance} uses route-model binding to App\Models\Maintenance
-    Route::get('/maintenance/{maintenance}/edit', [MaintenanceController::class, 'edit'])
-        ->name('maintenance.edit');
-
-    // Update record; if status is Completed/Cancelled, switch vehicle back to "Available"
-    Route::put('/maintenance/{maintenance}', [MaintenanceController::class, 'update'])
-        ->name('maintenance.update');
-
-    // Delete the selected record (controller handles any necessary vehicle state cleanup)
-    Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
-        ->name('maintenance.destroy');
-});
+        // Delete an existing maintenance record
+        Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])
+            ->name('destroy');
+    });
 
 // ================== REGISTRATION =========================
 // Redirect to registration page

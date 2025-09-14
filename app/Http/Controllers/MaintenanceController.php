@@ -97,6 +97,9 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string|max:500',
         ]);
 
+        // Business rules: default status = Scheduled
+        $validated['status'] = 'Scheduled';
+
         // Check vehicle exists and is available
         if ($useApi) {
             $vehResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id']));
