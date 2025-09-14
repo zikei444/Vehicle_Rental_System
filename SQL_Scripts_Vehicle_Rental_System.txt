@@ -17,8 +17,7 @@ CREATE TABLE admins (
     user_id BIGINT(20) NOT NULL,
     department VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT admins_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- CUSTOMERS
@@ -27,8 +26,7 @@ CREATE TABLE customers (
     user_id BIGINT(20) NOT NULL,
     phoneNo VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT customers_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- VEHICLES
@@ -60,8 +58,7 @@ CREATE TABLE cars (
     air_conditioning ENUM('yes','no') DEFAULT NULL,
     fuel_efficiency DECIMAL(5,2) DEFAULT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT cars_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- TRUCKS
@@ -72,8 +69,7 @@ CREATE TABLE trucks (
     truck_type VARCHAR(50) DEFAULT NULL,
     fuel_type ENUM('petrol','diesel') NOT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT trucks_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- VANS
@@ -84,8 +80,7 @@ CREATE TABLE vans (
     fuel_type ENUM('petrol','diesel') NOT NULL,
     air_conditioning ENUM('yes','no') DEFAULT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT vans_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- RESERVATIONS
@@ -100,9 +95,7 @@ CREATE TABLE reservations (
     payment_method ENUM('cash','card','bank_transfer') NOT NULL,
     status ENUM('ongoing','completed','cancelled') NOT NULL DEFAULT 'ongoing',
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT reservations_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id),
-    CONSTRAINT reservations_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- RATINGS
@@ -118,11 +111,7 @@ CREATE TABLE ratings (
     adminreply_notified TINYINT(1) NOT NULL DEFAULT 0,
     status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT ratings_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id),
-    CONSTRAINT ratings_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
-    CONSTRAINT ratings_reservation_id_foreign FOREIGN KEY (reservation_id) REFERENCES reservations(id),
-    CONSTRAINT ratings_admin_id_foreign FOREIGN KEY (admin_id) REFERENCES admins(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- RATING LOGS
@@ -132,9 +121,7 @@ CREATE TABLE rating_logs (
     customer_id BIGINT(20) NOT NULL,
     reply TEXT DEFAULT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT rating_logs_rating_id_foreign FOREIGN KEY (rating_id) REFERENCES ratings(id) ON DELETE CASCADE,
-    CONSTRAINT rating_logs_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- MAINTENANCES
@@ -148,8 +135,7 @@ CREATE TABLE maintenances (
     status VARCHAR(255) NOT NULL DEFAULT 'Scheduled',
     completed_at TIMESTAMP NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    CONSTRAINT maintenance_vehicle_id_foreign FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    updated_at TIMESTAMP NULL
 );
 
 -- NOTIFICATIONS
