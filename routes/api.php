@@ -28,7 +28,7 @@ Route::get('/vehicles', [VehicleApiController::class, 'index']); // Show all veh
 Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']); // Show specific vehicle 
 Route::post('/vehicles', [VehicleApiController::class, 'store']); // Create
 Route::put('/vehicles/{id}', [VehicleApiController::class, 'update']); // Update 
-Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStatus']);
+Route::patch('/vehicles/{id}/update-status', [VehicleApiController::class, 'updateStatus']); // Update Status 
 Route::delete('/vehicles/{id}', [VehicleApiController::class, 'destroy']); // Delete vehicle
 
 // Ratings api

@@ -55,7 +55,10 @@ class VehicleApiController extends Controller
             'availability_status' => 'required|in:available,rented,reserved,under_maintenance',
         ]);
 
-        $vehicle = Vehicle::create($request->all());
+        $vehicle = Vehicle::create($request->only([
+            'type', 'brand', 'model', 'year_of_manufacture',
+            'registration_number', 'rental_price', 'availability_status'
+        ]));
 
         return response()->json([
             'status' => 'success',
@@ -86,7 +89,11 @@ class VehicleApiController extends Controller
             'availability_status' => 'sometimes|required|in:available,rented,reserved,under_maintenance',
         ]);
 
-        $vehicle->update($request->all());
+        $vehicle->update($request->only([
+            'type','brand','model','year_of_manufacture',
+            'registration_number','rental_price','availability_status'
+        ]));
+
 
         return response()->json([
             'status' => 'success',
@@ -96,23 +103,30 @@ class VehicleApiController extends Controller
     }
 
     // Update vehicle (availability status only)
-    public function updateStatus(Request $request)
-    {
-        $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'status' => 'required|in:available,rented,reserved,under_maintenance'
-        ]);
+    public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:available,rented,reserved,under_maintenance'
+    ]);
 
-        $vehicle = Vehicle::findOrFail($request->vehicle_id);
-        $vehicle->availability_status = $request->status;
-        $vehicle->save();
-
+    $vehicle = Vehicle::find($id);
+    if (!$vehicle) {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Vehicle status updated successfully',
-            'data' => $vehicle
-        ]);
+            'status' => 'error',
+            'message' => 'Vehicle not found'
+        ], 404);
     }
+
+    $vehicle->availability_status = $request->status;
+    $vehicle->save();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Vehicle status updated successfully',
+        'data' => $vehicle
+    ], 200);
+}
+
 
     // Delete 
     public function destroy($id)
