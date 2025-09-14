@@ -13,12 +13,13 @@ class VehicleApiController extends Controller
 {
     //List all vehicles (paginated)
     public function index()
-    {
-        $vehicles = Vehicle::paginate(10); 
+    { 
+        $vehicles = \App\Models\Vehicle::select(
+            'id','brand','model','year_of_manufacture as year','registration_number','availability_status');
 
         return response()->json([
             'status' => 'success',
-            'data' => $vehicles
+            'data'   => $vehicles
         ]);
     }
 
