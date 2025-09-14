@@ -2,9 +2,9 @@
 // STUDENT NAME: Kek Xin Ying
 // STUDENT ID: 23WMR14547
 
-// app/Http/Controllers/Api/RatingApiController.php
 namespace App\Http\Controllers\Api;
-use App\Models\Rating; 
+
+use App\Models\Rating;
 use App\Http\Controllers\Controller;
 use App\Services\RatingService;
 use App\Models\Vehicle;
@@ -17,47 +17,107 @@ class RatingApiController extends Controller {
         $this->ratingService = $ratingService;
     }
 
+    /**
+     * Get rating summary for a vehicle
+     */
     public function summary($vehicleId) {
-        return $this->ratingService->getVehicleRatingSummary($vehicleId, 'approved');
+        $summary = $this->ratingService->getVehicleRatingSummary($vehicleId, 'approved');
+        return $summary;
     }
 
-    // 获取审核通过的评论
-    public function index($vehicleId) {
-        return response()->json($this->ratingService->getApprovedRatings($vehicleId));
-    }
-
-    public function store(Request $request)
+    /**
+     * Get all approved ratings for a vehicle
+     */
+    public function index($vehicleId)
     {
-        $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'vehicle_id'  => 'required|exists:vehicles,id',
-            'rating'      => 'required|integer|min:1|max:5',
-            'feedback'    => 'nullable|string|max:500',
+        $ratings = Rating::where('vehicle_id', $vehicleId)
+                        ->where('status', 'approved')
+                        ->get();
+
+        return response()->json(['data' => $ratings]);
+    }
+
+
+    /**
+     * Submit a new rating
+     */
+    public function store(Request $request) {
+        // Validate required fields
+        $validated = $request->validate([
+            'customer_id'    => 'required|exists:customers,id',
+            'vehicle_id'     => 'required|exists:vehicles,id',
+            'reservation_id' => 'required|exists:reservations,id',
+            'rating'         => 'required|integer|min:1|max:5',
+            'feedback'       => 'nullable|string|max:500',
         ]);
 
+        // Create the rating safely, setting optional fields to null if not provided
         $rating = Rating::create([
-            'customer_id' => $request->customer_id,
-            'vehicle_id'  => $request->vehicle_id,
-            'rating'      => $request->rating,
-            'feedback'    => $request->feedback,
-            'status'      => 'pending', // 默认状态
+            'customer_id'   => $validated['customer_id'],
+            'vehicle_id'    => $validated['vehicle_id'],
+            'reservation_id'=> $validated['reservation_id'],
+            'admin_id'      => $request->input('admin_id', null),     // optional
+            'rating'        => $validated['rating'],
+            'feedback'      => $validated['feedback'] ? strip_tags($validated['feedback']) : null,
+            'adminreply'    => $request->input('adminreply', null),   // optional
+            'status'        => $request->input('status', 'pending'),  // default pending
         ]);
 
         return response()->json([
             'message' => 'Rating submitted successfully',
-            'rating' => $rating
+            'data'    => $rating
         ], 201);
     }
+    /**
+     * Delete a rating by ID
+     */
+    public function destroy($id) {
+        $rating = Rating::find($id);
+        if (!$rating) {
+            return response()->json(['error' => 'Rating not found'], 404);
+        }
 
+        $rating->delete();
 
-
-    public function rating($vehicleId) {
-        $vehicle = Vehicle::findOrFail($vehicleId);
         return response()->json([
-            'vehicle_id' => $vehicleId,
-            'average_rating' => $vehicle->average_rating,
+            'message' => 'Rating deleted successfully'
         ]);
     }
+    //update
+    public function update(Request $request, $id)
+    {
+        $rating = Rating::find($id);
+        if (!$rating) {
+            return response()->json(['error' => 'Rating not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'rating'   => 'sometimes|integer|min:1|max:5',
+            'feedback' => 'sometimes|string|max:500',
+            'status'   => 'sometimes|string|in:pending,approved,rejected',
+        ]);
+
+        $rating->update($validated);
+
+        return response()->json([
+            'message' => 'Rating updated successfully',
+            'data' => $rating
+        ]);
+    }
+
+    /**
+     * Get average rating of a vehicle
+     */
+    // public function rating($vehicleId) {
+    //     $vehicle = Vehicle::findOrFail($vehicleId);
+    //     $response = [
+    //         'vehicle_id'     => $vehicleId,
+    //         'average_rating' => $vehicle->average_rating,
+    //     ];
+    //     return response()->json(['data' => $response]);
+    // }
+    public function rating($vehicleId) {
+        $avg = $this->ratingService->getAverageRating($vehicleId);
+        return response()->json(['data' => ['vehicle_id' => $vehicleId, 'average_rating' => $avg]]);
 }
-
-
+}

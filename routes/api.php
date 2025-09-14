@@ -29,17 +29,19 @@ Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']);
 Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStatus']);
 
 // Ratings api
-Route::post('/ratings', [RatingApiController::class, 'store']); // 提交评分
+Route::post('/ratings', [RatingApiController::class, 'store']); // submit rating
 
 Route::prefix('vehicles/{vehicle}')->group(function () {
-    Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取approved评论
-    Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
+    Route::get('/ratings', [RatingApiController::class, 'index']);   // get approved rating
+    Route::get('/ratings/average', [RatingApiController::class, 'rating']); // get average rating
 });
+
+Route::delete('/ratings/{id}', [RatingApiController::class, 'destroy']);//new delete
+Route::put('/ratings/{id}', [RatingApiController::class, 'update']);// Update an existing rating
 
 Route::prefix('ratings')->group(function () {
     Route::get('/summary/{vehicleId}', [RatingApiController::class, 'summary']);
     Route::get('/{vehicleId}', [RatingApiController::class, 'index']);
-    Route::post('/', [RatingApiController::class, 'store']);
 });
 
 // Reservation Api
