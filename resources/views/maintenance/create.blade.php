@@ -23,7 +23,7 @@ STUDENT ID: 23WMR14583 -->
                         <option value="{{ $v['id'] }}"
                             data-brand="{{ $v['brand'] ?? '' }}"
                             data-model="{{ $v['model'] ?? '' }}"
-                            data-year="{{ $v['year_of_manufacture'] ?? '' }}"
+                            data-year="{{ $v['year'] ?? '' }}"
                             data-reg="{{ $v['registration_number'] ?? '' }}"
                             {{ old('vehicle_id') == $v['id'] ? 'selected' : '' }}>
                             #{{ $v['id'] }} {{ $v['brand'] ?? '' }} {{ $v['model'] ?? '' }} ({{ $v['registration_number'] ?? '' }})

@@ -176,12 +176,16 @@ class MaintenanceController extends Controller
     }
 
     // ---------- DELETE ----------
-    public function destroy(Maintenance $maintenance)
+    public function destroy(int $id)
     {
-        $maintenance->delete();
+        $m = \App\Models\Maintenance::find($id);
+        if (!$m) {
+            return back()->with('error', 'Maintenance not found.');
+        }
 
-        return redirect()
-            ->route('maintenance.index')
-            ->with('ok', 'Maintenance record successfully deleted');
+        $m->delete();
+
+        return redirect()->route('maintenance.index')
+            ->with('ok', 'Maintenance deleted successfully.');
     }
 }

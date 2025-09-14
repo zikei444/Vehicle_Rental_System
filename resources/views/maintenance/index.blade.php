@@ -10,7 +10,7 @@ STUDENT ID: 23WMR14583 -->
     
     <h1 class="mb-4">All Maintenance Records</h1>
 
-    <a href="{{ route('maintenance.create') }}" class="btn btn-success w-100 py-3 fs-5">+ Schedule Maintenance</a>
+    <a href="{{ route('maintenance.create') }}" class="btn btn-success w-100 py-3 fs-5">+ Schedule Maintenance</a><br><br>
 
     <form method="GET" action="{{ route('maintenance.index') }}" class="row gx-2 gy-2 mb-3 align-items-end">
         <div class="col-md-4">
@@ -21,9 +21,9 @@ STUDENT ID: 23WMR14583 -->
         </div>
 
         <div class="col-md-3">
-            <label class="form-label small text-muted mb-1 fw-bold">Status</label>
+            <label class="form-label small text-muted mb-1 fw-bold">Filter by</label>
             <select name="status" class="form-select">
-                <option value="">-- Filter by --</option>
+                <option value="">-- Status --</option>
                 <option value="Scheduled" {{ request('status')=='Scheduled' ? 'selected' : '' }}>Scheduled</option>
                 <option value="Completed" {{ request('status')=='Completed' ? 'selected' : '' }}>Completed</option>
                 <option value="Cancelled" {{ request('status')=='Cancelled' ? 'selected' : '' }}>Cancelled</option>
@@ -125,10 +125,12 @@ STUDENT ID: 23WMR14583 -->
 
                     <td>
                         <a href="{{ route('maintenance.edit', $r) }}" class="btn btn-warning">Edit</a>
-                        <form action="{{ route('maintenance.destroy', $r) }}" method="post" style="display:inline">
+                        <form action="{{ route('maintenance.destroy', $r->id) }}" method="POST"
+                              onsubmit="return confirm('Delete this maintenance?')"
+                              class="d-inline">
                             @csrf
-                            @method('delete')
-                            <button onclick="return confirm('Delete this record?')" class="btn btn-danger">Delete</button>
+                            @method('DELETE')
+                            <button class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     </td>
                 </tr>
