@@ -97,6 +97,9 @@ class MaintenanceController extends Controller
             'notes'            => 'nullable|string|max:500',
         ]);
 
+        // Business rules: default status = Scheduled
+        $validated['status'] = 'Scheduled';
+
         // Check vehicle exists and is available
         if ($useApi) {
             $vehResp = Http::get(url($this->vehicleApi . '/' . $validated['vehicle_id']));
@@ -176,12 +179,16 @@ class MaintenanceController extends Controller
     }
 
     // ---------- DELETE ----------
-    public function destroy(Maintenance $maintenance)
+    public function destroy(int $id)
     {
-        $maintenance->delete();
+        $m = \App\Models\Maintenance::find($id);
+        if (!$m) {
+            return back()->with('error', 'Maintenance not found.');
+        }
 
-        return redirect()
-            ->route('maintenance.index')
-            ->with('ok', 'Maintenance record successfully deleted');
+        $m->delete();
+
+        return redirect()->route('maintenance.index')
+            ->with('ok', 'Maintenance deleted successfully.');
     }
 }

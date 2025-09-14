@@ -9,6 +9,17 @@ STUDENT ID: 23WMR14583 -->
 <div class="container">
     <h1 class="bg-success text-white p-3 rounded">Schedule Maintenance</h1>
 
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <div class="fw-bold mb-1">Please fix the following:</div>
+        <ul class="mb-0">
+        @foreach ($errors->all() as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+        </ul>
+    </div>
+    @endif
+
     <form method="post" action="{{ route('maintenance.store') }}">
         @csrf
 
@@ -23,7 +34,7 @@ STUDENT ID: 23WMR14583 -->
                         <option value="{{ $v['id'] }}"
                             data-brand="{{ $v['brand'] ?? '' }}"
                             data-model="{{ $v['model'] ?? '' }}"
-                            data-year="{{ $v['year_of_manufacture'] ?? '' }}"
+                            data-year="{{ $v['year'] ?? '' }}"
                             data-reg="{{ $v['registration_number'] ?? '' }}"
                             {{ old('vehicle_id') == $v['id'] ? 'selected' : '' }}>
                             #{{ $v['id'] }} {{ $v['brand'] ?? '' }} {{ $v['model'] ?? '' }} ({{ $v['registration_number'] ?? '' }})

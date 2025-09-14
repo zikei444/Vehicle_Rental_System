@@ -84,6 +84,7 @@ class VehicleService
             'brand' => $v->brand,
             'model' => $v->model,
             'type' => $v->type,
+            'year' => $v->year_of_manufacture,
             'registration_number' => $v->registration_number,
             'availability_status' => $v->availability_status,
             'rental_price' => $v->rental_price,
