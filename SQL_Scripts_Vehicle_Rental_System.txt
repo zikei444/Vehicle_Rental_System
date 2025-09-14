@@ -170,7 +170,7 @@ CREATE TABLE notifications (
 INSERT INTO users (name, email, password, role, created_at, updated_at)
 VALUES 
     -- Original password: admin123
-    ('Admin User', 'admin@gmail.com', '$2y$10$Od7Ckd.XIxi2dutV0h9PXeNfQjb/iq845LF69eHDco0nMyCd6sSRy', 'admin', NOW(), NOW()),
+    ('Admin, 'admin@gmail.com', '$2y$10$Od7Ckd.XIxi2dutV0h9PXeNfQjb/iq845LF69eHDco0nMyCd6sSRy', 'admin', NOW(), NOW()),
 
     -- Original password: ali123
     ('Ali', 'ali@gmail.com', '$2y$10$euT.4FRJjmmFO3q3I03JQ.vyVg8pKOqN7GSBYA3rlXhkvtMxamwgG', 'customer', NOW(), NOW()),
@@ -192,58 +192,58 @@ VALUES
 -- CARS
 INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
 VALUES
-('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/peroduaAxia.png', 'Perodua', 'Axia', 2020, 'CAR1001', 120.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('car', 'peroduaAxia.png', 'Perodua', 'Axia', 2020, 'CAR1001', 120.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 5),
-('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/toyotaVios.png', 'Toyota', 'Vios', 2021, 'CAR1002', 150.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('car', 'toyotaVios.png', 'Toyota', 'Vios', 2021, 'CAR1002', 150.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 4),
-('car', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/protonPersona.png', 'Proton', 'Persona', 2019, 'CAR1003', 110.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('car', 'protonPersona.png', 'Proton', 'Persona', 2019, 'CAR1003', 110.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 3);
 
 -- VANS
 INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
 VALUES
-('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/daihatsuGranMax.png', 'Daihatsu', 'Gran Max', 2021, 'VAN2001', 200.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('van', 'daihatsuGranMax.png', 'Daihatsu', 'Gran Max', 2021, 'VAN2001', 200.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 2),
-('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/toyotaHiAce.png', 'Toyota', 'HiAce', 2020, 'VAN2002', 220.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('van', 'toyotaHiAce.png', 'Toyota', 'HiAce', 2020, 'VAN2002', 220.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 5),
-('van', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/nissanNv200.png', 'Nissan', 'NV200', 2022, 'VAN2003', 210.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('van', 'nissanNv200.png', 'Nissan', 'NV200', 2022, 'VAN2003', 210.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 4);
 
 -- TRUCKS
 INSERT INTO vehicles (type, image, brand, model, year_of_manufacture, registration_number, rental_price, availability_status, insurance_doc, registration_doc, roadtax_doc, created_at, updated_at, average_rating)
 VALUES
-('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/isuzuForward.png', 'Isuzu', 'Forward', 2019, 'TRK3001', 350.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('truck', 'isuzuForward.png', 'Isuzu', 'Forward', 2019, 'TRK3001', 350.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 5),
-('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/mitsubishiFuso.png', 'Mitsubishi', 'Fuso', 2020, 'TRK3002', 380.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('truck', 'mitsubishiFuso.png', 'Mitsubishi', 'Fuso', 2020, 'TRK3002', 380.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 3),
-('truck', 'C:/xampp/htdocs/Vehicle_Rental_System/public/images/vehicles/fordRanger.png', 'Ford', 'Ranger', 2021, 'TRK3003', 330.00, 'available',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/insurance_doc.png',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/registration_doc.jpg',
- 'C:/xampp/htdocs/Vehicle_Rental_System/public/documents/vehicles/roadtax_doc.jpeg',
+('truck', 'fordRanger.png', 'Ford', 'Ranger', 2021, 'TRK3003', 330.00, 'available',
+ 'insurance_doc.png',
+ 'registration_doc.jpg',
+ 'roadtax_doc.jpeg',
  NOW(), NOW(), 4);
 
 -- Insert Cars
@@ -280,18 +280,18 @@ VALUES
 (2, 8, '2025-09-07', '2025-09-09', 2, (380.00*2*1.1), 'card', 'completed', NOW(), NOW()),
 (2, 9, '2025-09-13', '2025-09-16', 3, (330.00*3*1.1), 'cash', 'completed', NOW(), NOW());
 
--- Insert Ratings
-INSERT INTO ratings (customer_id, vehicle_id, reservation_id, rating, feedback, status, created_at, updated_at)
+-- Insert Ratings (adminreply set to match rating_logs.reply)
+INSERT INTO ratings (customer_id, vehicle_id, reservation_id, rating, feedback, adminreply, status, created_at, updated_at)
 VALUES
-(1, 1, 1, 5, 'Excellent small car, very economical.', 'approved', NOW(), NOW()),
-(1, 2, 2, 4, 'Nice car but engine a bit noisy.', 'approved', NOW(), NOW()),
-(2, 3, 3, 3, 'Average ride, comfort could be better.', 'approved', NOW(), NOW()),
-(1, 4, 4, 2, 'Too basic, not very comfortable.', 'approved', NOW(), NOW()),
-(1, 5, 5, 5, 'Perfect for transporting goods.', 'approved', NOW(), NOW()),
-(2, 6, 6, 4, 'Good handling, decent van.', 'approved', NOW(), NOW()),
-(1, 7, 7, 5, 'Strong and reliable truck.', 'approved', NOW(), NOW()),
-(2, 8, 8, 3, 'Powerful but fuel-hungry.', 'approved', NOW(), NOW()),
-(2, 9, 9, 4, 'Good pickup and durability.', 'approved', NOW(), NOW());
+(1, 1, 1, 5, 'Excellent small car, very economical.', 'Ali submitted feedback for Axia.', 'approved', NOW(), NOW()),
+(1, 2, 2, 4, 'Nice car but engine a bit noisy.', 'Ali gave feedback on Vios.', 'approved', NOW(), NOW()),
+(2, 3, 3, 3, 'Average ride, comfort could be better.', 'John reviewed Proton Persona.', 'approved', NOW(), NOW()),
+(1, 4, 4, 2, 'Too basic, not very comfortable.', 'Ali complained about Gran Max.', 'approved', NOW(), NOW()),
+(1, 5, 5, 5, 'Perfect for transporting goods.', 'Ali praised Toyota HiAce.', 'approved', NOW(), NOW()),
+(2, 6, 6, 4, 'Good handling, decent van.', 'John rated Nissan NV200.', 'approved', NOW(), NOW()),
+(1, 7, 7, 5, 'Strong and reliable truck.', 'Ali loved Isuzu Forward.', 'approved', NOW(), NOW()),
+(2, 8, 8, 3, 'Powerful but fuel-hungry.', 'John found Mitsubishi Fuso too costly.', 'approved', NOW(), NOW()),
+(2, 9, 9, 4, 'Good pickup and durability.', 'John reviewed Ford Ranger.', 'approved', NOW(), NOW());
 
 -- Insert Rating_logs
 INSERT INTO rating_logs (rating_id, customer_id, reply, created_at, updated_at)
@@ -306,7 +306,7 @@ VALUES
 (8, 2, 'John found Mitsubishi Fuso too costly.', NOW(), NOW()),
 (9, 2, 'John reviewed Ford Ranger.', NOW(), NOW());
 
--- Insert maintenances
+-- Insert Maintenances
 INSERT INTO maintenances (vehicle_id, maintenance_type, service_date, cost, notes, status, created_at, updated_at)
 VALUES
 (1, 'Oil Change', '2025-08-01', 150.00, 'Routine oil change.', 'Completed', NOW(), NOW()),
@@ -318,10 +318,3 @@ VALUES
 (7, 'Suspension Check', '2025-08-12', 500.00, 'Suspension parts replaced.', 'Completed', NOW(), NOW()),
 (8, 'Cooling System', '2025-07-05', 280.00, 'Radiator flushed.', 'Completed', NOW(), NOW()),
 (9, 'General Service', '2025-06-18', 320.00, 'Full inspection and service.', 'Completed', NOW(), NOW());
-
-
-
-
-
-
-
