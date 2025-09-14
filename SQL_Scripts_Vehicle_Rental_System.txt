@@ -133,7 +133,7 @@ CREATE TABLE rating_logs (
     reply TEXT DEFAULT NULL,
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
-    CONSTRAINT rating_logs_rating_id_foreign FOREIGN KEY (rating_id) REFERENCES ratings(id),
+    CONSTRAINT rating_logs_rating_id_foreign FOREIGN KEY (rating_id) REFERENCES ratings(id) ON DELETE CASCADE,
     CONSTRAINT rating_logs_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
