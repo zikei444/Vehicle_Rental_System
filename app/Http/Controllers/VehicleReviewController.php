@@ -142,13 +142,16 @@ class VehicleReviewController extends Controller
         ) {
             return response()->json(['error' => 'Already rated'], 403);
         }
+        // Sanitize feedback to prevent XSS
+        $safeFeedback = $request->feedback ? strip_tags($request->feedback) : null;
 
+        // Step 4: Save sanitized feedback to database
         $rating = Rating::create([
             'customer_id' => $customerId,
             'vehicle_id' => $request->vehicle_id,
             'reservation_id' => $request->reservation_id,
             'rating' => $request->rating,
-            'feedback' => $request->feedback,
+            'feedback' => $safeFeedback, // ✅ sanitized input
             'status' => 'pending',
         ]);
 
