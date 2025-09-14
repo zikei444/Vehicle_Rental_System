@@ -87,60 +87,7 @@ class AdminRatingController extends Controller
         }
     }
 
-    // ===========================
-    // Controller Actions
-    // ===========================
-
-    // public function index(Request $request)
-    // {
-    //     $useApi = (bool) $request->query('use_api', false);
-
-    //     if ($useApi) {
-    //         $response = Http::get(url($this->ratingApi));
-    //         $ratings = $response->successful() ? $response->json()['data'] ?? [] : [];
-    //     } else {
-    //         $ratings = Rating::with(['customer.user', 'vehicle'])->get(); // eager load relationships
-    //     }
-
-    //     return view('ratings_admin.index', compact('ratings', 'useApi'));
-    // }
-        // 显示所有评论（不管 pending/approved/rejected）
-        
-    // public function index()
-    // {
-    //     $ratings = Rating::with(['customer.user', 'reservation'])->get();
-    //     return view('ratings_admin.index', compact('ratings'));
-    // }
-
-    // public function dashboard()
-    // {
-    //     // 直接取 Observer 已经维护好的字段
-    // $vehicles = Vehicle::all(); 
-
-    // return view('ratings_admin.dashboard', compact('vehicles'));
-    // }
-    // public function dashboard(Request $request)
-    // {
-    //     // Decide whether to use API (for vehicles only)
-    //     $useApi = true; // always true since vehicles must come from API
-
-    //     if ($useApi) {
-    //         // $response = Http::timeout(10)->get(url('/api/vehicles'));
-    //         $vehicles = $this->vehicleService->all();
-
-    //         if ($response->failed()) {
-    //             $vehicles = [];
-    //         } else {
-    //             $vehicles = $response->json()['data'] ?? [];
-    //         }
-    //     } else {
-    //         // fallback (optional)
-    //         $vehicles = Vehicle::all();
-    //     }
-
-    //     return view('ratings_admin.dashboard', compact('vehicles'));
-    // }
-    // 显示所有评论（不管 pending/approved/rejected）
+    // show commend pending/approved/rejected
     public function index()
     {
         $ratings = Rating::with(['customer.user', 'reservation'])->get();
@@ -148,48 +95,22 @@ class AdminRatingController extends Controller
     }
     public function dashboard()
     {
-        // 直接取 Observer 已经维护好的字段
+   //get from Observer 
     $vehicles = Vehicle::all(); 
 
     return view('ratings_admin.dashboard', compact('vehicles'));
     }
-    // 每辆车的详细评分
+    // show vehicle rating details
     public function vehicleRatingsDetails(Vehicle $vehicle)
     {
         // 使用传入的 $vehicle 对象，不要再 find
-        $vehicle->load('ratings.customer.user'); // 加载关联
+        $vehicle->load('ratings.customer.user'); //load customer from vehicle
         return view('ratings_admin.vehicle_ratings_details', compact('vehicle'));
     }
 
 
 
-    // public function vehicleRatingsDetails(Request $request, int $vehicleId)
-    // {
-    //     $useApi = (bool) $request->query('use_api', false);
-    //     $vehicle = $this->getVehicleJson($vehicleId, $useApi);
-
-    //     return view('ratings_admin.vehicle_ratings_details', compact('vehicle', 'useApi'));
-    // }
-
-    // public function approve(Request $request, int $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|in:approved,rejected',
-    //     ]);
-
-    //     $useApi = (bool) $request->query('use_api', false);
-
-    //     if ($useApi) {
-    //         Http::put(url("{$this->ratingApi}/{$id}/status"), [
-    //             'status' => $request->status,
-    //         ]);
-    //     } else {
-    //         $this->ratingService->updateStatus($id, $request->status);
-    //     }
-
-    //     return response()->json(['success' => true]);
-    // }
-        // // 批准评论
+        //approvec rating
     public function approve(Request $request, Rating $rating)
     {
         $request->validate([
@@ -202,25 +123,7 @@ class AdminRatingController extends Controller
         return response()->json(['success' => true]);
     }
     
-
-    // public function reply(Request $request, int $id)
-    // {
-    //     $request->validate([
-    //         'reply' => 'required|string|max:500',
-    //     ]);
-
-    //     $useApi = (bool) $request->query('use_api', false);
-
-    //     if ($useApi) {
-    //         Http::post(url("{$this->ratingApi}/{$id}/reply"), [
-    //             'reply' => $request->reply,
-    //         ]);
-    //     } else {
-    //         $this->ratingService->reply($id, $request->reply);
-    //     }
-
-    //     return back()->with('success', 'Reply sent and notification created!');
-    // }
+//reply rating
         public function reply(Request $request, Rating $rating)
     {
         $request->validate([
@@ -232,19 +135,7 @@ class AdminRatingController extends Controller
 
         return back()->with('success', 'Reply sent and notification created!');
     }
-
-    // public function destroy(Request $request, int $id)
-    // {
-    //     $useApi = (bool) $request->query('use_api', false);
-
-    //     if ($useApi) {
-    //         Http::delete(url("{$this->ratingApi}/{$id}"));
-    //     } else {
-    //         $this->ratingService->delete($id);
-    //     }
-
-    //     return response()->json(['message' => 'Rating deleted successfully']);
-    // }
+    //delete rating
         public function destroy($id)
     {
         $rating = Rating::find($id);
@@ -256,19 +147,7 @@ class AdminRatingController extends Controller
         return response()->json(['message' => 'Rating deleted successfully']);
     }
 
-    // public function reject(Request $request, int $id)
-    // {
-    //     $useApi = (bool) $request->query('use_api', false);
-
-    //     if ($useApi) {
-    //         Http::put(url("{$this->ratingApi}/{$id}/status"), ['status' => 'rejected']);
-    //     } else {
-    //         $this->ratingService->updateStatus($id, 'rejected');
-    //     }
-
-    //     return redirect()->back()->with('success', '评论已拒绝');
-    // }
-        // 拒绝评论
+        // reject rating
     public function reject($id)
     {
         $rating = Rating::findOrFail($id);
