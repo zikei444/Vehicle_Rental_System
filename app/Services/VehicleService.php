@@ -1,5 +1,8 @@
 <?php
 
+// STUDENT NAME: Lian Wei Ying
+// STUDENT ID: 23WMR14568
+
 namespace App\Services;
 
 use App\Models\Vehicle;
@@ -37,7 +40,7 @@ class VehicleService
         $vehicle = Vehicle::create($data);
         return response()->json(['status' => 'success', 'data' => $this->formatVehicle($vehicle)], 201);
     }
-    
+
     /**
      * Update vehicle details
      */

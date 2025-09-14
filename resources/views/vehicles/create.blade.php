@@ -1,3 +1,8 @@
+<!-- 
+STUDENT NAME: Lian Wei Ying 
+STUDENT ID: 23WMR14568
+-->
+
 @extends('layouts.app')
 
 @section('content')
@@ -50,7 +55,7 @@
 
         <div class="mb-3">
             <label>Year Manufacturer</label>
-            <input type="number" name="year_of_manufacture" class="form-control" value="{{ old('year_of_manufacture') }}" required>
+            <input type="number" name="year_of_manufacture" class="form-control" value="{{ old('year_of_manufacture') }}" required min="1900" max="{{ date('Y') }}">
             @error('year_of_manufacture')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -58,7 +63,7 @@
 
         <div class="mb-3">
             <label>Registration Number</label>
-            <input type="text" name="registration_number" class="form-control" value="{{ old('registration_number') }}" required>
+            <input type="text" name="registration_number" class="form-control" value="{{ old('registration_number') }}" required pattern="[A-Z0-9\-]+">
             @error('registration_number')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -66,7 +71,7 @@
 
         <div class="mb-3">
             <label>Rental Price (RM)</label>
-            <input type="number" step="0.01" name="rental_price" class="form-control" value="{{ old('rental_price') }}" required>
+            <input type="number" step="0.01" name="rental_price" class="form-control" value="{{ old('rental_price') }}" required min="0">
             @error('rental_price')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -88,7 +93,7 @@
         <!-- Vehicle image -->
         <div class="mb-3">
             <label for="image" class="form-label">Vehicle Image</label>
-            <input type="file" name="image" class="form-control" id="image" required>
+            <input type="file" name="image" class="form-control" id="image" required accept="image/*">
             @error('image')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -98,21 +103,21 @@
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="insurance_doc" class="form-label">Insurance Document</label>
-                <input type="file" name="insurance_doc" class="form-control">
+                <input type="file" name="insurance_doc" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                 @error('insurance_doc')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
             </div>
             <div class="col-md-4">
                 <label for="registration_doc" class="form-label">Registration Document</label>
-                <input type="file" name="registration_doc" class="form-control">
+                <input type="file" name="registration_doc" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                 @error('registration_doc')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
             </div>
             <div class="col-md-4">
                 <label for="roadtax_doc" class="form-label">Road Tax Document</label>
-                <input type="file" name="roadtax_doc" class="form-control">
+                <input type="file" name="roadtax_doc" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                 @error('roadtax_doc')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
@@ -155,14 +160,14 @@
             </div>
             <div class="mb-3">
                 <label>Seats</label>
-                <input type="number" name="seats" class="form-control" value="{{ old('seats') }}">
+                <input type="number" name="seats" class="form-control" value="{{ old('seats') }}" min="1">
                 @error('seats')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
             </div>
             <div class="mb-3">
                 <label>Fuel Efficiency (km/l)</label>
-                <input type="number" step="0.01" name="fuel_efficiency" class="form-control" value="{{ old('fuel_efficiency') }}">
+                <input type="number" step="0.01" name="fuel_efficiency" class="form-control" value="{{ old('fuel_efficiency') }}" min="0">
                 @error('fuel_efficiency')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
@@ -173,7 +178,7 @@
             <h4>Truck Details</h4>
             <div class="mb-3">
                 <label>Load Capacity (tons)</label>
-                <input type="number" step="0.01" name="load_capacity" class="form-control" value="{{ old('load_capacity') }}">
+                <input type="number" step="0.01" name="load_capacity" class="form-control" value="{{ old('load_capacity') }}" min="0">
                 @error('load_capacity')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
@@ -206,7 +211,7 @@
             <h4>Van Details</h4>
             <div class="mb-3">
                 <label>Passenger Capacity</label>
-                <input type="number" name="passenger_capacity" class="form-control" value="{{ old('passenger_capacity') }}">
+                <input type="number" name="passenger_capacity" class="form-control" value="{{ old('passenger_capacity') }}" min="1">
                 @error('passenger_capacity')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror

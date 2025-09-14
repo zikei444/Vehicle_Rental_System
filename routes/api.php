@@ -23,13 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Route::prefix('ratings')->group(function () {
-//     Route::post('/', [RatingApiController::class, 'store']);           // Submit rating
-//     Route::put('/approve/{id}', [RatingApiController::class, 'approve']); // Admin approve
-//     Route::get('/', [RatingApiController::class, 'index']);           // Get approved ratings
-// });
-//Route::middleware('auth:sanctum')->post('/ratings', [RatingController::class, 'store']);
-
 // Vehicles API
 Route::get('/vehicles', [VehicleApiController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']);
@@ -42,8 +35,6 @@ Route::prefix('vehicles/{vehicle}')->group(function () {
     Route::get('/ratings', [RatingApiController::class, 'index']);   // 获取approved评论
     Route::get('/ratings/average', [RatingApiController::class, 'rating']); // 获取平均分
 });
-//Route::get('/ratings/reservation/{reservationId}/customer/{customerId}', [RatingApiController::class, 'checkRated']);
-
 
 Route::prefix('ratings')->group(function () {
     Route::get('/summary/{vehicleId}', [RatingApiController::class, 'summary']);
@@ -61,13 +52,29 @@ Route::get('/customers/{customerId}/reservations', [ReservationApiController::cl
 
 
 // Maintenance API
-Route::prefix('maintenances')->group(function () {
-    Route::get('/',        [MaintenanceApiController::class, 'index']);   // list
-    Route::post('/',       [MaintenanceApiController::class, 'store']);   // create
-    Route::get('/{id}',    [MaintenanceApiController::class, 'show']);    // details
-    Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // update / transition
-    Route::delete('/{id}', [MaintenanceApiController::class, 'destroy']); // delete
-});
-
-// Convenience listing by vehicle
+Route::get('/maintenances', [MaintenanceApiController::class, 'index']);
+Route::get('/maintenances/{id}', [MaintenanceApiController::class, 'show']);
+Route::post('/maintenances', [MaintenanceApiController::class, 'store']);
+Route::put('/maintenances/{id}', [MaintenanceApiController::class, 'update']);
+Route::delete('/maintenances/{id}', [MaintenanceApiController::class, 'destroy']);
 Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
+
+// User API
+// List all customers
+Route::get('/customers', [UserApiController::class, 'index']);
+
+// Get single customer by ID
+Route::get('/customers/{id}', [UserApiController::class, 'show']);
+
+// Create a new customer
+Route::post('/customers', [UserApiController::class, 'store']);
+
+// Update customer info
+Route::put('/customers/{id}', [UserApiController::class, 'update']);
+
+// Delete customer
+Route::delete('/customers/{id}', [UserApiController::class, 'destroy']);
+
+// Get customer id
+Route::get('/user/customer-id', [UserApiController::class, 'getCustomerId']);
+

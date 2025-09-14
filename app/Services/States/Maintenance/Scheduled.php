@@ -1,5 +1,8 @@
 <?php
 
+// STUDENT NAME: Loh Yun Le
+// STUDENT ID: 23WMR14583
+
 namespace App\Services\States\Maintenance;
 
 use App\Models\Maintenance;
@@ -10,7 +13,7 @@ class Scheduled extends BaseStatus
 {
     public function name(): string { return 'Scheduled'; }
 
-    // Allowed change status from Scheduled
+    // Allow only change from Scheduled → Completed/Cancelled
     public function transitionTo(Maintenance $m, string $newStatus): Maintenance
     {
         return match ($newStatus) {
@@ -20,6 +23,7 @@ class Scheduled extends BaseStatus
         };
     }
 
+    // Create a new Scheduled maintenance
     public function schedule(Maintenance $m): Maintenance
     {
         return DB::transaction(function () use ($m) {
@@ -32,6 +36,7 @@ class Scheduled extends BaseStatus
                 throw ValidationException::withMessages(['vehicle_id' => 'Vehicle not available for scheduling.']);
             }
 
+            // Only allow one Scheduled maintenance per vehicle
             $exists = Maintenance::where('vehicle_id', $m->vehicle_id)
                 ->where('status', 'Scheduled')
                 ->exists();
