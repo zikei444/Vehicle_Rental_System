@@ -52,15 +52,11 @@ Route::get('/customers/{customerId}/reservations', [ReservationApiController::cl
 
 
 // Maintenance API
-Route::prefix('maintenances')->group(function () {
-    Route::get('/',        [MaintenanceApiController::class, 'index']);   // list
-    Route::post('/',       [MaintenanceApiController::class, 'store']);   // create
-    Route::get('/{id}',    [MaintenanceApiController::class, 'show']);    // details
-    Route::put('/{id}',    [MaintenanceApiController::class, 'update']);  // update / transition
-    Route::delete('/{id}', [MaintenanceApiController::class, 'destroy']); // delete
-    Route::get('vehicles/{vehicleId}/maintenances', 'byVehicle');
-});
-// Convenience listing by vehicle
+Route::get('/maintenances', [MaintenanceApiController::class, 'index']);
+Route::get('/maintenances/{id}', [MaintenanceApiController::class, 'show']);
+Route::post('/maintenances', [MaintenanceApiController::class, 'store']);
+Route::put('/maintenances/{id}', [MaintenanceApiController::class, 'update']);
+Route::delete('/maintenances/{id}', [MaintenanceApiController::class, 'destroy']);
 Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
 
 // User API
