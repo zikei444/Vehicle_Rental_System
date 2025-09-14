@@ -24,9 +24,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Vehicles API
-Route::get('/vehicles', [VehicleApiController::class, 'index']);
-Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']);
+Route::get('/vehicles', [VehicleApiController::class, 'index']); // Show all vehicle 
+Route::get('/vehicles/{id}', [VehicleApiController::class, 'show']); // Show specific vehicle 
+Route::post('/vehicles', [VehicleApiController::class, 'store']); // Create
+Route::put('/vehicles/{id}', [VehicleApiController::class, 'update']); // Update 
 Route::post('/vehicles/update-status', [VehicleApiController::class, 'updateStatus']);
+Route::delete('/vehicles/{id}', [VehicleApiController::class, 'destroy']); // Delete vehicle
 
 // Ratings api
 Route::post('/ratings', [RatingApiController::class, 'store']); // submit rating

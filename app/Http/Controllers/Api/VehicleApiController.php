@@ -14,8 +14,9 @@ class VehicleApiController extends Controller
     //List all vehicles (paginated)
     public function index()
     { 
-        $vehicles = \App\Models\Vehicle::select(
-            'id','brand','model','year_of_manufacture as year','registration_number','availability_status');
+        $vehicles = Vehicle::select(
+        'id', 'type', 'brand', 'model', 'year_of_manufacture as year', 'registration_number', 'availability_status'
+        )->get(); 
 
         return response()->json([
             'status' => 'success',
@@ -45,6 +46,7 @@ class VehicleApiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'type' => 'required|in:car,truck,van',
             'brand' => 'required|string|max:100',
             'model' => 'required|string|max:100',
             'year_of_manufacture' => 'nullable|integer|min:1900|max:' . date('Y'),
@@ -75,6 +77,7 @@ class VehicleApiController extends Controller
         }
 
         $request->validate([
+            'type' => 'sometimes|required|in:car,truck,van',
             'brand' => 'sometimes|required|string|max:100',
             'model' => 'sometimes|required|string|max:100',
             'year_of_manufacture' => 'nullable|integer|min:1900|max:' . date('Y'),
