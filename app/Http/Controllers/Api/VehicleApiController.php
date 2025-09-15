@@ -104,28 +104,28 @@ class VehicleApiController extends Controller
 
     // Update vehicle (availability status only)
     public function updateStatus(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:available,rented,reserved,under_maintenance'
-    ]);
+    {
+        $request->validate([
+            'status' => 'required|in:available,rented,reserved,under_maintenance'
+        ]);
 
-    $vehicle = Vehicle::find($id);
-    if (!$vehicle) {
+        $vehicle = Vehicle::find($id);
+        if (!$vehicle) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Vehicle not found'
+            ], 404);
+        }
+
+        $vehicle->availability_status = $request->status;
+        $vehicle->save();
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Vehicle not found'
-        ], 404);
+            'status' => 'success',
+            'message' => 'Vehicle status updated successfully',
+            'data' => $vehicle
+        ], 200);
     }
-
-    $vehicle->availability_status = $request->status;
-    $vehicle->save();
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Vehicle status updated successfully',
-        'data' => $vehicle
-    ], 200);
-}
 
 
     // Delete 
@@ -140,11 +140,56 @@ class VehicleApiController extends Controller
             ], 404);
         }
 
-        $vehicle->delete();
+        try {
+            // --- 1️⃣ Delete rating_logs linked to vehicle's reservations ---
+            $reservationIds = $vehicle->reservations()->pluck('id');
+            if ($reservationIds->count() > 0) {
+                $ratingsForReservations = \App\Models\Rating::whereIn('reservation_id', $reservationIds)->pluck('id');
+                if ($ratingsForReservations->count() > 0) {
+                    \App\Models\RatingLog::whereIn('rating_id', $ratingsForReservations)->delete();
+                }
+            }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Vehicle deleted successfully'
-        ]);
+            // --- 2️⃣ Delete ratings linked to reservations ---
+            if ($reservationIds->count() > 0) {
+                \App\Models\Rating::whereIn('reservation_id', $reservationIds)->delete();
+            }
+
+            // --- 3️⃣ Delete vehicle's reservations ---
+            $vehicle->reservations()->delete();
+
+            // --- 4️⃣ Delete ratings directly linked to vehicle (if any) ---
+            if ($vehicle->ratings()->exists()) {
+                $vehicleRatingIds = $vehicle->ratings()->pluck('id');
+                if ($vehicleRatingIds->count() > 0) {
+                    \App\Models\RatingLog::whereIn('rating_id', $vehicleRatingIds)->delete();
+                }
+                $vehicle->ratings()->delete();
+            }
+
+            // --- 5️⃣ Delete maintenance records ---
+            if ($vehicle->maintenanceRecords()->exists()) {
+                $vehicle->maintenanceRecords()->delete();
+            }
+
+            // --- 6️⃣ Delete related car/truck/van (hasOne) ---
+            if ($vehicle->car) $vehicle->car->delete();
+            if ($vehicle->truck) $vehicle->truck->delete();
+            if ($vehicle->van) $vehicle->van->delete();
+
+            // --- 7️⃣ Delete the vehicle itself ---
+            $vehicle->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Vehicle deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete vehicle: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
