@@ -61,6 +61,7 @@ Route::get('/maintenances', [MaintenanceApiController::class, 'index']);
 Route::get('/maintenances/{id}', [MaintenanceApiController::class, 'show']);
 Route::post('/maintenances', [MaintenanceApiController::class, 'store']);
 Route::put('/maintenances/{id}', [MaintenanceApiController::class, 'update']);
+Route::delete('/maintenances/{id}', [MaintenanceApiController::class, 'destroy']);
 Route::get('/vehicles/{vehicleId}/maintenances', [MaintenanceApiController::class, 'byVehicle']);
 
 // User API
