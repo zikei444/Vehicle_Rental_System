@@ -141,7 +141,7 @@ class VehicleApiController extends Controller
         }
 
         try {
-            // --- 1️⃣ Delete rating_logs linked to vehicle's reservations ---
+            // Selete rating_logs linked to vehicle's reservations
             $reservationIds = $vehicle->reservations()->pluck('id');
             if ($reservationIds->count() > 0) {
                 $ratingsForReservations = \App\Models\Rating::whereIn('reservation_id', $reservationIds)->pluck('id');
@@ -150,15 +150,15 @@ class VehicleApiController extends Controller
                 }
             }
 
-            // --- 2️⃣ Delete ratings linked to reservations ---
+            // Delete ratings linked to reservations 
             if ($reservationIds->count() > 0) {
                 \App\Models\Rating::whereIn('reservation_id', $reservationIds)->delete();
             }
 
-            // --- 3️⃣ Delete vehicle's reservations ---
+            // Delete vehicle's reservations 
             $vehicle->reservations()->delete();
 
-            // --- 4️⃣ Delete ratings directly linked to vehicle (if any) ---
+            // Delete ratings directly linked to vehicle 
             if ($vehicle->ratings()->exists()) {
                 $vehicleRatingIds = $vehicle->ratings()->pluck('id');
                 if ($vehicleRatingIds->count() > 0) {
@@ -167,17 +167,17 @@ class VehicleApiController extends Controller
                 $vehicle->ratings()->delete();
             }
 
-            // --- 5️⃣ Delete maintenance records ---
+            // Delete maintenance records
             if ($vehicle->maintenanceRecords()->exists()) {
                 $vehicle->maintenanceRecords()->delete();
             }
 
-            // --- 6️⃣ Delete related car/truck/van (hasOne) ---
+            // Delete related car/truck/van (hasOne) 
             if ($vehicle->car) $vehicle->car->delete();
             if ($vehicle->truck) $vehicle->truck->delete();
             if ($vehicle->van) $vehicle->van->delete();
 
-            // --- 7️⃣ Delete the vehicle itself ---
+            // Delete the vehicle itself 
             $vehicle->delete();
 
             return response()->json([
