@@ -25,7 +25,7 @@ STUDENT ID: 23WMR14547 -->
             @foreach($ratings as $rating)
                 <tr>
                     <td>{{ $rating->customer->user->name ?? 'Unknown' }}</td>
-                    <td>{{ $rating->vehicle->brand }} {{ $rating->vehicle->model }}</td>
+                    <td>{{ $rating->vehicle->brand  ?? 'Unknown' }} {{ $rating->vehicle->model  ?? 'Unknown' }}</td>
                     <td>{{ $rating->rating }} / 5</td>
                     <td>{{ $rating->feedback }}</td>
                     <td>
